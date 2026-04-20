@@ -1,0 +1,137 @@
+{
+	"pages": [
+		{
+			"path": "pages/main/main",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/register/register",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/community/community",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/profile/profile",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/search/search",
+			"style": {
+				"navigationBarTitleText": "搜索"
+			}
+		},
+		{
+			"path": "pages/record/record",
+			"style": {
+				"navigationBarTitleText": "录制声音"
+			}
+		},
+		{
+			"path": "pages/sound-detail/sound-detail",
+			"style": {
+				"navigationBarTitleText": "声音详情"
+			}
+		},
+		{
+			"path": "pages/publish/publish",
+			"style": {
+				"navigationBarTitleText": "发布帖子"
+			}
+		},
+		{
+			"path": "pages/my-posts/my-posts",
+			"style": {
+				"navigationBarTitleText": "我的帖子",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/my-sounds/my-sounds",
+			"style": {
+				"navigationBarTitleText": "我的录音",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/my-likes/my-likes",
+			"style": {
+				"navigationBarTitleText": "我的点赞",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/post-detail/post-detail",
+			"style": {
+				"navigationBarTitleText": "帖子详情"
+			}
+		},
+		{
+			"path": "pages/sound-player/sound-player",
+			"style": {
+				"navigationBarTitleText": "声音播放"
+			}
+		},
+		{
+			"path": "pages/user-profile/user-profile",
+			"style": {
+				"navigationBarTitleText": "用户主页"
+			}
+		},
+		{
+			"path": "pages/about/about",
+			"style": {
+				"navigationBarTitleText": "关于我们",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/messages/messages",
+			"style": {
+				"navigationBarTitleText": "私信",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/chat/chat",
+			"style": {
+				"navigationBarTitleText": "聊天",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/follows/follows",
+			"style": {
+				"navigationBarTitleText": "关注列表",
+				"navigationStyle": "custom"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "声愈",
+		"navigationBarBackgroundColor": "#FFE4E1",
+		"backgroundColor": "#F8F8F8"
+	}
+}

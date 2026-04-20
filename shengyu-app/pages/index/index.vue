@@ -1,0 +1,833 @@
+<template>
+  <view class="index-container page-enter">
+    <view class="search-bar" @click="goSearch">
+      <view class="search-input">
+        <text class="search-icon">🔍</text>
+        <text class="search-placeholder">搜索声音、帖子、用户...</text>
+      </view>
+    </view>
+    
+    <!-- 录制声音区域 -->
+    <view class="record-section" @click="goRecord">
+      <view class="record-circle">
+        <text class="record-icon">🎤</text>
+        <text class="record-text">录制声音</text>
+      </view>
+      <text class="record-desc">点击录制你的声音</text>
+    </view>
+    
+    <!-- 动态分类区域 -->
+    <view v-for="(categoryData, category) in animalCategories" :key="category" class="category-section">
+      <text class="section-title">{{ categoryData.display_name }}</text>
+
+      <!-- 加载状态 -->
+      <view v-if="loading" class="loading">
+        <text>加载中...</text>
+      </view>
+
+      <!-- 错误提示 -->
+      <view v-else-if="error" class="error">
+        <text>{{ error }}</text>
+        <button @click="getPopularAnimals" class="retry-btn">重试</button>
+      </view>
+
+      <!-- 动物列表 -->
+      <view v-else class="animal-grid">
+        <view class="animal-item" v-for="animal in categoryData.items" :key="animal.id" @click="goSoundDetail(animal.type)">
+          <view class="animal-icon">
+            <text class="icon">{{ animal.icon }}</text>
+          </view>
+          <text class="animal-name">{{ animal.name }}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 通知弹窗 -->
+    <view v-if="showNotification" class="notification-popup" @click="closeNotification">
+      <view class="notification-content" @click.stop>
+        <!-- 顶部装饰条 -->
+        <view class="notification-top-bar"></view>
+        
+        <!-- 图标区域 -->
+        <view class="notification-icon-wrapper">
+          <view class="notification-icon">
+            <text class="notification-icon-text">📢</text>
+          </view>
+        </view>
+        
+        <!-- 关闭按钮 -->
+        <text class="notification-close" @click="closeNotification">×</text>
+        
+        <!-- 标题 -->
+        <view class="notification-title-wrapper">
+          <text class="notification-title">{{ notification.title }}</text>
+        </view>
+        
+        <!-- 内容 -->
+        <view class="notification-body">
+          <text class="notification-content-text">{{ notification.content }}</text>
+        </view>
+        
+        <!-- 底部按钮 -->
+        <view class="notification-footer">
+          <button class="notification-btn notification-btn-secondary" @click="dismissNotification">
+            <text class="btn-text">不再提示</text>
+          </button>
+          <button class="notification-btn notification-btn-primary" @click="closeNotification">
+            <text class="btn-text">我知道了</text>
+          </button>
+        </view>
+      </view>
+    </view>
+    
+  </view>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      animalCategories: {},
+      loading: false,
+      error: '',
+      showNotification: false,
+      notification: {
+        id: null,
+        title: '',
+        content: ''
+      },
+      dismissedNotifications: [],
+      unreadMessageCount: 0
+    };
+  },
+
+  onLoad() {
+    this.getPopularAnimals();
+    this.loadDismissedNotifications();
+    this.checkNotifications();
+    this.loadUnreadCount();
+  },
+  onShow() {
+    this.getPopularAnimals();
+    this.checkNotifications();
+    this.loadUnreadCount();
+  },
+  onPullDownRefresh() {
+    this.getPopularAnimals();
+    uni.stopPullDownRefresh();
+  },
+  methods: {
+    goSearch() {
+      uni.navigateTo({ url: '/pages/search/search' });
+    },
+    goRecord() {
+      const token = uni.getStorageSync('token');
+      if (!token) {
+        uni.showModal({
+          title: '提示',
+          content: '请先登录后使用录制功能',
+          confirmText: '去登录',
+          success: (res) => {
+            if (res.confirm) {
+              uni.navigateTo({ url: '/pages/login/login' });
+            }
+          }
+        });
+      } else {
+        uni.navigateTo({ url: '/pages/record/record' });
+      }
+    },
+    goSoundDetail(type) {
+      uni.navigateTo({ url: `/pages/sound-detail/sound-detail?type=${type}` });
+    },
+    async getPopularAnimals() {
+      this.loading = true;
+      this.error = '';
+
+      try {
+        const res = await uni.request({
+          url: 'http://shengyu.supersyh.xyz/api/sound/animal-types-grouped',
+          method: 'GET'
+        });
+
+        if (res.data.code === 200) {
+          this.animalCategories = res.data.data;
+        } else {
+          this.setDefaultAnimals();
+        }
+      } catch (error) {
+        this.error = '获取数据失败，请重试';
+        this.setDefaultAnimals();
+      } finally {
+        this.loading = false;
+      }
+    },
+    setDefaultAnimals() {
+      this.animalCategories = {
+        'popular': [
+          { id: 1, type: 'cat', name: '猫咪', icon: '🐱' },
+          { id: 2, type: 'dog', name: '狗狗', icon: '🐶' }
+        ],
+        'other': [
+          { id: 3, type: 'bird', name: '小鸟', icon: '🐦' },
+          { id: 4, type: 'rabbit', name: '兔子', icon: '🐰' },
+          { id: 5, type: 'mouse', name: '老鼠', icon: '🐭' },
+          { id: 6, type: 'cow', name: '奶牛', icon: '🐮' },
+          { id: 7, type: 'pig', name: '小猪', icon: '🐷' },
+          { id: 8, type: 'sheep', name: '绵羊', icon: '🐑' }
+        ]
+      };
+    },
+    loadDismissedNotifications() {
+      const dismissed = uni.getStorageSync('dismissedNotifications');
+      if (dismissed) {
+        this.dismissedNotifications = JSON.parse(dismissed);
+      }
+    },
+    saveDismissedNotifications() {
+      uni.setStorageSync('dismissedNotifications', JSON.stringify(this.dismissedNotifications));
+    },
+    // 加载未读消息数
+    async loadUnreadCount() {
+      const token = uni.getStorageSync('token');
+      if (!token) return;
+      try {
+        const res = await uni.request({
+          url: 'http://shengyu.supersyh.xyz/api/social/messages/unread/count',
+          method: 'GET',
+          header: { Authorization: `Bearer ${token}` }
+        });
+        if (res.statusCode === 200) {
+          this.unreadMessageCount = res.data.count || 0;
+        }
+      } catch (e) {
+        console.error('加载未读数失败:', e);
+      }
+    },
+    async checkNotifications() {
+      try {
+        uni.request({
+          url: 'http://shengyu.supersyh.xyz/api/admin/notifications/current',
+          method: 'GET',
+          success: (res) => {
+            console.log('通知API返回:', res.data);
+
+            if (res.data && res.data.hasNotification && res.data.notification) {
+              const notification = res.data.notification;
+
+              // 检查该通知是否已被用户选择不再提示
+              if (this.dismissedNotifications.includes(notification.id)) {
+                console.log('通知已被用户关闭:', notification.id);
+                return;
+              }
+
+              this.notification.id = notification.id;
+              this.notification.title = notification.title;
+              this.notification.content = notification.content;
+              this.showNotification = true;
+              console.log('显示通知:', notification);
+            } else {
+              console.log('没有通知或数据格式错误');
+            }
+          },
+          fail: (err) => {
+            console.error('请求通知失败:', err);
+          }
+        });
+      } catch (error) {
+        console.error('获取通知失败:', error);
+      }
+    },
+    closeNotification() {
+      this.showNotification = false;
+    },
+    dismissNotification() {
+      if (this.notification.id) {
+        if (!this.dismissedNotifications.includes(this.notification.id)) {
+          this.dismissedNotifications.push(this.notification.id);
+          this.saveDismissedNotifications();
+        }
+      }
+      this.showNotification = false;
+    }
+  }
+};
+</script>
+
+<style scoped>
+@import '/static/styles/theme.css';
+
+.index-container {
+  padding: 20rpx 20rpx 200rpx;
+  background: linear-gradient(180deg, #FFF5F7 0%, #F8F8F8 100%);
+  min-height: 100vh;
+  padding-top: 40rpx;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* 🔍栏 - 玻璃拟态效果 */
+.search-bar {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+  border-radius: 40rpx;
+  padding: 24rpx 32rpx;
+  margin-bottom: 40rpx;
+  box-shadow: 0 4rpx 20rpx rgba(255, 154, 158, 0.15);
+  border: 1rpx solid rgba(255, 255, 255, 0.5);
+  position: relative;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.search-bar:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 12rpx rgba(255, 154, 158, 0.1);
+}
+
+.search-input {
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  font-size: 32rpx;
+  margin-right: 15rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.search-placeholder {
+  font-size: 28rpx;
+  color: #999999;
+}
+
+/* 录制区域 */
+.record-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 50rpx;
+}
+
+/* 录制按钮 - 流动渐变色 */
+.record-circle {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
+  background-size: 200% 200%;
+  animation: gradient-flow 4s ease infinite, pulse-glow 2s ease-in-out infinite;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(255, 154, 158, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.record-circle::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 70%
+  );
+  animation: shimmer 3s infinite;
+}
+
+.record-circle:active {
+  transform: scale(0.95);
+  box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.3);
+}
+
+.record-icon {
+  font-size: 64rpx;
+  margin-bottom: 12rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.record-text {
+  font-size: 28rpx;
+  color: #FFFFFF;
+  font-weight: bold;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
+.record-desc {
+  font-size: 24rpx;
+  color: #888888;
+  margin-top: 8rpx;
+}
+
+/* 区块标题 */
+.popular-section {
+  margin-bottom: 50rpx;
+  animation: slide-up 0.5s ease-out;
+}
+
+.other-section {
+  margin-bottom: 50rpx;
+  animation: slide-up 0.6s ease-out;
+}
+
+.section-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 30rpx;
+  padding-left: 20rpx;
+  position: relative;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6rpx;
+  height: 32rpx;
+  background: linear-gradient(180deg, #FF9A9E 0%, #FECFEF 100%);
+  border-radius: 3rpx;
+}
+
+/* 动物网格 */
+.animal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24rpx;
+}
+
+/* 动物卡片 - 高级渐变效果 */
+.animal-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(145deg, #FFFFFF 0%, #FFF8F9 100%);
+  border-radius: 24rpx;
+  padding: 32rpx 0;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid rgba(255, 154, 158, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.animal-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rpx;
+  background: linear-gradient(90deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
+  background-size: 200% 100%;
+  animation: gradient-flow 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.animal-item:hover::before,
+.animal-item:active::before {
+  opacity: 1;
+}
+
+.animal-item:active {
+  transform: translateY(-4rpx) scale(0.98);
+  box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.2);
+}
+
+/* 动物图标 - 渐变背景 */
+.animal-icon {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFE4E8 0%, #FFF0F3 50%, #FFE4E8 100%);
+  background-size: 200% 200%;
+  animation: gradient-flow 5s ease infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(255, 154, 158, 0.2);
+  transition: all 0.3s ease;
+}
+
+.animal-item:active .animal-icon {
+  transform: scale(1.1);
+  box-shadow: 0 6rpx 20rpx rgba(255, 154, 158, 0.3);
+}
+
+.icon {
+  font-size: 52rpx;
+  transition: transform 0.3s ease;
+}
+
+.animal-item:active .icon {
+  transform: scale(1.15);
+}
+
+.animal-name {
+  font-size: 24rpx;
+  color: #444444;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.animal-item:active .animal-name {
+  color: #FF6B9D;
+}
+
+/* 加载动画 */
+.loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 100rpx 0;
+}
+
+.loading::before {
+  content: '';
+  width: 60rpx;
+  height: 60rpx;
+  border: 4rpx solid rgba(255, 154, 158, 0.2);
+  border-top-color: #FF9A9E;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20rpx;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading text {
+  font-size: 28rpx;
+  color: #888888;
+}
+
+/* 错误状态 */
+.error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 100rpx 0;
+}
+
+.error text {
+  font-size: 28rpx;
+  color: #FF6B6B;
+  margin-bottom: 24rpx;
+}
+
+.retry-btn {
+  width: 200rpx;
+  height: 64rpx;
+  font-size: 26rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+  color: #FFFFFF;
+  border-radius: 32rpx;
+  border: none;
+  box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.3);
+  transition: all 0.3s ease;
+}
+
+.retry-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(255, 154, 158, 0.2);
+}
+
+/* 通知弹窗 */
+.notification-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12rpx);
+  -webkit-backdrop-filter: blur(12rpx);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fade-in 0.3s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.notification-content {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  width: 82%;
+  max-width: 560rpx;
+  box-shadow: 0 24rpx 80rpx rgba(0, 0, 0, 0.15);
+  animation: popup-scale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  position: relative;
+  padding-bottom: 40rpx;
+}
+
+@keyframes popup-scale {
+  from { 
+    opacity: 0; 
+    transform: scale(0.85) translateY(30rpx); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
+}
+
+/* 顶部装饰条 */
+.notification-top-bar {
+  height: 6rpx;
+  background: linear-gradient(90deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
+  background-size: 200% 100%;
+  animation: gradient-slide 2s linear infinite;
+}
+
+@keyframes gradient-slide {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* 图标区域 */
+.notification-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 40rpx;
+  margin-bottom: 24rpx;
+}
+
+.notification-icon {
+  width: 120rpx;
+  height: 120rpx;
+  background: linear-gradient(135deg, #FFF5F7 0%, #FFE8EC 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba(255, 154, 158, 0.2);
+  animation: icon-pulse 2s ease-in-out infinite;
+}
+
+@keyframes icon-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.notification-icon-text {
+  font-size: 60rpx;
+}
+
+/* 关闭按钮 */
+.notification-close {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  font-size: 40rpx;
+  color: #CCCCCC;
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.notification-close:active {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #999999;
+}
+
+/* 标题 */
+.notification-title-wrapper {
+  padding: 0 40rpx;
+  text-align: center;
+  margin-bottom: 20rpx;
+}
+
+.notification-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333333;
+  line-height: 1.4;
+}
+
+/* 内容 */
+.notification-body {
+  padding: 0 40rpx 32rpx;
+  text-align: center;
+}
+
+.notification-content-text {
+  font-size: 28rpx;
+  color: #666666;
+  line-height: 1.8;
+}
+
+/* 底部按钮 */
+.notification-footer {
+  padding: 0 40rpx;
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.notification-btn {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.notification-btn-primary {
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+  box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.4);
+}
+
+.notification-btn-primary:active {
+  transform: scale(0.96);
+  box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.3);
+}
+
+.notification-btn-secondary {
+  background: #F5F5F5;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.notification-btn-secondary:active {
+  background: #EEEEEE;
+  transform: scale(0.96);
+}
+
+.btn-text {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.notification-btn-primary .btn-text {
+  color: #FFFFFF;
+}
+
+.notification-btn-secondary .btn-text {
+  color: #666666;
+}
+
+/* 更新弹窗 */
+.update-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.update-content {
+  background-color: #FFFFFF;
+  border-radius: 20rpx;
+  width: 80%;
+  max-width: 500rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.2);
+  animation: popup-fade 0.3s;
+}
+
+.update-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  border-bottom: 1rpx solid #EEEEEE;
+}
+
+.update-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.update-close {
+  font-size: 40rpx;
+  color: #999999;
+  cursor: pointer;
+}
+
+.update-body {
+  padding: 30rpx;
+  min-height: 150rpx;
+}
+
+.update-version {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.update-desc {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.5;
+}
+
+.update-footer {
+  padding: 0 30rpx 30rpx;
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.update-btn {
+  flex: 1;
+  height: 60rpx;
+  font-size: 28rpx;
+  border-radius: 30rpx;
+}
+
+.update-btn.cancel {
+  background-color: #F0F0F0;
+  color: #666666;
+}
+
+.update-btn.confirm {
+  background-color: #FF69B4;
+  color: #FFFFFF;
+}
+</style>

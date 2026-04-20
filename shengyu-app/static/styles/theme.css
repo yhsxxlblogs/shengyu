@@ -1,0 +1,448 @@
+/* 全局主题样式 - 成熟优雅风格 */
+
+/* 主渐变色定义 */
+:root {
+  --gradient-primary: linear-gradient(135deg, #4a6fa5 0%, #6b8cce 50%, #4a6fa5 100%);
+  --gradient-secondary: linear-gradient(135deg, #5c6e91 0%, #8a9bc2 100%);
+  --gradient-warm: linear-gradient(135deg, #8b9dc3 0%, #dfe3ee 100%);
+  --gradient-cool: linear-gradient(135deg, #6d81b5 0%, #a6b0c3 100%);
+  --gradient-sunset: linear-gradient(135deg, #5a73a5 0%, #8c9bc4 100%);
+  --gradient-ocean: linear-gradient(135deg, #3a539b 0%, #4b79a1 100%);
+  --gradient-pink: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
+  
+  /* 动画时长 */
+  --transition-fast: 0.2s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.5s;
+  
+  /* 阴影 */
+  --shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 4rpx 20rpx rgba(74, 111, 165, 0.3);
+  --shadow-pink-glow: 0 4rpx 20rpx rgba(255, 154, 158, 0.3);
+  
+  /* 间距 */
+  --spacing-xs: 8rpx;
+  --spacing-sm: 16rpx;
+  --spacing-md: 24rpx;
+  --spacing-lg: 32rpx;
+  --spacing-xl: 40rpx;
+  
+  /* 字体大小 */
+  --font-xs: 20rpx;
+  --font-sm: 24rpx;
+  --font-md: 28rpx;
+  --font-lg: 32rpx;
+  --font-xl: 40rpx;
+  
+  /* 圆角 */
+  --radius-sm: 12rpx;
+  --radius-md: 16rpx;
+  --radius-lg: 24rpx;
+  --radius-xl: 32rpx;
+  --radius-2xl: 40rpx;
+  
+  /* 颜色 */
+  --color-primary: #4a6fa5;
+  --color-secondary: #6b8cce;
+  --color-pink: #FF69B4;
+  --color-pink-light: #FF9A9E;
+  --color-text-primary: #333333;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #999999;
+  --color-bg-light: #F8F8F8;
+  --color-bg-pink: #FFF5F7;
+  --color-border: #EEEEEE;
+  --color-border-pink: #FFF0F5;
+}
+
+/* 流动渐变背景动画 */
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0rpx); }
+  50% { transform: translateY(-6rpx); }
+}
+
+@keyframes subtle-glow {
+  0%, 100% { box-shadow: 0 4rpx 20rpx rgba(74, 111, 165, 0.2); }
+  50% { box-shadow: 0 6rpx 30rpx rgba(74, 111, 165, 0.3); }
+}
+
+@keyframes gentle-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes smooth-scale-in {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes smooth-slide-up {
+  0% { transform: translateY(15rpx); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* 渐变按钮样式 */
+.btn-gradient {
+  background: var(--gradient-primary);
+  background-size: 200% 200%;
+  animation: gradient-flow 4s ease infinite;
+  color: #FFFFFF;
+  border: none;
+  transition: all var(--transition-normal) ease;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-2rpx);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-gradient:active {
+  transform: translateY(0);
+}
+
+/* 渐变背景 */
+.bg-gradient {
+  background: var(--gradient-primary);
+  background-size: 200% 200%;
+  animation: gradient-flow 10s ease infinite;
+}
+
+/* 卡片悬停效果 */
+.card-hover {
+  transition: all var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-3rpx);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-hover:active {
+  transform: translateY(-1rpx) scale(0.99);
+}
+
+/* 微光效果 */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: gentle-shimmer 3s infinite;
+}
+
+/* 浮动动画 */
+.float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* 脉冲发光 */
+.pulse-glow {
+  animation: subtle-glow 3s ease-in-out infinite;
+}
+
+/* 页面进入动画 */
+.page-enter {
+  animation: page-enter 0.5s ease-out;
+}
+
+/* 页面返回动画 */
+.page-leave {
+  animation: page-leave 0.4s ease-in;
+}
+
+/* 列表项进入动画 */
+.list-item-enter {
+  animation: smooth-scale-in 0.4s ease-out;
+}
+
+/* 页面进入动画 - 从右侧滑入 */
+@keyframes page-enter {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 页面返回动画 - 从左侧滑出 */
+@keyframes page-leave {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+/* 淡入淡出动画 */
+.page-fade-enter {
+  animation: page-fade-enter 0.5s ease-out;
+}
+
+.page-fade-leave {
+  animation: page-fade-leave 0.4s ease-in;
+}
+
+@keyframes page-fade-enter {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes page-fade-leave {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 玻璃拟态效果 */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24rpx);
+  -webkit-backdrop-filter: blur(24rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.4);
+  box-shadow: var(--shadow-md);
+}
+
+/* 深色玻璃拟态 */
+.glass-dark {
+  background: rgba(20, 30, 48, 0.7);
+  backdrop-filter: blur(24rpx);
+  -webkit-backdrop-filter: blur(24rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-md);
+}
+
+/* 圆角规范 */
+.radius-sm { border-radius: 12rpx; }
+.radius-md { border-radius: 16rpx; }
+.radius-lg { border-radius: 24rpx; }
+.radius-xl { border-radius: 32rpx; }
+.radius-full { border-radius: 50%; }
+
+/* 优雅边框 */
+.elegant-border {
+  border: 1rpx solid rgba(74, 111, 165, 0.2);
+  border-radius: 16rpx;
+  transition: all var(--transition-normal) ease;
+}
+
+.elegant-border:hover {
+  border-color: rgba(74, 111, 165, 0.4);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 平滑背景 */
+.smooth-bg {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  transition: all var(--transition-normal) ease;
+}
+
+/* 文字样式 */
+.text-elegant {
+  font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.text-subtle {
+  color: #6c757d;
+  font-size: 14rpx;
+  line-height: 1.5;
+}
+
+/* 页面切换动画 */
+.page-fade-enter {
+  animation: smooth-fade-in 0.5s ease-out;
+}
+
+.page-slide-right {
+  animation: smooth-slide-right 0.4s ease-out;
+}
+
+@keyframes smooth-fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes smooth-slide-right {
+  0% { transform: translateX(-20rpx); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+/* 按钮波纹效果 */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.ripple:active::after {
+  width: 300%;
+  height: 300%;
+}
+
+/* 弹性动画 */
+.bounce {
+  animation: bounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* 列表加载动画 */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 文字渐变 */
+.text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 阴影层级 */
+.shadow-1 { box-shadow: var(--shadow-sm); }
+.shadow-2 { box-shadow: var(--shadow-md); }
+.shadow-3 { box-shadow: var(--shadow-lg); }
+.shadow-glow { box-shadow: var(--shadow-glow); }
+
+/* 禁用状态 */
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 加载旋转 */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* 心跳动画 */
+.heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+}
+
+/* ==================== 隐藏滚动条 ==================== */
+
+/* 全局隐藏滚动条 */
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* 针对uni-app的scroll-view */
+scroll-view::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* 隐藏所有元素的滚动条 */
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* 页面容器隐藏滚动条 */
+page {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+page::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* 视图容器隐藏滚动条 */
+view {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+view::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* 可滚动区域隐藏滚动条但保持滚动功能 */
+.scroll-container {
+  overflow: auto;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.scroll-container::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
