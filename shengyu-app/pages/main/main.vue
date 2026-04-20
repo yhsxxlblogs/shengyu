@@ -9,6 +9,10 @@
       <!-- 首页 -->
       <swiper-item class="swiper-item">
         <view class="page-container">
+          <!-- 录制声音按钮 -->
+          <view class="record-btn" @click="goRecord">
+            <text class="record-btn-icon">🎤</text>
+          </view>
           <view class="index-content">
             <view class="search-bar" @click="goSearch">
               <view class="search-input">
@@ -1403,7 +1407,24 @@ export default {
 
     // ========== 通用方法 ==========
     goSearch() {
-      uni.navigateTo({ url: '/pages/search/search' })
+      uni.navigateTo({ url: '/pages/search/search' });
+    },
+    goRecord() {
+      const token = uni.getStorageSync('token');
+      if (!token) {
+        uni.showModal({
+          title: '提示',
+          content: '请先登录后使用录制功能',
+          confirmText: '去登录',
+          success: (res) => {
+            if (res.confirm) {
+              uni.navigateTo({ url: '/pages/login/login' });
+            }
+          }
+        });
+      } else {
+        uni.navigateTo({ url: '/pages/record/record' });
+      }
     },
 
 
@@ -1520,6 +1541,77 @@ export default {
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #FFF5F7 0%, #F8F8F8 100%);
+  position: relative;
+}
+
+/* 录制按钮 - 流动渐变色 */
+.record-btn {
+  position: fixed;
+  bottom: 140rpx;
+  right: 30rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
+  background-size: 200% 200%;
+  animation: gradient-flow 4s ease infinite, pulse-glow 2s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba(255, 154, 158, 0.4);
+  z-index: 999;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.record-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 70%
+  );
+  animation: shimmer 3s infinite;
+}
+
+.record-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.3);
+}
+
+.record-btn-icon {
+  font-size: 52rpx;
+  color: #FFFFFF;
+  font-weight: bold;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 动画定义 */
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 8rpx 32rpx rgba(255, 154, 158, 0.4);
+  }
+  50% {
+    box-shadow: 0 12rpx 48rpx rgba(255, 154, 158, 0.6);
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .main-swiper {
