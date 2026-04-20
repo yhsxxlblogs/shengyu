@@ -11,7 +11,7 @@
         <view class="page-container">
           <!-- 录制声音按钮 -->
           <view class="publish-btn" @click="goRecord">
-            <text class="publish-icon">🎤</text>
+            <text class="publish-icon">+</text>
           </view>
           <view class="index-content">
             <view class="search-bar" @click="goSearch">
