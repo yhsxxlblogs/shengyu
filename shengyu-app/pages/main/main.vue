@@ -10,8 +10,8 @@
       <swiper-item class="swiper-item">
         <view class="page-container">
           <!-- 录制声音按钮 -->
-          <view class="record-btn" @click="goRecord">
-            <text class="record-btn-icon">🎤</text>
+          <view class="publish-btn" @click="goRecord">
+            <text class="publish-icon">🎤</text>
           </view>
           <view class="index-content">
             <view class="search-bar" @click="goSearch">
@@ -1127,7 +1127,7 @@ export default {
 
       try {
         const res = await uni.request({
-          url: `http://shengyu.supersyh.xyz/api/post/${postId}/like`,
+          url: `http://shengyu.supersyh.xyz/api/post/like/${postId}`,
           method: 'POST',
           header: { 'Authorization': `Bearer ${token}` }
         })
@@ -1212,7 +1212,7 @@ export default {
       }
       try {
         const res = await uni.request({
-          url: `http://shengyu.supersyh.xyz/api/post/${this.currentPostId}/comment`,
+          url: `http://shengyu.supersyh.xyz/api/post/comment/${this.currentPostId}`,
           method: 'POST',
           header: { 'Authorization': `Bearer ${token}` },
           data: { content: this.commentContent }
@@ -1545,7 +1545,7 @@ export default {
 }
 
 /* 录制按钮 - 流动渐变色 */
-.record-btn {
+.publish-btn {
   position: fixed;
   bottom: 140rpx;
   right: 30rpx;
@@ -1563,7 +1563,7 @@ export default {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.record-btn::before {
+.publish-btn::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -1579,12 +1579,12 @@ export default {
   animation: shimmer 3s infinite;
 }
 
-.record-btn:active {
+.publish-btn:active {
   transform: scale(0.9);
   box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.3);
 }
 
-.record-btn-icon {
+.publish-icon {
   font-size: 52rpx;
   color: #FFFFFF;
   font-weight: bold;
