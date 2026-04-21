@@ -1066,7 +1066,7 @@
         
         if (response.ok) {
           localStorage.setItem('adminToken', data.token);
-          window.location.href = '/admin/index.html';
+          window.location.href = '/admin/admin.html';
         } else {
           alert(data.error || '登录失败');
           loadCaptcha();

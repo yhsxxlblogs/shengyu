@@ -7,8 +7,22 @@ let typesData = [];
 let systemSoundsData = [];
 let userSoundsData = [];
 
+// 检查登录状态
+function checkAuth() {
+  const token = localStorage.getItem('adminToken');
+  if (!token) {
+    // 未登录，跳转到登录页
+    window.location.href = '/admin/login.html';
+    return false;
+  }
+  return true;
+}
+
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+  // 先检查权限
+  if (!checkAuth()) return;
+  
   initNavigation();
   initModal();
   initEventListeners();

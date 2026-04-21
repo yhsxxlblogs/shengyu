@@ -152,7 +152,8 @@ function refreshCaptcha() {
 function handleLogout() {
   localStorage.removeItem('admin_token');
   showToast('已退出登录');
-  showLoginPage();
+  // 跳转到新的登录页面
+  window.location.href = '/admin/login.html';
 }
 
 // 切换页面
