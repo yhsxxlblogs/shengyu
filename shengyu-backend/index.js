@@ -6,10 +6,8 @@ const http = require('http');
 const net = require('net');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const helmet = require('helmet');
 const db = require('./config/db');
 const captcha = require('./utils/captcha');
-const { xssMiddleware, errorHandler } = require('./middleware/security');
 
 const app = express();
 const port = 3000;
@@ -465,19 +463,9 @@ global.sendNotificationToUser = (userId, notification) => {
 };
 global.connectedUsers = connectedUsers;
 
-// CORS 必须在 helmet 之前配置，以确保跨域请求正常工作
 app.use(cors());
-
-// Helmet 安全配置 - 放宽部分限制以支持前端功能
-app.use(helmet({
-  contentSecurityPolicy: false, // 禁用 CSP，避免阻止内联脚本和样式
-  crossOriginEmbedderPolicy: false, // 允许嵌入跨域资源
-  crossOriginResourcePolicy: { policy: 'cross-origin' } // 允许跨域资源共享
-}));
-
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(xssMiddleware);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
@@ -550,8 +538,6 @@ function processScheduledNotifications() {
 
 setInterval(processScheduledNotifications, 60000);
 processScheduledNotifications();
-
-app.use(errorHandler);
 
 server.listen(port, () => {
   console.log(`HTTP 服务已启动在端口 ${port}`);
