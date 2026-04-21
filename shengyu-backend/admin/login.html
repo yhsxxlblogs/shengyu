@@ -427,14 +427,16 @@
     }
 
     .login-header h1 {
-      font-size: 28px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 20px;
       font-weight: 700;
       background: linear-gradient(135deg, var(--gold) 0%, #fff 50%, var(--gold) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
       text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+      line-height: 1.5;
     }
 
     .login-header p {
@@ -852,7 +854,7 @@
       console.log('Loading captcha...');
       // 添加时间戳防止缓存
       const timestamp = Date.now();
-      captchaImage.src = `/api/auth/captcha?t=${timestamp}`;
+      captchaImage.src = `/api/captcha?t=${timestamp}`;
       
       // 添加加载事件监听
       captchaImage.onload = function() {
