@@ -921,23 +921,28 @@
     // 检查是否为移动端
     const isMobile = window.innerWidth <= 768;
 
+    // 验证码token存储
+    let captchaToken = '';
+    
     // 加载验证码 - 修复加载问题
-    function loadCaptcha() {
+    async function loadCaptcha() {
       console.log('Loading captcha...');
-      // 添加时间戳防止缓存
-      const timestamp = Date.now();
-      captchaImage.src = `/api/captcha?t=${timestamp}`;
-      
-      // 添加加载事件监听
-      captchaImage.onload = function() {
-        console.log('Captcha loaded successfully');
-      };
-      
-      captchaImage.onerror = function() {
-        console.error('Failed to load captcha');
-        // 显示错误状态
+      try {
+        const response = await fetch(`/api/captcha?t=${Date.now()}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          captchaToken = data.token;
+          captchaImage.src = data.image;
+          console.log('Captcha loaded successfully');
+        } else {
+          console.error('Failed to load captcha:', data.message);
+          captchaImage.style.background = 'rgba(255,0,0,0.2)';
+        }
+      } catch (error) {
+        console.error('Failed to load captcha:', error);
         captchaImage.style.background = 'rgba(255,0,0,0.2)';
-      };
+      }
     }
 
     // 页面加载时立即加载验证码
@@ -1041,7 +1046,12 @@
       
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      const captcha = document.getElementById('captcha').value;
+      const captchaCode = document.getElementById('captcha').value;
+      
+      if (!captchaToken || !captchaCode) {
+        alert('请输入验证码');
+        return;
+      }
       
       try {
         const response = await fetch('/api/auth/admin/login', {
@@ -1049,7 +1059,7 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ username, password, captcha })
+          body: JSON.stringify({ username, password, captchaToken, captchaCode })
         });
         
         const data = await response.json();
