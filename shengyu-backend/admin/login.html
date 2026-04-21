@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>声愈管理后台 - 登录</title>
+  <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #6366f1;
+      --primary-dark: #4f46e5;
+      --bg-dark: #0f172a;
+      --bg-light: #1e293b;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --border-color: #334155;
+      --glow-color: rgba(99, 102, 241, 0.5);
+      --bulb-off: #475569;
+      --bulb-on: #fbbf24;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg-dark);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 背景装饰 */
+    .bg-decoration {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .bg-decoration::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(99, 102, 241, 0.05) 0%, transparent 30%);
+      animation: bgFloat 20s ease-in-out infinite;
+    }
+
+    @keyframes bgFloat {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(1deg); }
+      66% { transform: translate(-20px, 20px) rotate(-1deg); }
+    }
+
+    /* 主容器 */
+    .login-wrapper {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+
+    /* 灯泡区域 */
+    .bulb-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* 灯泡 */
+    .bulb {
+      width: 120px;
+      height: 120px;
+      position: relative;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bulb-glass {
+      width: 100%;
+      height: 100%;
+      background: var(--bulb-off);
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 
+        inset -10px -10px 20px rgba(0, 0, 0, 0.3),
+        inset 10px 10px 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .bulb.on .bulb-glass {
+      background: var(--bulb-on);
+      box-shadow: 
+        0 0 60px rgba(251, 191, 36, 0.6),
+        0 0 100px rgba(251, 191, 36, 0.4),
+        0 0 140px rgba(251, 191, 36, 0.2),
+        inset -10px -10px 20px rgba(0, 0, 0, 0.2),
+        inset 10px 10px 20px rgba(255, 255, 255, 0.3);
+      animation: bulbPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes bulbPulse {
+      0%, 100% { 
+        box-shadow: 
+          0 0 60px rgba(251, 191, 36, 0.6),
+          0 0 100px rgba(251, 191, 36, 0.4),
+          0 0 140px rgba(251, 191, 36, 0.2),
+          inset -10px -10px 20px rgba(0, 0, 0, 0.2),
+          inset 10px 10px 20px rgba(255, 255, 255, 0.3);
+      }
+      50% { 
+        box-shadow: 
+          0 0 80px rgba(251, 191, 36, 0.8),
+          0 0 120px rgba(251, 191, 36, 0.5),
+          0 0 160px rgba(251, 191, 36, 0.3),
+          inset -10px -10px 20px rgba(0, 0, 0, 0.2),
+          inset 10px 10px 20px rgba(255, 255, 255, 0.3);
+      }
+    }
+
+    .bulb-filament {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
+      opacity: 0.3;
+      transition: all 0.5s ease;
+    }
+
+    .bulb.on .bulb-filament {
+      opacity: 1;
+    }
+
+    .bulb-filament::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 3px solid rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      border-bottom-color: transparent;
+      border-left-color: transparent;
+      transform: rotate(45deg);
+    }
+
+    .bulb-base {
+      width: 40px;
+      height: 30px;
+      background: linear-gradient(180deg, #64748b 0%, #475569 100%);
+      margin: -5px auto 0;
+      border-radius: 0 0 10px 10px;
+      position: relative;
+    }
+
+    .bulb-base::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: #334155;
+    }
+
+    /* 拉绳开关 */
+    .pull-switch {
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .rope-container {
+      position: relative;
+      height: 80px;
+      width: 4px;
+      background: linear-gradient(90deg, #475569 0%, #64748b 50%, #475569 100%);
+      border-radius: 2px;
+      transform-origin: top center;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .pull-switch.pulling .rope-container {
+      animation: ropePull 0.6s ease-out;
+    }
+
+    @keyframes ropePull {
+      0% { transform: translateY(0); }
+      30% { transform: translateY(30px); }
+      60% { transform: translateY(-10px); }
+      80% { transform: translateY(5px); }
+      100% { transform: translateY(0); }
+    }
+
+    .rope-handle {
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .pull-switch:hover .rope-handle {
+      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.6);
+      transform: translateX(-50%) scale(1.1);
+    }
+
+    .switch-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      opacity: 0.7;
+      transition: all 0.3s ease;
+    }
+
+    .pull-switch:hover .switch-text {
+      opacity: 1;
+      color: var(--text-primary);
+    }
+
+    /* 登录表单容器 */
+    .login-container {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .login-container.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+
+    /* 登录头部 */
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-color) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .login-header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* 表单样式 */
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px 14px 48px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 15px;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .form-group input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background: rgba(15, 23, 42, 0.8);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-group i {
+      position: absolute;
+      left: 16px;
+      top: 42px;
+      color: var(--text-secondary);
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus + i,
+    .form-group input:not(:placeholder-shown) + i {
+      color: var(--primary-color);
+    }
+
+    /* 验证码 */
+    .captcha-wrapper {
+      display: flex;
+      gap: 12px;
+    }
+
+    .captcha-wrapper input {
+      flex: 1;
+    }
+
+    .captcha-image {
+      height: 52px;
+      border-radius: 12px;
+      border: 2px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .captcha-image:hover {
+      border-color: var(--primary-color);
+      transform: scale(1.02);
+    }
+
+    /* 登录按钮 */
+    .btn-login {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      margin-top: 8px;
+    }
+
+    .btn-login::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn-login:hover::before {
+      left: 100%;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    /* 提示信息 */
+    .hint {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.5s ease 0.3s;
+    }
+
+    .login-container.active .hint {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hint i {
+      margin-right: 6px;
+      color: var(--primary-color);
+    }
+
+    /* 响应式 */
+    @media (max-width: 480px) {
+      .login-container {
+        margin: 20px;
+        padding: 30px 24px;
+      }
+
+      .bulb {
+        width: 100px;
+        height: 100px;
+      }
+
+      .login-header h1 {
+        font-size: 24px;
+      }
+    }
+
+    /* 加载动画 */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- 加载遮罩 -->
+  <div class="loading-overlay" id="loading">
+    <div class="loader"></div>
+  </div>
+
+  <!-- 背景装饰 -->
+  <div class="bg-decoration"></div>
+
+  <!-- 登录包装器 -->
+  <div class="login-wrapper">
+    <!-- 灯泡和拉绳开关 -->
+    <div class="bulb-container">
+      <div class="bulb" id="bulb">
+        <div class="bulb-glass">
+          <div class="bulb-filament"></div>
+        </div>
+        <div class="bulb-base"></div>
+      </div>
+      
+      <div class="pull-switch" id="pullSwitch">
+        <div class="rope-container">
+          <div class="rope-handle"></div>
+        </div>
+        <span class="switch-text">拉动开启</span>
+      </div>
+    </div>
+
+    <!-- 登录表单 -->
+    <div class="login-container" id="loginContainer">
+      <div class="login-header">
+        <h1>声愈管理后台</h1>
+        <p>欢迎回来，请登录您的账户</p>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" id="username" placeholder="请输入用户名" required>
+          <i class="fas fa-user"></i>
+        </div>
+
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="password" placeholder="请输入密码" required>
+          <i class="fas fa-lock"></i>
+        </div>
+
+        <div class="form-group">
+          <label>验证码</label>
+          <div class="captcha-wrapper">
+            <input type="text" id="captcha" placeholder="请输入验证码" required maxlength="4" style="padding-left: 16px;">
+            <img id="captchaImage" class="captcha-image" src="" alt="验证码" title="点击刷新">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <i class="fas fa-sign-in-alt"></i> 登录
+        </button>
+      </form>
+
+      <div class="hint">
+        <i class="fas fa-lightbulb"></i>
+        提示：点击灯泡或拉绳可以切换登录界面显示
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 页面加载完成后隐藏加载动画
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loading').classList.add('hidden');
+      }, 500);
+    });
+
+    // 拉绳开关和灯泡交互
+    const pullSwitch = document.getElementById('pullSwitch');
+    const bulb = document.getElementById('bulb');
+    const loginContainer = document.getElementById('loginContainer');
+    let isOn = false;
+
+    function toggleLight() {
+      if (pullSwitch.classList.contains('pulling')) return;
+      
+      pullSwitch.classList.add('pulling');
+      
+      setTimeout(() => {
+        isOn = !isOn;
+        
+        if (isOn) {
+          bulb.classList.add('on');
+          loginContainer.classList.add('active');
+          pullSwitch.querySelector('.switch-text').textContent = '拉动关闭';
+        } else {
+          bulb.classList.remove('on');
+          loginContainer.classList.remove('active');
+          pullSwitch.querySelector('.switch-text').textContent = '拉动开启';
+        }
+        
+        setTimeout(() => {
+          pullSwitch.classList.remove('pulling');
+        }, 300);
+      }, 300);
+    }
+
+    pullSwitch.addEventListener('click', toggleLight);
+    bulb.addEventListener('click', toggleLight);
+
+    // 验证码刷新
+    const captchaImage = document.getElementById('captchaImage');
+    
+    function refreshCaptcha() {
+      captchaImage.src = `/api/auth/captcha?t=${Date.now()}`;
+    }
+    
+    captchaImage.addEventListener('click', refreshCaptcha);
+    
+    // 初始加载验证码
+    refreshCaptcha();
+
+    // 表单提交
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const captcha = document.getElementById('captcha').value;
+      
+      try {
+        const response = await fetch('/api/auth/admin/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password, captcha })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          localStorage.setItem('adminToken', data.token);
+          window.location.href = '/admin/index.html';
+        } else {
+          alert(data.error || '登录失败');
+          refreshCaptcha();
+        }
+      } catch (error) {
+        console.error('登录错误:', error);
+        alert('网络错误，请稍后重试');
+      }
+    });
+  </script>
+</body>
+</html>
