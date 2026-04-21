@@ -294,6 +294,28 @@ router.get('/likes', (req, res) => {
   }
 });
 
+// 获取用户点赞的帖子ID列表（用于前端快速判断点赞状态）
+router.get('/liked-ids', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: '未授权' });
+
+  try {
+    const decoded = jwt.verify(token, 'secret_key');
+
+    db.query(
+      'SELECT post_id FROM likes WHERE user_id = ?',
+      [decoded.id],
+      (err, results) => {
+        if (err) return res.status(500).json({ error: '服务器错误' });
+        const likedIds = results.map(r => r.post_id);
+        res.status(200).json({ likedIds });
+      }
+    );
+  } catch (error) {
+    res.status(401).json({ error: '无效的token' });
+  }
+});
+
 // 删除帖子
 router.delete('/delete/:post_id', (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -374,6 +396,7 @@ router.get('/detail/:post_id',
     let query = `
       SELECT p.*, u.username, u.avatar
              ${currentUserId ? `, EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = p.user_id) as is_following` : ''}
+             ${currentUserId ? `, EXISTS(SELECT 1 FROM likes WHERE user_id = ? AND post_id = p.id) as liked` : ''}
       FROM posts p
       LEFT JOIN users u ON p.user_id = u.id
       WHERE p.id = ?
@@ -381,6 +404,7 @@ router.get('/detail/:post_id',
 
     let params = [];
     if (currentUserId) {
+      params.push(currentUserId);
       params.push(currentUserId);
     }
     params.push(post_id);

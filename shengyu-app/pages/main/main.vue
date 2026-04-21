@@ -1033,22 +1033,47 @@ export default {
         this.communityError = ''
       }
       try {
+        // 获取用户点赞的帖子ID列表（仅登录用户）
+        const token = uni.getStorageSync('token')
+        let likedIdsSet = new Set()
+        if (token) {
+          try {
+            const likedRes = await uni.request({
+              url: 'http://shengyu.supersyh.xyz/api/post/liked-ids',
+              method: 'GET',
+              header: { 'Authorization': `Bearer ${token}` }
+            })
+            if (likedRes.statusCode === 200 && likedRes.data.likedIds) {
+              likedIdsSet = new Set(likedRes.data.likedIds.map(id => String(id)))
+              // 缓存到本地
+              uni.setStorageSync('likedPostsSet', Array.from(likedIdsSet))
+            }
+          } catch (e) {
+            console.error('获取点赞列表失败:', e)
+            // 使用缓存的点赞列表
+            const cachedLikedIds = uni.getStorageSync('likedPostsSet') || []
+            likedIdsSet = new Set(cachedLikedIds)
+          }
+        }
+
         const res = await uni.request({
           url: `http://shengyu.supersyh.xyz/api/post/list?page=${this.page}&pageSize=${this.pageSize}`,
           method: 'GET'
         })
         if (res.data.posts) {
           // 获取缓存的关注列表（仅登录用户）
-          const token = uni.getStorageSync('token')
           const followingSet = token ? new Set(uni.getStorageSync('followingSet') || []) : new Set()
           // 将 is_following 和 liked 转换为布尔值，并使用缓存的关注列表进行补充
           const posts = res.data.posts.map(post => {
             const isFollowingFromServer = Boolean(post.is_following)
             const isFollowingFromCache = token ? followingSet.has(String(post.user_id)) : false
+            // 优先使用后端返回的liked字段，如果没有则使用本地缓存的点赞列表
+            const isLikedFromServer = Boolean(post.liked)
+            const isLikedFromCache = likedIdsSet.has(String(post.id))
             return {
               ...post,
               is_following: isFollowingFromServer || isFollowingFromCache,
-              liked: Boolean(post.liked)
+              liked: isLikedFromServer || isLikedFromCache
             }
           })
           if (loadMore) {
@@ -1141,7 +1166,18 @@ export default {
         })
 
         if (res.statusCode === 200 && res.data.message) {
-          // 点赞成功，显示提示
+          // 点赞成功，更新本地缓存
+          const likedPostsSet = new Set(uni.getStorageSync('likedPostsSet') || [])
+          if (originalLiked) {
+            // 取消点赞，从缓存中移除
+            likedPostsSet.delete(String(postId))
+          } else {
+            // 点赞，添加到缓存
+            likedPostsSet.add(String(postId))
+          }
+          uni.setStorageSync('likedPostsSet', Array.from(likedPostsSet))
+
+          // 显示提示
           uni.showToast({
             title: originalLiked ? '取消点赞' : '点赞成功',
             icon: 'none',
@@ -1816,8 +1852,8 @@ export default {
 }
 
 .animal-icon {
-  width: 80rpx;
-  height: 80rpx;
+  width: 88rpx;
+  height: 88rpx;
   border-radius: 16rpx;
   background: #FFFFFF;
   display: flex;

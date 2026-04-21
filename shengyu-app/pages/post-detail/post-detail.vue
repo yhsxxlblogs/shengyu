@@ -116,17 +116,29 @@ export default {
     async loadPostDetail() {
       this.loading = true;
       this.error = '';
-      
+
       try {
+        // 获取用户点赞的帖子ID列表（用于判断当前帖子是否已点赞）
+        const token = uni.getStorageSync('token');
+        let likedIdsSet = new Set();
+        if (token) {
+          const likedPostsSet = uni.getStorageSync('likedPostsSet') || [];
+          likedIdsSet = new Set(likedPostsSet);
+        }
+
         const res = await uni.request({
           url: api.post.detail(this.postId),
           method: 'GET'
         });
         if (res.data.post) {
           // 将 is_following 转换为布尔值
+          // 优先使用后端返回的liked字段，如果没有则使用本地缓存
+          const isLikedFromServer = Boolean(res.data.post.liked);
+          const isLikedFromCache = likedIdsSet.has(String(this.postId));
           this.post = {
             ...res.data.post,
-            is_following: Boolean(res.data.post.is_following)
+            is_following: Boolean(res.data.post.is_following),
+            liked: isLikedFromServer || isLikedFromCache
           };
         } else {
           this.error = '获取帖子详情失败';
@@ -164,7 +176,13 @@ export default {
         uni.showToast({ title: '请先登录', icon: 'none' });
         return;
       }
-      
+
+      // 乐观更新UI
+      const originalLiked = this.post.liked;
+      const originalCount = this.post.like_count || 0;
+      this.post.liked = !originalLiked;
+      this.post.like_count = originalLiked ? originalCount - 1 : originalCount + 1;
+
       try {
         const res = await uni.request({
           url: api.post.like(this.postId),
@@ -174,11 +192,34 @@ export default {
           }
         });
         if (res.data.message) {
-          // 重新加载帖子详情
-          this.loadPostDetail();
+          // 更新本地缓存的点赞列表
+          const likedPostsSet = new Set(uni.getStorageSync('likedPostsSet') || []);
+          if (originalLiked) {
+            // 取消点赞，从缓存中移除
+            likedPostsSet.delete(String(this.postId));
+          } else {
+            // 点赞，添加到缓存
+            likedPostsSet.add(String(this.postId));
+          }
+          uni.setStorageSync('likedPostsSet', Array.from(likedPostsSet));
+
+          // 显示提示
+          uni.showToast({
+            title: originalLiked ? '取消点赞' : '点赞成功',
+            icon: 'none',
+            duration: 1000
+          });
+        } else {
+          // 请求失败，恢复原始状态
+          this.post.liked = originalLiked;
+          this.post.like_count = originalCount;
         }
       } catch (error) {
+        // 网络错误，恢复原始状态
+        this.post.liked = originalLiked;
+        this.post.like_count = originalCount;
         console.error('点赞失败:', error);
+        uni.showToast({ title: '操作失败，请重试', icon: 'none' });
       }
     },
     async sendComment() {

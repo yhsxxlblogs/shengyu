@@ -16,6 +16,7 @@ description: "声愈项目的技术文档和开发指南。包含项目概述、
 3. **私信系统** - 实时WebSocket聊天，支持未读消息提醒
 4. **用户管理** - 注册登录、头像上传、个人主页
 5. **后台管理** - 轮播图管理、通知发布、内容审核
+6. **二维码扫描** - 支持扫描二维码，跳转链接或识别内容
 
 ## 技术栈
 
@@ -184,6 +185,7 @@ shengyu-backend/
 | GET | /comments/:post_id | 获取评论 |
 | GET | /my | 我的帖子 |
 | GET | /likes | 我点赞的帖子 |
+| GET | /liked-ids | 获取点赞的帖子ID列表 |
 | DELETE | /delete/:post_id | 删除帖子 |
 | GET | /detail/:post_id | 帖子详情 |
 
