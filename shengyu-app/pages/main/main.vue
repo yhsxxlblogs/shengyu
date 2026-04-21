@@ -11,13 +11,18 @@
         <view class="page-container">
           <!-- 录制声音按钮 -->
           <view class="publish-btn" @click="goRecord">
-            <text class="publish-icon">+</text>
+            <SvgIcon name="plus" :size="40" class="publish-icon-svg" />
           </view>
           <view class="index-content">
-            <view class="search-bar" @click="goSearch">
-              <view class="search-input">
-                <text class="search-icon">🔍</text>
-                <text class="search-placeholder">搜索声音、帖子、用户...</text>
+            <view class="search-bar">
+              <view class="search-input-wrapper" @click="goSearch">
+                <view class="search-input">
+                  <SvgIcon name="search" :size="28" class="search-icon-svg" />
+                  <text class="search-placeholder">搜索声音、帖子、用户...</text>
+                </view>
+              </view>
+              <view class="scan-btn" @click="goScan">
+                <SvgIcon name="scan" :size="32" class="scan-icon-svg" />
               </view>
             </view>
 
@@ -123,7 +128,7 @@
             <!-- 社区内容 -->
             <view v-if="communityTab === 'community'" class="community-panel">
               <view class="publish-btn" @click="goPublish">
-                <text class="publish-icon">+</text>
+                <SvgIcon name="plus" :size="40" class="publish-icon-svg" />
               </view>
 
               <view class="community-header">
@@ -173,17 +178,17 @@
                       <text class="content">{{ post.content }}</text>
                       <image v-if="post.image_url" :src="getAvatarUrl(post.image_url)" class="post-image" mode="aspectFit"></image>
                       <view v-if="post.sound_url" class="audio-container" @click.stop="playSound(post.sound_url)">
-                        <text class="audio-icon">🎵</text>
+                        <SvgIcon name="play" :size="28" class="audio-icon-svg" />
                         <text class="audio-text">点击播放声音</text>
                       </view>
                     </view>
                     <view class="post-footer">
                       <view class="action-item" @click.stop="likePost(post.id)">
-                        <text class="action-icon">{{ post.liked ? '♥' : '♡' }}</text>
+                        <SvgIcon :name="post.liked ? 'heart' : 'heart-o'" :size="28" class="action-icon-svg" :class="{ liked: post.liked }" />
                         <text class="action-text">{{ post.like_count || 0 }}</text>
                       </view>
                       <view class="action-item" @click.stop="showComments(post.id)">
-                        <text class="action-icon">💬</text>
+                        <SvgIcon name="message" :size="28" class="action-icon-svg" />
                         <text class="action-text">{{ post.comment_count || 0 }}</text>
                       </view>
                     </view>
@@ -217,7 +222,7 @@
                 <text class="loading-text">加载中...</text>
               </view>
               <view v-else-if="messageList.length === 0" class="empty-messages">
-                <text class="empty-icon">💬</text>
+                <SvgIcon name="message" :size="80" class="empty-icon-svg" />
                 <text class="empty-text">还没有私信</text>
                 <text class="empty-subtext">去社区关注感兴趣的人吧</text>
               </view>
@@ -248,7 +253,9 @@
           <view class="comment-popup-content">
             <view class="comment-popup-header">
               <text class="comment-popup-title">评论</text>
-              <text class="comment-popup-close" @click="closeCommentPopup">✕</text>
+              <view class="comment-popup-close" @click="closeCommentPopup">
+                <SvgIcon name="close" :size="32" />
+              </view>
             </view>
             <view class="comment-list">
               <view v-if="loadingComments" class="loading">
@@ -311,7 +318,7 @@
             <!-- 未登录状态 -->
             <view v-else-if="!isLoggedIn" class="not-logged-in">
               <view class="empty-avatar">
-                <text class="empty-icon">🐾</text>
+                <SvgIcon name="user" :size="80" class="empty-icon-svg" />
               </view>
               <text class="empty-title">登录后享受更多功能</text>
               <text class="empty-desc">记录动物声音、发布帖子、互动交流</text>
@@ -328,7 +335,7 @@
                     <text class="user-email">{{ userInfo.email || '' }}</text>
                   </view>
                   <view class="edit-icon" @click="changeAvatar">
-                    <text class="edit-emoji">📷</text>
+                    <SvgIcon name="camera" :size="28" class="edit-icon-svg" />
                   </view>
                 </view>
 
@@ -366,38 +373,38 @@
                 <text class="menu-title">我的功能</text>
                 <view class="menu-item" @click="goToMyPosts">
                   <view class="menu-icon-wrapper">
-                    <text class="menu-icon">📝</text>
+                    <SvgIcon name="edit" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">我的帖子</text>
-                  <text class="menu-arrow">›</text>
+                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
                 <view class="menu-item" @click="goToMySounds">
                   <view class="menu-icon-wrapper">
-                    <text class="menu-icon">🎵</text>
+                    <SvgIcon name="sound" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">我的声音</text>
-                  <text class="menu-arrow">›</text>
+                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
                 <view class="menu-item" @click="goToMyLikes">
                   <view class="menu-icon-wrapper">
-                    <text class="menu-icon">♥</text>
+                    <SvgIcon name="heart" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">我的点赞</text>
-                  <text class="menu-arrow">›</text>
+                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
                 <view class="menu-item" @click="goToFollows">
                   <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                    <text class="menu-icon">👥</text>
+                    <SvgIcon name="users" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">我的关注</text>
-                  <text class="menu-arrow">›</text>
+                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
                 <view class="menu-item" @click="goToFollowers">
                   <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                    <text class="menu-icon">🌟</text>
+                    <SvgIcon name="star" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">我的粉丝</text>
-                  <text class="menu-arrow">›</text>
+                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
               </view>
 
@@ -405,17 +412,17 @@
                 <text class="menu-title">设置与帮助</text>
                 <view class="menu-item" @click="goToSettings">
                   <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <text class="menu-icon">⚙️</text>
+                    <SvgIcon name="settings" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">设置</text>
-                  <text class="menu-arrow">›</text>
+                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
                 <view class="menu-item" @click="goToAbout">
                   <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    <text class="menu-icon">ℹ️</text>
+                    <SvgIcon name="info" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">关于我们</text>
-                  <text class="menu-arrow">›</text>
+                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
               </view>
 
@@ -1034,13 +1041,14 @@ export default {
           // 获取缓存的关注列表（仅登录用户）
           const token = uni.getStorageSync('token')
           const followingSet = token ? new Set(uni.getStorageSync('followingSet') || []) : new Set()
-          // 将 is_following 转换为布尔值，并使用缓存的关注列表进行补充
+          // 将 is_following 和 liked 转换为布尔值，并使用缓存的关注列表进行补充
           const posts = res.data.posts.map(post => {
             const isFollowingFromServer = Boolean(post.is_following)
             const isFollowingFromCache = token ? followingSet.has(String(post.user_id)) : false
             return {
               ...post,
-              is_following: isFollowingFromServer || isFollowingFromCache
+              is_following: isFollowingFromServer || isFollowingFromCache,
+              liked: Boolean(post.liked)
             }
           })
           if (loadMore) {
@@ -1409,6 +1417,9 @@ export default {
     goSearch() {
       uni.navigateTo({ url: '/pages/search/search' });
     },
+    goScan() {
+      uni.navigateTo({ url: '/pages/scan/scan' });
+    },
     goRecord() {
       const token = uni.getStorageSync('token');
       if (!token) {
@@ -1584,13 +1595,10 @@ export default {
   box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.3);
 }
 
-.publish-icon {
-  font-size: 52rpx;
+.publish-icon-svg {
   color: #FFFFFF;
-  font-weight: bold;
   position: relative;
   z-index: 1;
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 }
 
 /* 动画定义 */
@@ -1638,27 +1646,58 @@ export default {
 }
 
 .search-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20rpx);
   border-radius: 40rpx;
-  padding: 24rpx 32rpx;
+  padding: 20rpx 24rpx;
   margin-bottom: 40rpx;
   box-shadow: 0 4rpx 20rpx rgba(255, 154, 158, 0.15);
+}
+
+.search-input-wrapper {
+  flex: 1;
 }
 
 .search-input {
   display: flex;
   align-items: center;
+  background: rgba(245, 245, 245, 0.8);
+  border-radius: 32rpx;
+  padding: 16rpx 24rpx;
+  border: 2rpx solid rgba(255, 154, 158, 0.4);
 }
 
-.search-icon {
-  font-size: 32rpx;
-  margin-right: 15rpx;
+.search-icon-svg {
+  margin-right: 12rpx;
+  color: #FF9A9E;
 }
 
 .search-placeholder {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #999999;
+}
+
+.scan-btn {
+  width: 72rpx;
+  height: 72rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.scan-btn:active {
+  transform: scale(0.95);
+}
+
+.scan-icon-svg {
+  color: #FFFFFF;
 }
 
 /* 轮播图样式 */
@@ -1752,36 +1791,45 @@ export default {
 }
 
 .section-title {
-  font-size: 36rpx;
+  font-size: 30rpx;
   font-weight: bold;
   color: #333333;
-  margin-bottom: 24rpx;
+  margin-bottom: 20rpx;
   display: block;
 }
 
 .animal-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20rpx;
+  gap: 12rpx;
 }
 
 .animal-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20rpx;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 20rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  justify-content: center;
+  padding: 12rpx 8rpx;
+  background: transparent;
+  border-radius: 16rpx;
+  aspect-ratio: 1;
 }
 
 .animal-icon {
-  font-size: 60rpx;
-  margin-bottom: 12rpx;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 16rpx;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8rpx;
+  font-size: 36rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .animal-name {
-  font-size: 26rpx;
+  font-size: 20rpx;
   color: #555555;
 }
 
@@ -1939,9 +1987,9 @@ export default {
   padding: 100rpx 40rpx;
 }
 
-.empty-messages .empty-icon {
-  font-size: 80rpx;
+.empty-messages .empty-icon-svg {
   margin-bottom: 20rpx;
+  color: #CCCCCC;
 }
 
 .empty-messages .empty-text {
@@ -2056,10 +2104,8 @@ export default {
   z-index: 100;
 }
 
-.publish-icon {
-  font-size: 48rpx;
+.publish-icon-svg {
   color: #FFFFFF;
-  font-weight: 300;
 }
 
 .community-header {
@@ -2197,9 +2243,9 @@ export default {
   margin-top: 16rpx;
 }
 
-.audio-icon {
-  font-size: 32rpx;
+.audio-icon-svg {
   margin-right: 12rpx;
+  color: #FFFFFF;
 }
 
 .audio-text {
@@ -2218,8 +2264,12 @@ export default {
   gap: 8rpx;
 }
 
-.action-icon {
-  font-size: 28rpx;
+.action-icon-svg {
+  color: #999999;
+}
+
+.action-icon-svg.liked {
+  color: #FF6B9D;
 }
 
 .action-text {
@@ -2552,8 +2602,8 @@ export default {
   margin-bottom: 40rpx;
 }
 
-.empty-icon {
-  font-size: 80rpx;
+.empty-icon-svg {
+  color: #FF9A9E;
 }
 
 .empty-title {
@@ -2638,8 +2688,8 @@ export default {
   justify-content: center;
 }
 
-.edit-emoji {
-  font-size: 32rpx;
+.edit-icon-svg {
+  color: #FFFFFF;
 }
 
 .stats-row {
@@ -2742,8 +2792,8 @@ export default {
   margin-right: 20rpx;
 }
 
-.menu-icon {
-  font-size: 28rpx;
+.menu-icon-svg {
+  color: #FFFFFF;
 }
 
 .menu-text {
@@ -2752,8 +2802,7 @@ export default {
   color: #333333;
 }
 
-.menu-arrow {
-  font-size: 36rpx;
+.menu-arrow-svg {
   color: #CCCCCC;
 }
 

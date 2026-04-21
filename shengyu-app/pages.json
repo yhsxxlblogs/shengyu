@@ -126,6 +126,13 @@
 				"navigationBarTitleText": "关注列表",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/scan/scan",
+			"style": {
+				"navigationBarTitleText": "扫描二维码",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {

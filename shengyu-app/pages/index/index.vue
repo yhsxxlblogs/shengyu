@@ -1,21 +1,26 @@
 <template>
   <view class="index-container page-enter">
-    <view class="search-bar" @click="goSearch">
-      <view class="search-input">
-        <text class="search-icon">🔍</text>
-        <text class="search-placeholder">搜索声音、帖子、用户...</text>
+    <view class="search-bar">
+      <view class="search-input-wrapper" @click="goSearch">
+        <view class="search-input">
+          <SvgIcon name="search" :size="28" class="search-icon-svg" />
+          <text class="search-placeholder">搜索声音、帖子、用户...</text>
+        </view>
+      </view>
+      <view class="scan-btn" @click="goScan">
+        <SvgIcon name="scan" :size="32" class="scan-icon-svg" />
       </view>
     </view>
     
     <!-- 录制声音按钮 -->
     <view class="record-btn" @click="goRecord">
-      <text class="record-btn-icon">🎤</text>
+      <SvgIcon name="plus" :size="40" class="record-btn-icon-svg" />
     </view>
     
     <!-- 录制声音区域 -->
     <view class="record-section" @click="goRecord">
       <view class="record-circle">
-        <text class="record-icon">🎤</text>
+        <SvgIcon name="plus" :size="48" class="record-icon-svg" />
         <text class="record-text">录制声音</text>
       </view>
       <text class="record-desc">点击录制你的声音</text>
@@ -56,12 +61,14 @@
         <!-- 图标区域 -->
         <view class="notification-icon-wrapper">
           <view class="notification-icon">
-            <text class="notification-icon-text">📢</text>
+            <SvgIcon name="settings" :size="48" class="notification-icon-svg" />
           </view>
         </view>
         
         <!-- 关闭按钮 -->
-        <text class="notification-close" @click="closeNotification">×</text>
+        <view class="notification-close" @click="closeNotification">
+          <SvgIcon name="close" :size="32" />
+        </view>
         
         <!-- 标题 -->
         <view class="notification-title-wrapper">
@@ -124,6 +131,9 @@ export default {
   methods: {
     goSearch() {
       uni.navigateTo({ url: '/pages/search/search' });
+    },
+    goScan() {
+      uni.navigateTo({ url: '/pages/scan/scan' });
     },
     goRecord() {
       const token = uni.getStorageSync('token');
@@ -311,31 +321,35 @@ export default {
   box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.3);
 }
 
-.record-btn-icon {
-  font-size: 52rpx;
+.record-btn-icon-svg {
   color: #FFFFFF;
-  font-weight: bold;
   position: relative;
   z-index: 1;
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 }
 
 /* 🔍栏 - 玻璃拟态效果 */
 .search-bar {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 40rpx;
+}
+
+.search-input-wrapper {
+  flex: 1;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20rpx);
   -webkit-backdrop-filter: blur(20rpx);
   border-radius: 40rpx;
-  padding: 24rpx 32rpx;
-  margin-bottom: 40rpx;
+  padding: 20rpx 28rpx;
   box-shadow: 0 4rpx 20rpx rgba(255, 154, 158, 0.15);
-  border: 1rpx solid rgba(255, 255, 255, 0.5);
+  border: 2rpx solid rgba(255, 154, 158, 0.4);
   position: relative;
   z-index: 10;
   transition: all 0.3s ease;
 }
 
-.search-bar:active {
+.search-input-wrapper:active {
   transform: scale(0.98);
   box-shadow: 0 2rpx 12rpx rgba(255, 154, 158, 0.1);
 }
@@ -345,13 +359,31 @@ export default {
   align-items: center;
 }
 
-.search-icon {
-  font-size: 32rpx;
-  margin-right: 15rpx;
+/* 扫描按钮 */
+.scan-btn {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
   background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.3);
+  transition: all 0.3s ease;
+}
+
+.scan-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 2rpx 8rpx rgba(255, 154, 158, 0.2);
+}
+
+.scan-icon-svg {
+  color: #FFFFFF;
+}
+
+.search-icon-svg {
+  margin-right: 12rpx;
+  color: #FF9A9E;
 }
 
 .search-placeholder {
@@ -407,11 +439,11 @@ export default {
   box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.3);
 }
 
-.record-icon {
-  font-size: 64rpx;
+.record-icon-svg {
   margin-bottom: 12rpx;
   position: relative;
   z-index: 1;
+  color: #FFFFFF;
 }
 
 .record-text {
@@ -441,14 +473,14 @@ export default {
 }
 
 .section-title {
-  font-size: 34rpx;
+  font-size: 30rpx;
   font-weight: bold;
   background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 30rpx;
-  padding-left: 20rpx;
+  margin-bottom: 24rpx;
+  padding-left: 16rpx;
   position: relative;
 }
 
@@ -458,81 +490,57 @@ export default {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 6rpx;
-  height: 32rpx;
+  width: 4rpx;
+  height: 28rpx;
   background: linear-gradient(180deg, #FF9A9E 0%, #FECFEF 100%);
-  border-radius: 3rpx;
+  border-radius: 2rpx;
 }
 
 /* 动物网格 */
 .animal-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24rpx;
+  gap: 12rpx;
 }
 
-/* 动物卡片 - 高级渐变效果 */
+/* 动物卡片 - 简洁无框 */
 .animal-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(145deg, #FFFFFF 0%, #FFF8F9 100%);
-  border-radius: 24rpx;
-  padding: 32rpx 0;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
-  border: 1rpx solid rgba(255, 154, 158, 0.1);
+  justify-content: center;
+  background: transparent;
+  border-radius: 16rpx;
+  padding: 16rpx 0;
+  aspect-ratio: 1;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.animal-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4rpx;
-  background: linear-gradient(90deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
-  background-size: 200% 100%;
-  animation: gradient-flow 3s linear infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.animal-item:hover::before,
-.animal-item:active::before {
-  opacity: 1;
 }
 
 .animal-item:active {
   transform: translateY(-4rpx) scale(0.98);
-  box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.2);
 }
 
-/* 动物图标 - 渐变背景 */
+/* 动物图标 - 白色背景 */
 .animal-icon {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #FFE4E8 0%, #FFF0F3 50%, #FFE4E8 100%);
-  background-size: 200% 200%;
-  animation: gradient-flow 5s ease infinite;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 16rpx;
+  background: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(255, 154, 158, 0.2);
+  margin-bottom: 8rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 
 .animal-item:active .animal-icon {
-  transform: scale(1.1);
-  box-shadow: 0 6rpx 20rpx rgba(255, 154, 158, 0.3);
+  transform: scale(1.05);
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.12);
 }
 
 .icon {
-  font-size: 52rpx;
+  font-size: 36rpx;
   transition: transform 0.3s ease;
 }
 
@@ -541,7 +549,7 @@ export default {
 }
 
 .animal-name {
-  font-size: 24rpx;
+  font-size: 20rpx;
   color: #444444;
   font-weight: 500;
   transition: color 0.3s ease;
@@ -695,8 +703,8 @@ export default {
   50% { transform: scale(1.05); }
 }
 
-.notification-icon-text {
-  font-size: 60rpx;
+.notification-icon-svg {
+  color: #FF9A9E;
 }
 
 /* 关闭按钮 */
@@ -704,7 +712,6 @@ export default {
   position: absolute;
   top: 20rpx;
   right: 20rpx;
-  font-size: 40rpx;
   color: #CCCCCC;
   width: 56rpx;
   height: 56rpx;

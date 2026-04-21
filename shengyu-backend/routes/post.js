@@ -103,6 +103,7 @@ router.get('/list',
     let query = `
       SELECT p.*, u.username, u.avatar
              ${currentUserId ? `, EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = p.user_id) as is_following` : ''}
+             ${currentUserId ? `, EXISTS(SELECT 1 FROM likes WHERE user_id = ? AND post_id = p.id) as liked` : ''}
       FROM posts p
       LEFT JOIN users u ON p.user_id = u.id
     `;
@@ -116,6 +117,7 @@ router.get('/list',
 
     let params = [];
     if (currentUserId) {
+      params.push(currentUserId);
       params.push(currentUserId);
     }
     if (q) {
