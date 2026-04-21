@@ -61,17 +61,18 @@ router.post('/register', (req, res) => {
       // 密码加密
       const hashedPassword = bcrypt.hashSync(password, 10);
       
-      // 插入用户数据
+      // 插入用户数据，设置默认头像
+      const defaultAvatar = '/uploads/avatars/default-avatar.svg';
       db.query(
-        'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-        [username, email, hashedPassword],
+        'INSERT INTO users (username, email, password, avatar) VALUES (?, ?, ?, ?)',
+        [username, email, hashedPassword, defaultAvatar],
         (err, results) => {
           if (err) return res.status(500).json({ error: '服务器错误' });
-          
+
           // 生成token
           const token = jwt.sign({ id: results.insertId }, 'secret_key', { expiresIn: '1d' });
-          
-          res.status(201).json({ message: '注册成功', token, user: { id: results.insertId, username, email } });
+
+          res.status(201).json({ message: '注册成功', token, user: { id: results.insertId, username, email, avatar: defaultAvatar } });
         }
       );
     });

@@ -993,10 +993,12 @@ async function loadBanners() {
       return;
     }
 
-    tbody.innerHTML = banners.map(banner => `
+    tbody.innerHTML = banners.map(banner => {
+      const fullImageUrl = banner.image_url.startsWith('http') ? banner.image_url : `${window.location.origin}${banner.image_url}`;
+      return `
       <tr>
         <td>${banner.id}</td>
-        <td><img src="${banner.image_url}" alt="" class="img-preview"></td>
+        <td><img src="${fullImageUrl}" alt="" class="img-preview" onerror="this.src='${getDefaultAvatar('Banner')}'"></td>
         <td>${escapeHtml(banner.title) || '-'}</td>
         <td>${banner.link_url ? `<a href="${banner.link_url}" target="_blank">${escapeHtml(banner.link_url.substring(0, 30))}...</a>` : '-'}</td>
         <td>${banner.sort_order || 0}</td>
@@ -1008,7 +1010,7 @@ async function loadBanners() {
           </div>
         </td>
       </tr>
-    `).join('');
+    `}).join('');
   } catch (error) {
     console.error('加载轮播图失败:', error);
     tbody.innerHTML = '<tr><td colspan="7" class="empty-state">加载失败</td></tr>';

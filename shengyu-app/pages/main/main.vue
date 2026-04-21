@@ -433,7 +433,7 @@
 </template>
 
 <script>
-import { getImageUrl } from '../../utils/api.js'
+import { getImageUrl, DEFAULT_AVATAR } from '../../utils/api.js'
 import wsService from '@/utils/websocket.js'
 
 export default {
@@ -692,7 +692,7 @@ export default {
     },
 
     getAvatarUrl(avatar) {
-      if (!avatar) return ''
+      if (!avatar) return DEFAULT_AVATAR
       return getImageUrl(avatar)
     },
 

@@ -1,9 +1,18 @@
 const BASE_URL = 'http://shengyu.supersyh.xyz'
 const API_BASE_URL = `${BASE_URL}/api`
 
+// 默认头像路径
+export const DEFAULT_AVATAR = `${BASE_URL}/uploads/avatars/default-avatar.svg`
+
 export const getImageUrl = (relativePath) => {
-  if (!relativePath) return ''
+  if (!relativePath) return DEFAULT_AVATAR
   return relativePath.startsWith('http') ? relativePath : `${BASE_URL}${relativePath}`
+}
+
+// 获取头像URL（如果用户没有头像则返回默认头像）
+export const getAvatarUrl = (avatar) => {
+  if (!avatar) return DEFAULT_AVATAR
+  return avatar.startsWith('http') ? avatar : `${BASE_URL}${avatar}`
 }
 
 export default {
