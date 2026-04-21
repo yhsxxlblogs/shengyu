@@ -3,315 +3,431 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>声愈App管理系统</title>
-  <link rel="stylesheet" href="admin.css">
+  <title>声愈管理后台 - supersyh.xyz</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 </head>
 <body>
-  <div class="admin-container">
-    <header class="admin-header">
-      <h1>🎵 声愈App管理系统</h1>
-      <div class="header-actions">
-        <button id="refresh-btn">刷新数据</button>
-      </div>
-    </header>
-    
-    <nav class="admin-nav">
-      <ul>
-        <li><a href="#dashboard" class="nav-link active" data-section="dashboard">📊 数据概览</a></li>
-        <li><a href="#categories" class="nav-link" data-section="categories">📁 大类管理</a></li>
-        <li><a href="#types" class="nav-link" data-section="types">🏷️ 类型管理</a></li>
-        <li><a href="#system-sounds" class="nav-link" data-section="system-sounds">🎶 系统声音</a></li>
-        <li><a href="#user-sounds" class="nav-link" data-section="user-sounds">🎤 用户声音</a></li>
-        <li><a href="#users" class="nav-link" data-section="users">👥 用户管理</a></li>
-        <li><a href="#posts" class="nav-link" data-section="posts">📝 帖子管理</a></li>
-        <li><a href="#push" class="nav-link" data-section="push">📢 推送管理</a></li>
-      </ul>
-    </nav>
-    
-    <main class="admin-content">
-      <!-- 数据概览 -->
-      <section id="dashboard" class="content-section active">
-        <div class="section-header">
-          <h2>📊 数据概览</h2>
+  <div id="app">
+    <!-- 主页面 -->
+    <div id="main-page" class="main-page">
+      <!-- 侧边栏 -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <i class="fas fa-paw"></i>
+          <span>后台</span>
         </div>
-        <div class="dashboard-stats">
-          <div class="stat-card">
-            <div class="stat-icon">📁</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-categories">0</div>
-              <div class="stat-label">大类数量</div>
+        <nav class="sidebar-nav">
+          <a href="#dashboard" class="nav-item active" data-page="dashboard">
+            <i class="fas fa-chart-line"></i>
+            <span>数据概览</span>
+          </a>
+          <a href="#categories" class="nav-item" data-page="categories">
+            <i class="fas fa-folder-tree"></i>
+            <span>分类管理</span>
+          </a>
+          <a href="#animal-types" class="nav-item" data-page="animal-types">
+            <i class="fas fa-paw"></i>
+            <span>声音类型</span>
+          </a>
+          <a href="#system-sounds" class="nav-item" data-page="system-sounds">
+            <i class="fas fa-music"></i>
+            <span>系统声音</span>
+          </a>
+          <a href="#user-sounds" class="nav-item" data-page="user-sounds">
+            <i class="fas fa-microphone"></i>
+            <span>用户声音</span>
+          </a>
+          <a href="#users" class="nav-item" data-page="users">
+            <i class="fas fa-users"></i>
+            <span>用户管理</span>
+          </a>
+          <a href="#posts" class="nav-item" data-page="posts">
+            <i class="fas fa-comments"></i>
+            <span>社区帖子</span>
+          </a>
+          <a href="#banners" class="nav-item" data-page="banners">
+            <i class="fas fa-images"></i>
+            <span>轮播图管理</span>
+          </a>
+          <a href="#notifications" class="nav-item" data-page="notifications">
+            <i class="fas fa-bell"></i>
+            <span>推送通知</span>
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="domain-info">
+            <i class="fas fa-globe"></i>
+            <span>supersyh.xyz</span>
+          </div>
+          <button id="logout-btn" class="btn btn-logout">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出登录</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- 主内容区 -->
+      <main class="main-content">
+        <!-- 顶部栏 -->
+        <header class="top-bar">
+          <button id="sidebar-toggle" class="btn btn-icon">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="top-bar-right">
+            <span id="current-time"></span>
+            <div class="admin-info">
+              <i class="fas fa-user-circle"></i>
+              <span>管理员</span>
             </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon">🏷️</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-types">0</div>
-              <div class="stat-label">类型数量</div>
+        </header>
+
+        <!-- 页面内容 -->
+        <div class="content-wrapper">
+          <!-- 数据概览页 -->
+          <section id="page-dashboard" class="page active">
+            <div class="page-header">
+              <h2><i class="fas fa-chart-line"></i> 数据概览</h2>
+              <button class="btn btn-refresh" onclick="refreshDashboard()">
+                <i class="fas fa-sync-alt"></i> 刷新
+              </button>
             </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">🎶</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-system-sounds">0</div>
-              <div class="stat-label">系统声音</div>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon users">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                  <h3 id="stat-users">0</h3>
+                  <p>总用户数</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon sounds">
+                  <i class="fas fa-music"></i>
+                </div>
+                <div class="stat-info">
+                  <h3 id="stat-sounds">0</h3>
+                  <p>系统声音</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon user-sounds">
+                  <i class="fas fa-microphone"></i>
+                </div>
+                <div class="stat-info">
+                  <h3 id="stat-user-sounds">0</h3>
+                  <p>用户上传</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon posts">
+                  <i class="fas fa-comments"></i>
+                </div>
+                <div class="stat-info">
+                  <h3 id="stat-posts">0</h3>
+                  <p>社区帖子</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon pending">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                  <h3 id="stat-pending">0</h3>
+                  <p>待审核</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon categories">
+                  <i class="fas fa-folder-tree"></i>
+                </div>
+                <div class="stat-info">
+                  <h3 id="stat-categories">0</h3>
+                  <p>分类数量</p>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">🎤</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-user-sounds">0</div>
-              <div class="stat-label">用户声音</div>
+
+            <!-- 最近活动 -->
+            <div class="dashboard-sections">
+              <div class="dashboard-card">
+                <h3><i class="fas fa-clock"></i> 最近上传</h3>
+                <div id="recent-uploads" class="recent-list">
+                  <div class="loading">加载中...</div>
+                </div>
+              </div>
+              <div class="dashboard-card">
+                <h3><i class="fas fa-user-plus"></i> 最新用户</h3>
+                <div id="recent-users" class="recent-list">
+                  <div class="loading">加载中...</div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">👥</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-users">0</div>
-              <div class="stat-label">总用户数</div>
+          </section>
+
+          <!-- 分类管理页 -->
+          <section id="page-categories" class="page">
+            <div class="page-header">
+              <h2><i class="fas fa-folder-tree"></i> 分类管理</h2>
+              <button class="btn btn-primary" onclick="showAddCategoryModal()">
+                <i class="fas fa-plus"></i> 添加分类
+              </button>
             </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">📝</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-posts">0</div>
-              <div class="stat-label">总帖子数</div>
+            <div class="card">
+              <div class="table-responsive">
+                <table class="data-table" id="categories-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>标识</th>
+                      <th>显示名称</th>
+                      <th>排序</th>
+                      <th>状态</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <!-- 大类管理 -->
-      <section id="categories" class="content-section">
-        <div class="section-header">
-          <h2>📁 大类管理</h2>
-          <button id="add-category-btn" class="btn btn-primary">+ 添加大类</button>
-        </div>
-        <div class="table-container">
-          <table id="categories-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>大类标识</th>
-                <th>显示名称</th>
-                <th>类型数量</th>
-                <th>排序</th>
-                <th>状态</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- 动态生成 -->
-            </tbody>
-          </table>
-        </div>
-      </section>
+          <!-- 声音类型页 -->
+          <section id="page-animal-types" class="page">
+            <div class="page-header">
+              <h2><i class="fas fa-paw"></i> 声音类型管理</h2>
+              <div class="header-actions">
+                <select id="filter-category" class="form-select">
+                  <option value="">所有分类</option>
+                </select>
+                <button class="btn btn-primary" onclick="showAddAnimalTypeModal()">
+                  <i class="fas fa-plus"></i> 添加类型
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="table-responsive">
+                <table class="data-table" id="animal-types-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>标识</th>
+                      <th>名称</th>
+                      <th>图标</th>
+                      <th>所属分类</th>
+                      <th>排序</th>
+                      <th>状态</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-      <!-- 类型管理 -->
-      <section id="types" class="content-section">
-        <div class="section-header">
-          <h2>🏷️ 类型管理</h2>
-        </div>
+          <!-- 系统声音页 -->
+          <section id="page-system-sounds" class="page">
+            <div class="page-header">
+              <h2><i class="fas fa-music"></i> 系统声音管理</h2>
+              <div class="header-actions">
+                <select id="filter-sound-category" class="form-select">
+                  <option value="">所有分类</option>
+                </select>
+                <select id="filter-sound-type" class="form-select">
+                  <option value="">所有类型</option>
+                </select>
+                <button class="btn btn-primary" onclick="showAddSystemSoundModal()">
+                  <i class="fas fa-plus"></i> 上传声音
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="table-responsive">
+                <table class="data-table" id="system-sounds-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>预览</th>
+                      <th>声音类型</th>
+                      <th>情绪</th>
+                      <th>时长</th>
+                      <th>描述</th>
+                      <th>状态</th>
+                      <th>上传时间</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-        <!-- 大类标签管理 -->
-        <div class="subsection">
-          <div class="subsection-header">
-            <h3>📁 大类标签</h3>
-            <button id="add-category-btn" class="btn btn-primary">+ 添加大类</button>
-          </div>
-          <div class="table-container">
-            <table id="types-categories-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>标识</th>
-                  <th>显示名称</th>
-                  <th>排序</th>
-                  <th>状态</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- 动态生成 -->
-              </tbody>
-            </table>
-          </div>
-        </div>
+          <!-- 用户声音页 -->
+          <section id="page-user-sounds" class="page">
+            <div class="page-header">
+              <h2><i class="fas fa-microphone"></i> 用户声音管理</h2>
+              <div class="header-actions">
+                <select id="filter-user-sound-status" class="form-select">
+                  <option value="">所有状态</option>
+                  <option value="pending">待审核</option>
+                  <option value="approved">已通过</option>
+                  <option value="rejected">已拒绝</option>
+                </select>
+                <button class="btn btn-primary" onclick="refreshUserSounds()">
+                  <i class="fas fa-sync-alt"></i> 刷新
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="table-responsive">
+                <table class="data-table" id="user-sounds-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>预览</th>
+                      <th>用户</th>
+                      <th>声音类型</th>
+                      <th>情绪</th>
+                      <th>时长</th>
+                      <th>审核状态</th>
+                      <th>上传时间</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-        <!-- 小类标签管理 -->
-        <div class="subsection">
-          <div class="subsection-header">
-            <h3>🏷️ 小类标签</h3>
-            <button id="add-type-btn" class="btn btn-primary">+ 添加小类</button>
-          </div>
-          <div class="filter-bar">
-            <select id="type-category-filter">
-              <option value="">所有大类</option>
-            </select>
-          </div>
-          <div class="table-container">
-            <table id="types-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>标识</th>
-                  <th>名称</th>
-                  <th>图标</th>
-                  <th>所属大类</th>
-                  <th>排序</th>
-                  <th>状态</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- 动态生成 -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+          <!-- 用户管理页 -->
+          <section id="page-users" class="page">
+            <div class="page-header">
+              <h2><i class="fas fa-users"></i> 用户管理</h2>
+              <div class="header-actions">
+                <input type="text" id="search-user" class="form-input" placeholder="搜索用户名或邮箱">
+                <button class="btn btn-primary" onclick="searchUsers()">
+                  <i class="fas fa-search"></i> 搜索
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="table-responsive">
+                <table class="data-table" id="users-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>头像</th>
+                      <th>用户名</th>
+                      <th>邮箱</th>
+                      <th>帖子数</th>
+                      <th>声音数</th>
+                      <th>评论数</th>
+                      <th>注册时间</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-      <!-- 系统声音管理 -->
-      <section id="system-sounds" class="content-section">
-        <div class="section-header">
-          <h2>🎶 系统声音管理</h2>
-          <button id="add-system-sound-btn" class="btn btn-primary">+ 上传系统声音</button>
-        </div>
-        <div class="filter-bar">
-          <select id="system-sound-category-filter">
-            <option value="">所有大类</option>
-          </select>
-          <select id="system-sound-type-filter">
-            <option value="">所有类型</option>
-          </select>
-        </div>
-        <div class="table-container">
-          <table id="system-sounds-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>类型</th>
-                <th>情绪/场景</th>
-                <th>声音文件</th>
-                <th>时长</th>
-                <th>描述</th>
-                <th>状态</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- 动态生成 -->
-            </tbody>
-          </table>
-        </div>
-      </section>
+          <!-- 社区帖子页 -->
+          <section id="page-posts" class="page">
+            <div class="page-header">
+              <h2><i class="fas fa-comments"></i> 社区帖子管理</h2>
+              <div class="header-actions">
+                <input type="text" id="search-post" class="form-input" placeholder="搜索帖子内容">
+                <button class="btn btn-primary" onclick="searchPosts()">
+                  <i class="fas fa-search"></i> 搜索
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="table-responsive">
+                <table class="data-table" id="posts-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>用户</th>
+                      <th>内容</th>
+                      <th>图片</th>
+                      <th>点赞</th>
+                      <th>评论</th>
+                      <th>发布时间</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-      <!-- 用户声音管理 -->
-      <section id="user-sounds" class="content-section">
-        <div class="section-header">
-          <h2>🎤 用户声音管理</h2>
-        </div>
-        <div class="filter-bar">
-          <select id="user-sound-status-filter">
-            <option value="">所有状态</option>
-            <option value="pending">待审核</option>
-            <option value="approved">已通过</option>
-            <option value="rejected">已拒绝</option>
-          </select>
-        </div>
-        <div class="table-container">
-          <table id="user-sounds-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>用户</th>
-                <th>类型</th>
-                <th>情绪</th>
-                <th>声音文件</th>
-                <th>时长</th>
-                <th>审核状态</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- 动态生成 -->
-            </tbody>
-          </table>
-        </div>
-      </section>
+          <!-- 轮播图页 -->
+          <section id="page-banners" class="page">
+            <div class="page-header">
+              <h2><i class="fas fa-images"></i> 轮播图管理</h2>
+              <button class="btn btn-primary" onclick="showAddBannerModal()">
+                <i class="fas fa-plus"></i> 添加轮播图
+              </button>
+            </div>
+            <div class="card">
+              <div class="table-responsive">
+                <table class="data-table" id="banners-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>图片</th>
+                      <th>标题（左下角文字）</th>
+                      <th>链接</th>
+                      <th>排序</th>
+                      <th>状态</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-      <!-- 用户管理 -->
-      <section id="users" class="content-section">
-        <div class="section-header">
-          <h2>👥 用户管理</h2>
+          <!-- 推送通知页 -->
+          <section id="page-notifications" class="page">
+            <div class="page-header">
+              <h2><i class="fas fa-bell"></i> 推送通知管理</h2>
+              <button class="btn btn-primary" onclick="showAddNotificationModal()">
+                <i class="fas fa-plus"></i> 发送通知
+              </button>
+            </div>
+            <div class="card">
+              <div class="table-responsive">
+                <table class="data-table" id="notifications-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>标题</th>
+                      <th>内容</th>
+                      <th>类型</th>
+                      <th>状态</th>
+                      <th>发布时间</th>
+                      <th>过期时间</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
         </div>
-        <div class="table-container">
-          <table id="users-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>用户名</th>
-                <th>邮箱</th>
-                <th>注册时间</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- 动态生成 -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- 帖子管理 -->
-      <section id="posts" class="content-section">
-        <div class="section-header">
-          <h2>📝 帖子管理</h2>
-        </div>
-        <div class="table-container">
-          <table id="posts-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>用户</th>
-                <th>内容</th>
-                <th>关联声音</th>
-                <th>发布时间</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- 动态生成 -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- 推送管理 -->
-      <section id="push" class="content-section">
-        <div class="section-header">
-          <h2>📢 推送管理</h2>
-          <button id="add-notification-btn" class="btn btn-primary">+ 添加通知</button>
-        </div>
-        <div class="table-container">
-          <table id="notifications-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>标题</th>
-                <th>内容</th>
-                <th>类型</th>
-                <th>状态</th>
-                <th>发布时间</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- 动态生成 -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+      </main>
+    </div>
   </div>
 
   <!-- 模态框 -->
@@ -319,20 +435,25 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modal-title">标题</h3>
-        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <button class="btn-close" onclick="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div id="modal-body" class="modal-body">
+      <div class="modal-body" id="modal-body">
         <!-- 动态内容 -->
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal()">取消</button>
-        <button id="modal-save" class="btn btn-primary">保存</button>
+        <button class="btn btn-primary" id="modal-confirm" onclick="confirmModal()">确认</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast提示 -->
-  <div id="toast" class="toast"></div>
+  <!-- 提示框 -->
+  <div id="toast" class="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toast-message">操作成功</span>
+  </div>
 
   <script src="admin.js"></script>
 </body>
