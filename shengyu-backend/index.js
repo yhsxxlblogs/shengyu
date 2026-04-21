@@ -465,8 +465,16 @@ global.sendNotificationToUser = (userId, notification) => {
 };
 global.connectedUsers = connectedUsers;
 
-app.use(helmet());
+// CORS 必须在 helmet 之前配置，以确保跨域请求正常工作
 app.use(cors());
+
+// Helmet 安全配置 - 放宽部分限制以支持前端功能
+app.use(helmet({
+  contentSecurityPolicy: false, // 禁用 CSP，避免阻止内联脚本和样式
+  crossOriginEmbedderPolicy: false, // 允许嵌入跨域资源
+  crossOriginResourcePolicy: { policy: 'cross-origin' } // 允许跨域资源共享
+}));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(xssMiddleware);
