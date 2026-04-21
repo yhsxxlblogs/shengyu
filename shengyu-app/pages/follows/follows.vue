@@ -24,7 +24,7 @@
         <view class="user-card" v-for="user in users" :key="user.id">
           <view class="user-info" @click="goToUserProfile(user.id)">
             <view class="avatar-wrapper">
-              <image :src="getImageUrl(user.avatar) || defaultAvatar(user.username)" class="avatar" mode="aspectFill"></image>
+              <image :src="getAvatarUrl(user.avatar)" class="avatar" mode="aspectFill"></image>
             </view>
             <view class="user-detail">
               <text class="username">{{ user.username }}</text>
@@ -47,6 +47,8 @@
 </template>
 
 <script>
+import { getImageUrl, DEFAULT_AVATAR } from '../../utils/api.js'
+
 export default {
   data() {
     return {
@@ -80,13 +82,9 @@ export default {
     goBack() {
       uni.navigateBack();
     },
-    getImageUrl(url) {
-      if (!url) return null;
-      if (url.startsWith('http')) return url;
-      return `http://shengyu.supersyh.xyz${url}`;
-    },
-    defaultAvatar(name) {
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=FF69B4&color=fff&size=60`;
+    getAvatarUrl(avatar) {
+      if (!avatar) return DEFAULT_AVATAR
+      return getImageUrl(avatar)
     },
     async loadUsers() {
       this.loading = true;
