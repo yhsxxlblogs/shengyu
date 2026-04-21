@@ -836,7 +836,7 @@ async function loadUsers() {
     tbody.innerHTML = users.map(user => `
       <tr>
         <td>${user.id}</td>
-        <td><img src="${user.avatar || '/uploads/avatars/default.png'}" alt="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
+        <td><img src="${user.avatar || getDefaultAvatar(user.username)}" alt="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
         <td>${escapeHtml(user.username)}</td>
         <td>${escapeHtml(user.email)}</td>
         <td>${user.posts_count || 0}</td>
@@ -983,7 +983,7 @@ async function loadBanners() {
   tbody.innerHTML = '<tr><td colspan="7" class="loading">加载中...</td></tr>';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/banner`);
+    const response = await fetch(`${API_BASE_URL}/banner/admin/list`);
     const data = await response.json();
     console.log('轮播图数据:', data);
     const banners = data.banners || [];
@@ -1051,7 +1051,7 @@ async function deleteBanner(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/banner/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/banner/admin/delete/${id}`, {
       method: 'DELETE'
     });
 
@@ -1434,7 +1434,7 @@ async function saveBanner() {
   formData.append('sort_order', sort_order);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/banner`, {
+    const response = await fetch(`${API_BASE_URL}/banner/admin/create`, {
       method: 'POST',
       body: formData
     });
@@ -1585,6 +1585,12 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// 生成默认头像URL
+function getDefaultAvatar(name) {
+  if (!name) name = 'User';
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=FF69B4&color=fff&size=60`;
 }
 
 function showToast(message, type = 'success') {
