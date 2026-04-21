@@ -1,5 +1,5 @@
-// API基础URL
-const API_BASE_URL = 'http://106.14.248.12:3000/api';
+// API基础URL - 使用相对路径，自动适配当前域名
+const API_BASE_URL = '/api';
 
 // 全局数据缓存
 let categoriesData = [];
@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initEventListeners();
   updateTime();
   setInterval(updateTime, 1000);
+
+  // 默认加载数据概览页
   loadDashboard();
 });
 
@@ -68,7 +70,7 @@ function initNavigation() {
   const sidebar = document.querySelector('.sidebar');
   if (sidebarToggle && sidebar) {
     sidebarToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
+      sidebar.classList.toggle('open');
     });
   }
 
@@ -84,6 +86,7 @@ function initNavigation() {
 
 // 根据页面加载数据
 function loadPageData(page) {
+  console.log('加载页面:', page);
   switch(page) {
     case 'dashboard':
       loadDashboard();
@@ -145,15 +148,16 @@ function initEventListeners() {
 
 // ========== 数据概览 ==========
 async function loadDashboard() {
+  console.log('加载数据概览...');
   try {
-    // 获取统计数据
+    // 获取统计数据 - 使用正确的API路径
     const [catRes, typeRes, sysSoundRes, userSoundRes, userRes, postRes] = await Promise.all([
       fetch(`${API_BASE_URL}/sound/admin/categories`),
       fetch(`${API_BASE_URL}/sound/admin/animal-types`),
       fetch(`${API_BASE_URL}/sound/admin/system-sounds`),
       fetch(`${API_BASE_URL}/sound/admin/user-sounds`),
-      fetch(`${API_BASE_URL}/social/users`),
-      fetch(`${API_BASE_URL}/post/list`)
+      fetch(`${API_BASE_URL}/admin/users`),
+      fetch(`${API_BASE_URL}/admin/posts`)
     ]);
 
     const [catData, typeData, sysSoundData, userSoundData, userData, postData] = await Promise.all([
@@ -164,6 +168,8 @@ async function loadDashboard() {
       userRes.json(),
       postRes.json()
     ]);
+
+    console.log('统计数据:', { catData, typeData, sysSoundData, userSoundData, userData, postData });
 
     // 更新统计卡片
     const statUsers = document.getElementById('stat-users');
@@ -188,6 +194,7 @@ async function loadDashboard() {
     loadRecentUsers(userData.users || []);
   } catch (error) {
     console.error('加载概览数据失败:', error);
+    showToast('加载数据失败', 'error');
   }
 }
 
@@ -198,15 +205,18 @@ async function loadRecentUploads(sounds) {
   const recentSounds = sounds.slice(-5).reverse();
 
   if (recentSounds.length === 0) {
-    container.innerHTML = '<div class="empty-item">暂无上传</div>';
+    container.innerHTML = '<div class="empty-state">暂无上传</div>';
     return;
   }
 
   container.innerHTML = recentSounds.map(sound => `
     <div class="recent-item">
       <i class="fas fa-music"></i>
-      <span>${escapeHtml(sound.emotion || '未知')}</span>
-      <small>${formatDate(sound.created_at)}</small>
+      <div class="info">
+        <h4>${escapeHtml(sound.emotion || '未知')}</h4>
+        <p>${escapeHtml(sound.type_name || sound.animal_type || '系统声音')}</p>
+      </div>
+      <span class="time">${formatDate(sound.created_at)}</span>
     </div>
   `).join('');
 }
@@ -218,15 +228,18 @@ async function loadRecentUsers(users) {
   const recentUsers = users.slice(-5).reverse();
 
   if (recentUsers.length === 0) {
-    container.innerHTML = '<div class="empty-item">暂无用户</div>';
+    container.innerHTML = '<div class="empty-state">暂无用户</div>';
     return;
   }
 
   container.innerHTML = recentUsers.map(user => `
     <div class="recent-item">
       <i class="fas fa-user"></i>
-      <span>${escapeHtml(user.username)}</span>
-      <small>${formatDate(user.created_at)}</small>
+      <div class="info">
+        <h4>${escapeHtml(user.username)}</h4>
+        <p>${escapeHtml(user.email)}</p>
+      </div>
+      <span class="time">${formatDate(user.created_at)}</span>
     </div>
   `).join('');
 }
@@ -238,6 +251,7 @@ function refreshDashboard() {
 
 // ========== 分类管理 ==========
 async function loadCategories() {
+  console.log('加载分类...');
   const tbody = document.querySelector('#categories-table tbody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
@@ -245,6 +259,7 @@ async function loadCategories() {
   try {
     const response = await fetch(`${API_BASE_URL}/sound/admin/categories`);
     const data = await response.json();
+    console.log('分类数据:', data);
     categoriesData = data.data || [];
 
     if (categoriesData.length === 0) {
@@ -260,7 +275,7 @@ async function loadCategories() {
         <td>${cat.sort_order || 0}</td>
         <td>${cat.is_active ? '<span class="badge badge-success">启用</span>' : '<span class="badge badge-danger">禁用</span>'}</td>
         <td>
-          <div class="action-buttons">
+          <div class="table-actions">
             <button class="btn btn-sm btn-primary" onclick="editCategory(${cat.id})">编辑</button>
             <button class="btn btn-sm btn-danger" onclick="deleteCategory(${cat.id})">删除</button>
           </div>
@@ -279,15 +294,15 @@ function showAddCategoryModal() {
   document.getElementById('modal-body').innerHTML = `
     <div class="form-group">
       <label>分类标识（英文，只能包含字母、数字和下划线）</label>
-      <input type="text" id="category-name" class="form-input" placeholder="例如: popular, sleep">
+      <input type="text" id="category-name" class="form-control" placeholder="例如: popular, sleep">
     </div>
     <div class="form-group">
       <label>显示名称</label>
-      <input type="text" id="category-display" class="form-input" placeholder="例如: 热门动物, 睡前疗愈馆">
+      <input type="text" id="category-display" class="form-control" placeholder="例如: 热门动物, 睡前疗愈馆">
     </div>
     <div class="form-group">
       <label>排序</label>
-      <input type="number" id="category-sort" class="form-input" value="0" placeholder="数字越小越靠前">
+      <input type="number" id="category-sort" class="form-control" value="0" placeholder="数字越小越靠前">
     </div>
   `;
   modal.setAttribute('data-type', 'addCategory');
@@ -303,20 +318,20 @@ async function editCategory(id) {
   document.getElementById('modal-body').innerHTML = `
     <div class="form-group">
       <label>分类标识</label>
-      <input type="text" class="form-input" value="${escapeHtml(cat.name)}" disabled>
+      <input type="text" class="form-control" value="${escapeHtml(cat.name)}" disabled>
       <small>分类标识不可修改</small>
     </div>
     <div class="form-group">
       <label>显示名称</label>
-      <input type="text" id="category-display" class="form-input" value="${escapeHtml(cat.display_name)}">
+      <input type="text" id="category-display" class="form-control" value="${escapeHtml(cat.display_name)}">
     </div>
     <div class="form-group">
       <label>排序</label>
-      <input type="number" id="category-sort" class="form-input" value="${cat.sort_order || 0}">
+      <input type="number" id="category-sort" class="form-control" value="${cat.sort_order || 0}">
     </div>
     <div class="form-group">
       <label>状态</label>
-      <select id="category-active" class="form-select">
+      <select id="category-active" class="form-control">
         <option value="1" ${cat.is_active ? 'selected' : ''}>启用</option>
         <option value="0" ${!cat.is_active ? 'selected' : ''}>禁用</option>
       </select>
@@ -355,6 +370,7 @@ async function deleteCategory(id) {
 
 // ========== 声音类型管理 ==========
 async function loadAnimalTypes() {
+  console.log('加载声音类型...');
   const tbody = document.querySelector('#animal-types-table tbody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="8" class="loading">加载中...</td></tr>';
@@ -372,6 +388,9 @@ async function loadAnimalTypes() {
 
     const typeData = await typeRes.json();
     const catData = await catRes.json();
+
+    console.log('类型数据:', typeData);
+    console.log('分类数据:', catData);
 
     typesData = typeData.data || [];
     categoriesData = catData.data || [];
@@ -401,7 +420,7 @@ async function loadAnimalTypes() {
         <td>${type.sort_order || 0}</td>
         <td>${type.is_active ? '<span class="badge badge-success">启用</span>' : '<span class="badge badge-danger">禁用</span>'}</td>
         <td>
-          <div class="action-buttons">
+          <div class="table-actions">
             <button class="btn btn-sm btn-primary" onclick="editAnimalType(${type.id})">编辑</button>
             <button class="btn btn-sm btn-danger" onclick="deleteAnimalType(${type.id})">删除</button>
           </div>
@@ -423,25 +442,25 @@ function showAddAnimalTypeModal() {
   document.getElementById('modal-body').innerHTML = `
     <div class="form-group">
       <label>类型标识（英文）</label>
-      <input type="text" id="type-id" class="form-input" placeholder="例如: cat, dog, rain">
+      <input type="text" id="type-id" class="form-control" placeholder="例如: cat, dog, rain">
     </div>
     <div class="form-group">
       <label>显示名称</label>
-      <input type="text" id="type-name" class="form-input" placeholder="例如: 猫咪, 雨声">
+      <input type="text" id="type-name" class="form-control" placeholder="例如: 猫咪, 雨声">
     </div>
     <div class="form-group">
       <label>图标（Emoji）</label>
-      <input type="text" id="type-icon" class="form-input" placeholder="例如: 🐱, 🌧️">
+      <input type="text" id="type-icon" class="form-control" placeholder="例如: 🐱, 🌧️">
     </div>
     <div class="form-group">
       <label>所属分类</label>
-      <select id="type-category" class="form-select">
+      <select id="type-category" class="form-control">
         ${categories.map(c => `<option value="${c.name}">${escapeHtml(c.display_name)}</option>`).join('')}
       </select>
     </div>
     <div class="form-group">
       <label>排序</label>
-      <input type="number" id="type-sort" class="form-input" value="0">
+      <input type="number" id="type-sort" class="form-control" value="0">
     </div>
   `;
   modal.setAttribute('data-type', 'addAnimalType');
@@ -460,30 +479,30 @@ async function editAnimalType(id) {
   document.getElementById('modal-body').innerHTML = `
     <div class="form-group">
       <label>类型标识</label>
-      <input type="text" class="form-input" value="${escapeHtml(type.type)}" disabled>
+      <input type="text" class="form-control" value="${escapeHtml(type.type)}" disabled>
       <small>类型标识不可修改</small>
     </div>
     <div class="form-group">
       <label>显示名称</label>
-      <input type="text" id="type-name" class="form-input" value="${escapeHtml(type.name)}">
+      <input type="text" id="type-name" class="form-control" value="${escapeHtml(type.name)}">
     </div>
     <div class="form-group">
       <label>图标（Emoji）</label>
-      <input type="text" id="type-icon" class="form-input" value="${escapeHtml(type.icon) || ''}">
+      <input type="text" id="type-icon" class="form-control" value="${escapeHtml(type.icon) || ''}">
     </div>
     <div class="form-group">
       <label>所属分类</label>
-      <select id="type-category" class="form-select">
+      <select id="type-category" class="form-control">
         ${categories.map(c => `<option value="${c.name}" ${c.name === type.category ? 'selected' : ''}>${escapeHtml(c.display_name)}</option>`).join('')}
       </select>
     </div>
     <div class="form-group">
       <label>排序</label>
-      <input type="number" id="type-sort" class="form-input" value="${type.sort_order || 0}">
+      <input type="number" id="type-sort" class="form-control" value="${type.sort_order || 0}">
     </div>
     <div class="form-group">
       <label>状态</label>
-      <select id="type-active" class="form-select">
+      <select id="type-active" class="form-control">
         <option value="1" ${type.is_active ? 'selected' : ''}>启用</option>
         <option value="0" ${!type.is_active ? 'selected' : ''}>禁用</option>
       </select>
@@ -522,6 +541,7 @@ async function deleteAnimalType(id) {
 
 // ========== 系统声音管理 ==========
 async function loadSystemSounds() {
+  console.log('加载系统声音...');
   const tbody = document.querySelector('#system-sounds-table tbody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="9" class="loading">加载中...</td></tr>';
@@ -535,6 +555,7 @@ async function loadSystemSounds() {
   try {
     const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds`);
     const data = await response.json();
+    console.log('系统声音数据:', data);
     systemSoundsData = data.data || [];
 
     // 筛选
@@ -568,7 +589,7 @@ async function loadSystemSounds() {
         <td>${sound.is_active ? '<span class="badge badge-success">启用</span>' : '<span class="badge badge-danger">禁用</span>'}</td>
         <td>${formatDate(sound.created_at)}</td>
         <td>
-          <div class="action-buttons">
+          <div class="table-actions">
             <button class="btn btn-sm btn-primary" onclick="editSystemSound(${sound.id})">编辑</button>
             <button class="btn btn-sm btn-danger" onclick="deleteSystemSound(${sound.id})">删除</button>
           </div>
@@ -590,32 +611,32 @@ async function showAddSystemSoundModal() {
   document.getElementById('modal-body').innerHTML = `
     <div class="form-group">
       <label>选择分类</label>
-      <select id="system-sound-category" class="form-select" onchange="updateTypeSelect()">
+      <select id="system-sound-category" class="form-control" onchange="updateTypeSelect()">
         <option value="">请选择分类</option>
         ${categories.map(c => `<option value="${c.name}">${escapeHtml(c.display_name)}</option>`).join('')}
       </select>
     </div>
     <div class="form-group">
       <label>选择类型</label>
-      <select id="system-sound-type" class="form-select">
+      <select id="system-sound-type" class="form-control">
         <option value="">请先选择分类</option>
       </select>
     </div>
     <div class="form-group">
       <label>情绪/场景</label>
-      <input type="text" id="system-sound-emotion" class="form-input" placeholder="例如: 开心, 放松, 睡眠">
+      <input type="text" id="system-sound-emotion" class="form-control" placeholder="例如: 开心, 放松, 睡眠">
     </div>
     <div class="form-group">
       <label>声音文件</label>
-      <input type="file" id="system-sound-file" class="form-input" accept="audio/*">
+      <input type="file" id="system-sound-file" class="form-control" accept="audio/*">
     </div>
     <div class="form-group">
       <label>时长（秒）</label>
-      <input type="number" id="system-sound-duration" class="form-input" placeholder="自动检测或手动输入">
+      <input type="number" id="system-sound-duration" class="form-control" placeholder="自动检测或手动输入">
     </div>
     <div class="form-group">
       <label>描述</label>
-      <textarea id="system-sound-description" class="form-input" rows="3"></textarea>
+      <textarea id="system-sound-description" class="form-control" rows="3"></textarea>
     </div>
   `;
   modal.setAttribute('data-type', 'addSystemSound');
@@ -646,15 +667,15 @@ async function editSystemSound(id) {
   document.getElementById('modal-body').innerHTML = `
     <div class="form-group">
       <label>情绪/场景</label>
-      <input type="text" id="system-sound-emotion" class="form-input" value="${escapeHtml(sound.emotion)}">
+      <input type="text" id="system-sound-emotion" class="form-control" value="${escapeHtml(sound.emotion)}">
     </div>
     <div class="form-group">
       <label>描述</label>
-      <textarea id="system-sound-description" class="form-input" rows="3">${escapeHtml(sound.description) || ''}</textarea>
+      <textarea id="system-sound-description" class="form-control" rows="3">${escapeHtml(sound.description) || ''}</textarea>
     </div>
     <div class="form-group">
       <label>状态</label>
-      <select id="system-sound-active" class="form-select">
+      <select id="system-sound-active" class="form-control">
         <option value="1" ${sound.is_active ? 'selected' : ''}>启用</option>
         <option value="0" ${!sound.is_active ? 'selected' : ''}>禁用</option>
       </select>
@@ -690,6 +711,7 @@ async function deleteSystemSound(id) {
 
 // ========== 用户声音管理 ==========
 async function loadUserSounds() {
+  console.log('加载用户声音...');
   const tbody = document.querySelector('#user-sounds-table tbody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="9" class="loading">加载中...</td></tr>';
@@ -699,6 +721,7 @@ async function loadUserSounds() {
   try {
     const response = await fetch(`${API_BASE_URL}/sound/admin/user-sounds`);
     const data = await response.json();
+    console.log('用户声音数据:', data);
     userSoundsData = data.data || [];
 
     // 筛选
@@ -727,7 +750,7 @@ async function loadUserSounds() {
         <td>${getReviewStatusBadge(sound.review_status)}</td>
         <td>${formatDate(sound.created_at)}</td>
         <td>
-          <div class="action-buttons">
+          <div class="table-actions">
             ${sound.review_status === 'pending' ? `
               <button class="btn btn-sm btn-success" onclick="reviewSound(${sound.id}, 'approved')">通过</button>
               <button class="btn btn-sm btn-danger" onclick="reviewSound(${sound.id}, 'rejected')">拒绝</button>
@@ -794,13 +817,15 @@ async function deleteUserSound(id) {
 
 // ========== 用户管理 ==========
 async function loadUsers() {
+  console.log('加载用户...');
   const tbody = document.querySelector('#users-table tbody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="9" class="loading">加载中...</td></tr>';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/social/users`);
+    const response = await fetch(`${API_BASE_URL}/admin/users`);
     const data = await response.json();
+    console.log('用户数据:', data);
     const users = data.users || [];
 
     if (users.length === 0) {
@@ -814,12 +839,12 @@ async function loadUsers() {
         <td><img src="${user.avatar || '/uploads/avatars/default.png'}" alt="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
         <td>${escapeHtml(user.username)}</td>
         <td>${escapeHtml(user.email)}</td>
-        <td>${user.post_count || 0}</td>
-        <td>${user.sound_count || 0}</td>
-        <td>${user.comment_count || 0}</td>
+        <td>${user.posts_count || 0}</td>
+        <td>${user.sounds_count || 0}</td>
+        <td>${user.comments_count || 0}</td>
         <td>${formatDate(user.created_at)}</td>
         <td>
-          <div class="action-buttons">
+          <div class="table-actions">
             <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">删除</button>
           </div>
         </td>
@@ -854,7 +879,7 @@ async function deleteUser(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/social/users/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
       method: 'DELETE'
     });
 
@@ -873,13 +898,15 @@ async function deleteUser(id) {
 
 // ========== 帖子管理 ==========
 async function loadPosts() {
+  console.log('加载帖子...');
   const tbody = document.querySelector('#posts-table tbody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="8" class="loading">加载中...</td></tr>';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/post/list`);
+    const response = await fetch(`${API_BASE_URL}/admin/posts`);
     const data = await response.json();
+    console.log('帖子数据:', data);
     const posts = data.posts || [];
 
     if (posts.length === 0) {
@@ -892,12 +919,12 @@ async function loadPosts() {
         <td>${post.id}</td>
         <td>${escapeHtml(post.username)}</td>
         <td>${escapeHtml(post.content?.substring(0, 50))}${post.content?.length > 50 ? '...' : ''}</td>
-        <td>${post.images ? `<i class="fas fa-image" title="有图片"></i>` : '-'}</td>
+        <td>${post.image_url ? `<i class="fas fa-image" title="有图片"></i>` : '-'}</td>
         <td>${post.like_count || 0}</td>
         <td>${post.comment_count || 0}</td>
         <td>${formatDate(post.created_at)}</td>
         <td>
-          <div class="action-buttons">
+          <div class="table-actions">
             <button class="btn btn-sm btn-danger" onclick="deletePost(${post.id})">删除</button>
           </div>
         </td>
@@ -931,7 +958,7 @@ async function deletePost(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/post/admin/delete/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/posts/${id}`, {
       method: 'DELETE'
     });
 
@@ -950,6 +977,7 @@ async function deletePost(id) {
 
 // ========== 轮播图管理 ==========
 async function loadBanners() {
+  console.log('加载轮播图...');
   const tbody = document.querySelector('#banners-table tbody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="7" class="loading">加载中...</td></tr>';
@@ -957,6 +985,7 @@ async function loadBanners() {
   try {
     const response = await fetch(`${API_BASE_URL}/admin/banner`);
     const data = await response.json();
+    console.log('轮播图数据:', data);
     const banners = data.banners || [];
 
     if (banners.length === 0) {
@@ -967,13 +996,13 @@ async function loadBanners() {
     tbody.innerHTML = banners.map(banner => `
       <tr>
         <td>${banner.id}</td>
-        <td><img src="${banner.image_url}" alt="" style="width: 100px; height: 60px; object-fit: cover; border-radius: 4px;"></td>
+        <td><img src="${banner.image_url}" alt="" class="img-preview"></td>
         <td>${escapeHtml(banner.title) || '-'}</td>
         <td>${banner.link_url ? `<a href="${banner.link_url}" target="_blank">${escapeHtml(banner.link_url.substring(0, 30))}...</a>` : '-'}</td>
         <td>${banner.sort_order || 0}</td>
         <td>${banner.is_active ? '<span class="badge badge-success">启用</span>' : '<span class="badge badge-danger">禁用</span>'}</td>
         <td>
-          <div class="action-buttons">
+          <div class="table-actions">
             <button class="btn btn-sm btn-primary" onclick="editBanner(${banner.id})">编辑</button>
             <button class="btn btn-sm btn-danger" onclick="deleteBanner(${banner.id})">删除</button>
           </div>
@@ -992,19 +1021,19 @@ function showAddBannerModal() {
   document.getElementById('modal-body').innerHTML = `
     <div class="form-group">
       <label>图片</label>
-      <input type="file" id="banner-image" class="form-input" accept="image/*">
+      <input type="file" id="banner-image" class="form-control" accept="image/*">
     </div>
     <div class="form-group">
       <label>标题（左下角文字）</label>
-      <input type="text" id="banner-title" class="form-input" placeholder="例如: 热门推荐">
+      <input type="text" id="banner-title" class="form-control" placeholder="例如: 热门推荐">
     </div>
     <div class="form-group">
       <label>链接</label>
-      <input type="text" id="banner-link" class="form-input" placeholder="例如: https://...">
+      <input type="text" id="banner-link" class="form-control" placeholder="例如: https://...">
     </div>
     <div class="form-group">
       <label>排序</label>
-      <input type="number" id="banner-sort" class="form-input" value="0">
+      <input type="number" id="banner-sort" class="form-control" value="0">
     </div>
   `;
   modal.setAttribute('data-type', 'addBanner');
@@ -1041,6 +1070,7 @@ async function deleteBanner(id) {
 
 // ========== 推送通知管理 ==========
 async function loadNotifications() {
+  console.log('加载通知...');
   const tbody = document.querySelector('#notifications-table tbody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="8" class="loading">加载中...</td></tr>';
@@ -1048,6 +1078,7 @@ async function loadNotifications() {
   try {
     const response = await fetch(`${API_BASE_URL}/admin/notification`);
     const data = await response.json();
+    console.log('通知数据:', data);
     const notifications = data.notifications || [];
 
     if (notifications.length === 0) {
@@ -1065,7 +1096,7 @@ async function loadNotifications() {
         <td>${formatDate(n.created_at)}</td>
         <td>${n.expire_at ? formatDate(n.expire_at) : '-'}</td>
         <td>
-          <div class="action-buttons">
+          <div class="table-actions">
             <button class="btn btn-sm btn-danger" onclick="deleteNotification(${n.id})">删除</button>
           </div>
         </td>
@@ -1083,15 +1114,15 @@ function showAddNotificationModal() {
   document.getElementById('modal-body').innerHTML = `
     <div class="form-group">
       <label>标题</label>
-      <input type="text" id="notification-title" class="form-input" placeholder="通知标题">
+      <input type="text" id="notification-title" class="form-control" placeholder="通知标题">
     </div>
     <div class="form-group">
       <label>内容</label>
-      <textarea id="notification-content" class="form-input" rows="4" placeholder="通知内容"></textarea>
+      <textarea id="notification-content" class="form-control" rows="4" placeholder="通知内容"></textarea>
     </div>
     <div class="form-group">
       <label>类型</label>
-      <select id="notification-type" class="form-select">
+      <select id="notification-type" class="form-control">
         <option value="info">信息</option>
         <option value="warning">警告</option>
         <option value="update">更新</option>
@@ -1128,7 +1159,6 @@ async function deleteNotification(id) {
 // ========== 模态框 ==========
 function initModal() {
   const modal = document.getElementById('modal');
-  const confirmBtn = document.getElementById('modal-confirm');
 
   if (!modal) return;
 
@@ -1136,11 +1166,6 @@ function initModal() {
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
   });
-
-  // 确认按钮
-  if (confirmBtn) {
-    confirmBtn.addEventListener('click', confirmModal);
-  }
 }
 
 function closeModal() {
@@ -1571,7 +1596,15 @@ function showToast(message, type = 'success') {
   toast.className = `toast ${type}`;
   toast.style.display = 'flex';
 
+  // 使用CSS动画
   setTimeout(() => {
-    toast.style.display = 'none';
+    toast.classList.add('show');
+  }, 10);
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 300);
   }, 3000);
 }
