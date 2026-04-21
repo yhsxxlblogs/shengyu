@@ -1589,10 +1589,13 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// 本地默认头像路径
+const DEFAULT_AVATAR_URL = '/uploads/avatars/default-avatar.svg';
+
 // 生成默认头像URL
 function getDefaultAvatar(name) {
-  if (!name) name = 'User';
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=FF69B4&color=fff&size=60`;
+  // 使用本地默认头像，避免外部API无法访问的问题
+  return DEFAULT_AVATAR_URL;
 }
 
 function showToast(message, type = 'success') {
