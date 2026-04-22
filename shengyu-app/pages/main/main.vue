@@ -2020,8 +2020,10 @@ export default {
 
 /* 推荐区域 */
 .recommend-section {
-  margin-top: 12rpx;
-  margin-bottom: 24rpx;
+  margin-top: 16rpx;
+  margin-bottom: 32rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid #F0F0F0;
 }
 
 .section-header {
@@ -2059,23 +2061,23 @@ export default {
 .recommend-list {
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 6rpx;
 }
 
 .recommend-item {
   display: flex;
   align-items: center;
-  gap: 10rpx;
+  gap: 8rpx;
   background: #FFFFFF;
-  border-radius: 10rpx;
-  padding: 12rpx;
-  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.03);
+  border-radius: 8rpx;
+  padding: 10rpx 12rpx;
+  box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.03);
   transition: all 0.3s ease;
 }
 
 .recommend-item:active {
   transform: translateY(-1rpx);
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
 }
 
 .recommend-rank {
