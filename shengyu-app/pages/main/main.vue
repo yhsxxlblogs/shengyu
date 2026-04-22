@@ -26,7 +26,7 @@
               </view>
             </view>
 
-            <!-- 轮播图区域 -->
+            <!-- 轮播图区域 - 层叠预览效果 -->
             <view class="banner-section" v-if="bannerList.length > 0">
               <swiper
                 class="banner-swiper"
@@ -34,28 +34,32 @@
                 @change="onBannerChange"
                 :autoplay="bannerList.length > 1"
                 :interval="4000"
-                :duration="300"
+                :duration="350"
                 :circular="bannerList.length > 1"
                 :indicator-dots="false"
+                previous-margin="50rpx"
+                next-margin="50rpx"
               >
                 <swiper-item
                   v-for="(banner, index) in bannerList"
                   :key="banner.id"
-                  class="banner-item"
+                  class="banner-item-wrapper"
                   @click="handleBannerClick(banner)"
                 >
-                  <image
-                    v-if="banner.fullImageUrl"
-                    :src="banner.fullImageUrl"
-                    class="banner-image"
-                    mode="aspectFill"
-                    @error="onBannerImageError(index)"
-                  />
-                  <view v-else class="banner-placeholder">
-                    <text class="placeholder-text">{{ banner.title || '轮播图 ' + (index + 1) }}</text>
-                  </view>
-                  <view v-if="banner.title" class="banner-title-wrapper">
-                    <text class="banner-title">{{ banner.title }}</text>
+                  <view class="banner-card">
+                    <image
+                      v-if="banner.fullImageUrl"
+                      :src="banner.fullImageUrl"
+                      class="banner-image"
+                      mode="aspectFill"
+                      @error="onBannerImageError(index)"
+                    />
+                    <view v-else class="banner-placeholder">
+                      <text class="placeholder-text">{{ banner.title || '轮播图 ' + (index + 1) }}</text>
+                    </view>
+                    <view v-if="banner.title" class="banner-title-wrapper">
+                      <text class="banner-title">{{ banner.title }}</text>
+                    </view>
                   </view>
                 </swiper-item>
               </swiper>
@@ -1755,38 +1759,40 @@ export default {
   color: #FFFFFF;
 }
 
-/* 轮播图样式 - 层叠卡片式 */
-/* 轮播图样式 */
+/* 轮播图样式 - 层叠预览效果 */
 .banner-section {
   margin: 30rpx 0 40rpx;
-  border-radius: 24rpx;
-  overflow: hidden;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
   position: relative;
 }
 
 .banner-swiper {
-  height: 320rpx;
-  border-radius: 24rpx;
+  height: 340rpx;
+  overflow: visible;
 }
 
-.banner-swiper swiper-item {
+.banner-item-wrapper {
   width: 100%;
   height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
-.banner-item {
+.banner-card {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   overflow: hidden;
+  background: #FFFFFF;
+  transition: transform 0.35s ease;
 }
 
 .banner-image {
   width: 100%;
   height: 100%;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
 }
 
 .banner-placeholder {
@@ -1796,7 +1802,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
 }
 
 .placeholder-text {
@@ -1812,7 +1818,7 @@ export default {
   right: 0;
   padding: 40rpx 30rpx 30rpx;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
-  border-radius: 0 0 24rpx 24rpx;
+  border-radius: 0 0 20rpx 20rpx;
 }
 
 .banner-title {
@@ -1823,13 +1829,10 @@ export default {
 }
 
 .banner-indicators {
-  position: absolute;
-  bottom: 20rpx;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
-  gap: 12rpx;
-  z-index: 10;
+  justify-content: center;
+  gap: 10rpx;
+  margin-top: 20rpx;
 }
 
 .indicator-dot {
