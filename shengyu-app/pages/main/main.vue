@@ -1763,67 +1763,58 @@ export default {
   color: #FFFFFF;
 }
 
-/* 轮播图样式 - 层叠3D效果 */
+/* 轮播图样式 - 简洁层叠效果 */
 .banner-section {
   margin: 30rpx 0 40rpx;
   position: relative;
-  overflow: visible;
 }
 
 .banner-swiper {
-  height: 360rpx;
-  overflow: visible;
+  height: 340rpx;
 }
 
-.banner-item-wrapper {
+.banner-swiper swiper-item {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding: 0 4rpx;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* 中心激活状态 */
-.banner-item-wrapper.banner-active .banner-card {
-  transform: scale(1.05);
-  opacity: 1;
-  z-index: 10;
-}
-
-/* 左侧预览状态 */
-.banner-item-wrapper.banner-prev .banner-card {
-  transform: scale(0.82) translateX(-15rpx);
-  opacity: 0.65;
-  z-index: 5;
-}
-
-/* 右侧预览状态 */
-.banner-item-wrapper.banner-next .banner-card {
-  transform: scale(0.82) translateX(15rpx);
-  opacity: 0.65;
-  z-index: 5;
-}
-
-/* 远处状态 */
-.banner-item-wrapper.banner-far .banner-card {
-  transform: scale(0.68);
-  opacity: 0.35;
-  z-index: 1;
+  padding: 0 8rpx;
 }
 
 .banner-card {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 20rpx;
+  border-radius: 16rpx;
   overflow: hidden;
   background: #FFFFFF;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  transform-origin: center center;
-  will-change: transform, opacity;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+/* 中心激活状态 */
+.banner-item-wrapper.banner-active .banner-card {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* 左侧预览状态 */
+.banner-item-wrapper.banner-prev .banner-card {
+  transform: scale(0.88);
+  opacity: 0.6;
+}
+
+/* 右侧预览状态 */
+.banner-item-wrapper.banner-next .banner-card {
+  transform: scale(0.88);
+  opacity: 0.6;
+}
+
+/* 远处状态 */
+.banner-item-wrapper.banner-far .banner-card {
+  transform: scale(0.75);
+  opacity: 0.3;
 }
 
 .banner-image {
