@@ -34,11 +34,11 @@
                 @change="onBannerChange"
                 :autoplay="bannerList.length > 1"
                 :interval="4000"
-                :duration="350"
+                :duration="300"
                 :circular="bannerList.length > 1"
                 :indicator-dots="false"
-                previous-margin="50rpx"
-                next-margin="50rpx"
+                previous-margin="30rpx"
+                next-margin="30rpx"
               >
                 <swiper-item
                   v-for="(banner, index) in bannerList"
@@ -1761,12 +1761,12 @@ export default {
 
 /* 轮播图样式 - 层叠预览效果 */
 .banner-section {
-  margin: 30rpx 0 40rpx;
+  margin: 30rpx 16rpx 40rpx;
   position: relative;
 }
 
 .banner-swiper {
-  height: 340rpx;
+  height: 320rpx;
   overflow: visible;
 }
 
@@ -1777,22 +1777,23 @@ export default {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  padding: 0 8rpx;
 }
 
 .banner-card {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 20rpx;
+  border-radius: 16rpx;
   overflow: hidden;
   background: #FFFFFF;
-  transition: transform 0.35s ease;
+  transition: all 0.3s ease;
 }
 
 .banner-image {
   width: 100%;
   height: 100%;
-  border-radius: 20rpx;
+  border-radius: 16rpx;
 }
 
 .banner-placeholder {
@@ -1802,7 +1803,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 20rpx;
+  border-radius: 16rpx;
 }
 
 .placeholder-text {
@@ -1816,13 +1817,13 @@ export default {
   left: 0;
   bottom: 0;
   right: 0;
-  padding: 40rpx 30rpx 30rpx;
+  padding: 40rpx 24rpx 24rpx;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
-  border-radius: 0 0 20rpx 20rpx;
+  border-radius: 0 0 16rpx 16rpx;
 }
 
 .banner-title {
-  font-size: 32rpx;
+  font-size: 30rpx;
   color: #FFFFFF;
   font-weight: 600;
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
@@ -1831,22 +1832,22 @@ export default {
 .banner-indicators {
   display: flex;
   justify-content: center;
-  gap: 10rpx;
-  margin-top: 20rpx;
+  gap: 8rpx;
+  margin-top: 16rpx;
 }
 
 .indicator-dot {
-  width: 16rpx;
-  height: 16rpx;
+  width: 8rpx;
+  height: 8rpx;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
 .indicator-dot.active {
   background-color: #FF6B9D;
-  width: 32rpx;
-  border-radius: 8rpx;
+  width: 20rpx;
+  border-radius: 4rpx;
 }
 
 .section-title {
