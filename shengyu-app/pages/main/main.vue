@@ -1859,22 +1859,26 @@ export default {
 .banner-indicators {
   display: flex;
   justify-content: center;
-  gap: 8rpx;
+  align-items: center;
+  gap: 6rpx;
   margin-top: 20rpx;
+  height: 16rpx;
 }
 
 .indicator-dot {
-  width: 8rpx;
-  height: 8rpx;
+  width: 6rpx;
+  height: 6rpx;
   border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.25);
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .indicator-dot.active {
-  background-color: #FF6B9D;
-  width: 20rpx;
-  border-radius: 4rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FF6B9D 100%);
+  width: 16rpx;
+  height: 6rpx;
+  border-radius: 3rpx;
 }
 
 .section-title {
