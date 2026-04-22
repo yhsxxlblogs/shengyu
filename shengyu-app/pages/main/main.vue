@@ -34,11 +34,11 @@
                 @change="onBannerChange"
                 :autoplay="bannerList.length > 1"
                 :interval="4000"
-                :duration="500"
+                :duration="400"
                 :circular="bannerList.length > 1"
                 :indicator-dots="false"
-                previous-margin="60rpx"
-                next-margin="60rpx"
+                previous-margin="40rpx"
+                next-margin="40rpx"
                 display-multiple-items="1"
               >
                 <swiper-item
@@ -1756,7 +1756,7 @@ export default {
 }
 
 .banner-swiper {
-  height: 360rpx;
+  height: 340rpx;
   overflow: visible;
 }
 
@@ -1767,42 +1767,48 @@ export default {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding: 0 10rpx;
+  padding: 0 6rpx;
 }
 
 .banner-card {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   overflow: hidden;
   background: #FFFFFF;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
-  transform: scale(0.85);
-  opacity: 0.6;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border: 2rpx solid rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 2rpx 8rpx rgba(0, 0, 0, 0.08),
+    0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  transform: scale(0.88);
+  opacity: 0.65;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .banner-card.banner-active {
   transform: scale(1);
   opacity: 1;
+  border: 2rpx solid rgba(255, 255, 255, 1);
   box-shadow: 
-    0 20rpx 60rpx rgba(0, 0, 0, 0.25),
-    0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+    0 12rpx 40rpx rgba(0, 0, 0, 0.18),
+    0 4rpx 12rpx rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
 
 .banner-card.banner-prev,
 .banner-card.banner-next {
-  transform: scale(0.9);
-  opacity: 0.8;
-  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.15);
+  transform: scale(0.92);
+  opacity: 0.85;
+  box-shadow: 
+    0 4rpx 16rpx rgba(0, 0, 0, 0.1),
+    0 2rpx 8rpx rgba(0, 0, 0, 0.06);
 }
 
 .banner-image {
   width: 100%;
   height: 100%;
-  border-radius: 24rpx;
+  border-radius: 18rpx;
   object-fit: cover;
 }
 
@@ -1815,7 +1821,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24rpx;
+  border-radius: 18rpx;
 }
 
 @keyframes gradient-shift {
