@@ -1771,7 +1771,7 @@ export default {
 }
 
 .banner-swiper {
-  height: 340rpx;
+  height: 360rpx;
   overflow: visible;
 }
 
@@ -1788,29 +1788,29 @@ export default {
 
 /* 中心激活状态 */
 .banner-item-wrapper.banner-active .banner-card {
-  transform: scale(1);
+  transform: scale(1.05);
   opacity: 1;
   z-index: 10;
 }
 
 /* 左侧预览状态 */
 .banner-item-wrapper.banner-prev .banner-card {
-  transform: scale(0.85) translateX(-10rpx);
-  opacity: 0.7;
+  transform: scale(0.82) translateX(-15rpx);
+  opacity: 0.65;
   z-index: 5;
 }
 
 /* 右侧预览状态 */
 .banner-item-wrapper.banner-next .banner-card {
-  transform: scale(0.85) translateX(10rpx);
-  opacity: 0.7;
+  transform: scale(0.82) translateX(15rpx);
+  opacity: 0.65;
   z-index: 5;
 }
 
 /* 远处状态 */
 .banner-item-wrapper.banner-far .banner-card {
-  transform: scale(0.7);
-  opacity: 0.4;
+  transform: scale(0.68);
+  opacity: 0.35;
   z-index: 1;
 }
 
@@ -1823,6 +1823,7 @@ export default {
   background: #FFFFFF;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform-origin: center center;
+  will-change: transform, opacity;
 }
 
 .banner-image {
