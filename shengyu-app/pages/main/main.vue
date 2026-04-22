@@ -26,24 +26,31 @@
               </view>
             </view>
 
-            <!-- 轮播图区域 - 层叠预览效果 -->
+            <!-- 轮播图区域 - 层叠3D效果 -->
             <view class="banner-section" v-if="bannerList.length > 0">
               <swiper
                 class="banner-swiper"
                 :current="bannerCurrentIndex"
                 @change="onBannerChange"
+                @transition="onBannerTransition"
                 :autoplay="bannerList.length > 1"
                 :interval="4000"
-                :duration="300"
+                :duration="400"
                 :circular="bannerList.length > 1"
                 :indicator-dots="false"
-                previous-margin="30rpx"
-                next-margin="30rpx"
+                previous-margin="60rpx"
+                next-margin="60rpx"
               >
                 <swiper-item
                   v-for="(banner, index) in bannerList"
                   :key="banner.id"
                   class="banner-item-wrapper"
+                  :class="{
+                    'banner-active': bannerCurrentIndex === index,
+                    'banner-prev': getBannerPosition(index) === 'prev',
+                    'banner-next': getBannerPosition(index) === 'next',
+                    'banner-far': getBannerPosition(index) === 'far'
+                  }"
                   @click="handleBannerClick(banner)"
                 >
                   <view class="banner-card">
@@ -70,6 +77,7 @@
                   :key="index"
                   class="indicator-dot"
                   :class="{ active: bannerCurrentIndex === index }"
+                  @click="bannerCurrentIndex = index"
                 ></view>
               </view>
             </view>
@@ -925,21 +933,17 @@ export default {
       this.bannerCurrentIndex = e.detail.current
     },
 
-    // 轮播图触摸开始 - 用户交互时暂停自动播放
-    onBannerTouchStart() {
-      this.isUserInteracting = true
-      // 清除之前的定时器
-      if (this.userInteractionTimer) {
-        clearTimeout(this.userInteractionTimer)
-      }
-    },
-
-    // 轮播图触摸结束 - 延迟恢复自动播放
-    onBannerTouchEnd() {
-      // 2秒后恢复自动播放
-      this.userInteractionTimer = setTimeout(() => {
-        this.isUserInteracting = false
-      }, 2000)
+    // 轮播图位置计算
+    getBannerPosition(index) {
+      const current = this.bannerCurrentIndex
+      const total = this.bannerList.length
+      if (index === current) return 'active'
+      // 处理循环情况
+      if (current === 0 && index === total - 1) return 'prev'
+      if (current === total - 1 && index === 0) return 'next'
+      if (index === current - 1) return 'prev'
+      if (index === current + 1) return 'next'
+      return 'far'
     },
 
     // 轮播图图片加载失败
@@ -1759,14 +1763,15 @@ export default {
   color: #FFFFFF;
 }
 
-/* 轮播图样式 - 层叠预览效果 */
+/* 轮播图样式 - 层叠3D效果 */
 .banner-section {
-  margin: 30rpx 16rpx 40rpx;
+  margin: 30rpx 0 40rpx;
   position: relative;
+  overflow: visible;
 }
 
 .banner-swiper {
-  height: 320rpx;
+  height: 340rpx;
   overflow: visible;
 }
 
@@ -1777,23 +1782,53 @@ export default {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding: 0 8rpx;
+  padding: 0 4rpx;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 中心激活状态 */
+.banner-item-wrapper.banner-active .banner-card {
+  transform: scale(1);
+  opacity: 1;
+  z-index: 10;
+}
+
+/* 左侧预览状态 */
+.banner-item-wrapper.banner-prev .banner-card {
+  transform: scale(0.85) translateX(-10rpx);
+  opacity: 0.7;
+  z-index: 5;
+}
+
+/* 右侧预览状态 */
+.banner-item-wrapper.banner-next .banner-card {
+  transform: scale(0.85) translateX(10rpx);
+  opacity: 0.7;
+  z-index: 5;
+}
+
+/* 远处状态 */
+.banner-item-wrapper.banner-far .banner-card {
+  transform: scale(0.7);
+  opacity: 0.4;
+  z-index: 1;
 }
 
 .banner-card {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   overflow: hidden;
   background: #FFFFFF;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: center center;
 }
 
 .banner-image {
   width: 100%;
   height: 100%;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
 }
 
 .banner-placeholder {
@@ -1803,7 +1838,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
 }
 
 .placeholder-text {
@@ -1819,7 +1854,7 @@ export default {
   right: 0;
   padding: 40rpx 24rpx 24rpx;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
-  border-radius: 0 0 16rpx 16rpx;
+  border-radius: 0 0 20rpx 20rpx;
 }
 
 .banner-title {
@@ -1833,7 +1868,7 @@ export default {
   display: flex;
   justify-content: center;
   gap: 8rpx;
-  margin-top: 16rpx;
+  margin-top: 20rpx;
 }
 
 .indicator-dot {
