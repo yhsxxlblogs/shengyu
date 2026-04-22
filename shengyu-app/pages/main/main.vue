@@ -1981,7 +1981,8 @@ export default {
 .animal-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8rpx;
+  gap: 20rpx;
+  padding: 0 8rpx;
 }
 
 .animal-item {
@@ -1989,33 +1990,33 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8rpx 4rpx;
+  padding: 12rpx 0;
   background: transparent;
-  border-radius: 12rpx;
+  border-radius: 16rpx;
   aspect-ratio: 1;
 }
 
 .animal-icon {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 14rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 20rpx;
   background: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 6rpx;
-  font-size: 48rpx;
-  box-shadow: 0 3rpx 10rpx rgba(0, 0, 0, 0.06);
+  margin-bottom: 10rpx;
+  font-size: 52rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
 
 .animal-name {
-  font-size: 18rpx;
+  font-size: 22rpx;
   color: #555555;
 }
 
 .popular-section, .other-section, .category-section {
-  margin-bottom: 24rpx;
+  margin-bottom: 32rpx;
 }
 
 /* 推荐区域 */
