@@ -2020,26 +2020,24 @@ export default {
 
 /* 推荐区域 */
 .recommend-section {
-  margin-top: 16rpx;
+  margin-top: 24rpx;
   margin-bottom: 32rpx;
-  padding-bottom: 16rpx;
-  border-bottom: 1rpx solid #F0F0F0;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12rpx;
+  margin-bottom: 16rpx;
 }
 
 .more-btn {
   display: flex;
   align-items: center;
-  gap: 2rpx;
-  padding: 4rpx 10rpx;
+  gap: 4rpx;
+  padding: 6rpx 14rpx;
   background: rgba(255, 154, 158, 0.1);
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   transition: all 0.3s ease;
 }
 
@@ -2049,7 +2047,7 @@ export default {
 }
 
 .more-text {
-  font-size: 20rpx;
+  font-size: 22rpx;
   color: #FF6B9D;
   font-weight: 500;
 }
@@ -2061,37 +2059,38 @@ export default {
 .recommend-list {
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
+  gap: 12rpx;
 }
 
 .recommend-item {
   display: flex;
-  align-items: center;
-  gap: 8rpx;
+  align-items: flex-start;
+  gap: 12rpx;
   background: #FFFFFF;
-  border-radius: 8rpx;
-  padding: 10rpx 12rpx;
-  box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.03);
+  border-radius: 12rpx;
+  padding: 14rpx 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
 }
 
 .recommend-item:active {
-  transform: translateY(-1rpx);
-  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
+  transform: translateY(-2rpx);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .recommend-rank {
-  width: 32rpx;
-  height: 32rpx;
-  border-radius: 6rpx;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 8rpx;
   background: #F5F5F5;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20rpx;
+  font-size: 22rpx;
   font-weight: bold;
   color: #888888;
   flex-shrink: 0;
+  margin-top: 2rpx;
 }
 
 .recommend-rank.rank-top {
@@ -2104,15 +2103,15 @@ export default {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
+  gap: 8rpx;
 }
 
 .recommend-text {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #333333;
-  line-height: 1.3;
+  line-height: 1.4;
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
