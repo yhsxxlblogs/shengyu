@@ -547,21 +547,25 @@ async function updatePopularPostsCache() {
       LIMIT 10
     `;
     
-    db.query(query, (err, results) => {
+    db.query(query, async (err, results) => {
       if (err) {
         console.error('更新热门帖子缓存失败:', err);
         return;
       }
       
-      // 将热门帖子存入Redis，设置10分钟过期
+      // 将热门帖子存入Redis
+      // 使用随机过期时间防止缓存雪崩（5-10分钟）
       const redis = require('./config/redis');
-      redis.setAsync('popular:posts', JSON.stringify(results), 600)
-        .then(() => {
-          console.log(`[${new Date().toLocaleString()}] 热门帖子缓存已更新，共 ${results.length} 条`);
-        })
-        .catch(err => {
-          console.error('Redis缓存失败:', err);
-        });
+      const baseTTL = 300; // 基础5分钟
+      const randomTTL = Math.floor(Math.random() * 300); // 随机0-5分钟
+      const cacheTTL = results.length > 0 ? baseTTL + randomTTL : 60; // 有数据5-10分钟，空数据1分钟
+      
+      try {
+        await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
+        console.log(`[${new Date().toLocaleString()}] 热门帖子缓存已更新，共 ${results.length} 条，TTL: ${cacheTTL}s`);
+      } catch (err) {
+        console.error('Redis缓存失败:', err);
+      }
     });
   } catch (error) {
     console.error('更新热门帖子缓存出错:', error);

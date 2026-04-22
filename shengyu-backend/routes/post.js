@@ -513,6 +513,11 @@ router.get('/popular', async (req, res) => {
     if (cachedPosts) {
       let posts = JSON.parse(cachedPosts);
       
+      // 如果缓存为空数组，也直接返回，防止缓存穿透
+      if (posts.length === 0) {
+        return res.status(200).json({ posts: [] });
+      }
+      
       // 如果用户已登录，查询该用户的点赞状态
       if (currentUserId) {
         const postIds = posts.map(p => p.id);
@@ -556,16 +561,22 @@ router.get('/popular', async (req, res) => {
       params.push(currentUserId);
     }
 
-    db.query(query, params, (err, results) => {
+    db.query(query, params, async (err, results) => {
       if (err) {
         console.error('获取热门帖子失败:', err);
         return res.status(500).json({ error: '服务器错误' });
       }
       
-      // 存入Redis缓存
-      redis.setAsync('popular:posts', JSON.stringify(results), 300).catch(err => {
-        console.error('缓存热门帖子失败:', err);
-      });
+      // 即使结果为空，也缓存空数组，防止缓存穿透
+      // 空数组缓存时间较短（60秒），有数据时缓存300秒
+      const cacheTTL = results.length > 0 ? 300 : 60;
+      
+      try {
+        await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
+        console.log(`[Cache] 热门帖子已缓存，数量: ${results.length}，TTL: ${cacheTTL}s`);
+      } catch (cacheErr) {
+        console.error('缓存热门帖子失败:', cacheErr);
+      }
       
       res.status(200).json({ posts: results });
     });
