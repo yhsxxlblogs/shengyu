@@ -601,8 +601,7 @@ export default {
 .animal-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20rpx;
-  padding: 0 8rpx;
+  gap: 12rpx;
 }
 
 /* 动物卡片 - 简洁无框 */
@@ -612,8 +611,8 @@ export default {
   align-items: center;
   justify-content: center;
   background: transparent;
-  border-radius: 16rpx;
-  padding: 12rpx 0;
+  border-radius: 14rpx;
+  padding: 10rpx 0;
   aspect-ratio: 1;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -624,15 +623,15 @@ export default {
 
 /* 动物图标 - 白色背景 */
 .animal-icon {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 20rpx;
+  width: 92rpx;
+  height: 92rpx;
+  border-radius: 16rpx;
   background: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  margin-bottom: 8rpx;
+  box-shadow: 0 3rpx 10rpx rgba(0, 0, 0, 0.07);
   transition: all 0.3s ease;
 }
 
@@ -642,7 +641,7 @@ export default {
 }
 
 .icon {
-  font-size: 52rpx;
+  font-size: 50rpx;
   transition: transform 0.3s ease;
 }
 
@@ -651,14 +650,14 @@ export default {
 }
 
 .animal-name {
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: #444444;
   font-weight: 500;
   transition: color 0.3s ease;
 }
 
 .category-section {
-  margin-bottom: 32rpx;
+  margin-bottom: 28rpx;
 }
 
 .animal-item:active .animal-name {
