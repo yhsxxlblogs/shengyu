@@ -2020,24 +2020,24 @@ export default {
 
 /* 推荐区域 */
 .recommend-section {
-  margin-top: 20rpx;
-  margin-bottom: 40rpx;
+  margin-top: 16rpx;
+  margin-bottom: 32rpx;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24rpx;
+  margin-bottom: 16rpx;
 }
 
 .more-btn {
   display: flex;
   align-items: center;
   gap: 4rpx;
-  padding: 8rpx 16rpx;
+  padding: 6rpx 12rpx;
   background: rgba(255, 154, 158, 0.1);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   transition: all 0.3s ease;
 }
 
@@ -2047,7 +2047,7 @@ export default {
 }
 
 .more-text {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #FF6B9D;
   font-weight: 500;
 }
@@ -2059,34 +2059,34 @@ export default {
 .recommend-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .recommend-item {
   display: flex;
   align-items: flex-start;
-  gap: 16rpx;
+  gap: 12rpx;
   background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 20rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border-radius: 12rpx;
+  padding: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
 }
 
 .recommend-item:active {
   transform: translateY(-2rpx);
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
 }
 
 .recommend-rank {
-  width: 44rpx;
-  height: 44rpx;
-  border-radius: 12rpx;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 8rpx;
   background: #F5F5F5;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24rpx;
+  font-size: 22rpx;
   font-weight: bold;
   color: #888888;
   flex-shrink: 0;
@@ -2102,13 +2102,13 @@ export default {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 8rpx;
 }
 
 .recommend-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #333333;
-  line-height: 1.5;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -2125,19 +2125,19 @@ export default {
 .recommend-author {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 6rpx;
 }
 
 .author-avatar {
-  width: 40rpx;
-  height: 40rpx;
+  width: 32rpx;
+  height: 32rpx;
   border-radius: 50%;
   background: #F5F5F5;
 }
 
 .author-avatar-placeholder {
-  width: 40rpx;
-  height: 40rpx;
+  width: 32rpx;
+  height: 32rpx;
   border-radius: 50%;
   background: #F5F5F5;
   display: flex;
@@ -2147,20 +2147,20 @@ export default {
 }
 
 .author-name {
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: #888888;
 }
 
 .recommend-stats {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 4rpx;
+  gap: 2rpx;
 }
 
 .stat-icon {
@@ -2168,14 +2168,14 @@ export default {
 }
 
 .stat-num {
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: #888888;
 }
 
 .recommend-image {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 12rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 8rpx;
   flex-shrink: 0;
   background: #F5F5F5;
 }
@@ -2185,10 +2185,10 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60rpx 0;
+  padding: 40rpx 0;
   background: #FFFFFF;
-  border-radius: 16rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 .empty-icon {
