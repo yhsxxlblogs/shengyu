@@ -251,6 +251,39 @@ ws://106.14.248.12:3001?token={JWT_TOKEN}&userId={USER_ID}
 - 点赞/评论 → 清除相关帖子缓存
 - 关注/取消关注 → 清除用户相关缓存
 
+### 缓存问题防护
+
+#### 1. 缓存雪崩 (Cache Avalanche)
+**问题**：大量缓存同时过期，请求直接打到数据库
+**解决方案**：
+- 使用随机过期时间（5-10分钟随机）
+- 定时任务提前更新缓存
+- 代码示例：
+```javascript
+const baseTTL = 300; // 基础5分钟
+const randomTTL = Math.floor(Math.random() * 300); // 随机0-5分钟
+const cacheTTL = baseTTL + randomTTL; // 5-10分钟随机
+```
+
+#### 2. 缓存击穿 (Cache Breakdown)
+**问题**：热点数据过期瞬间，大量请求同时查询数据库
+**解决方案**：
+- 热点数据永不过期（定时更新）
+- 互斥锁防止并发重建缓存
+- 热门帖子使用定时任务每5分钟更新，避免过期
+
+#### 3. 缓存穿透 (Cache Penetration)
+**问题**：查询不存在的数据，每次都要访问数据库
+**解决方案**：
+- 空值缓存（缓存空数组）
+- 布隆过滤器（可选）
+- 代码示例：
+```javascript
+// 即使结果为空，也缓存空数组
+const cacheTTL = results.length > 0 ? 300 : 60; // 空数据缓存60秒
+await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
+```
+
 ## 安全设计
 
 1. **JWT认证** - 使用JWT进行身份认证，过期时间1天
