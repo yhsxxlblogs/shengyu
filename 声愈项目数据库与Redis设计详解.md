@@ -707,6 +707,7 @@ const CACHE_KEYS = {
   // 帖子相关
   POST_DETAIL: 'post:detail:',          // 帖子详情
   POSTS_LIST: 'posts:list:',            // 帖子列表
+  POPULAR_POSTS: 'popular:posts',       // 热门帖子（每5分钟自动更新）
   
   // 声音相关
   POPULAR_SOUNDS: 'sounds:popular',     // 热门声音
@@ -726,6 +727,7 @@ const CACHE_TTL = {
   USER_STATS: 60,           // 1分钟
   POST_DETAIL: 300,         // 5分钟
   POSTS_LIST: 60,           // 1分钟
+  POPULAR_POSTS: 600,       // 10分钟（热门帖子每5分钟自动更新）
   POPULAR_SOUNDS: 600,      // 10分钟
   UNREAD_COUNT: 30,         // 30秒
   FOLLOW_STATS: 60
