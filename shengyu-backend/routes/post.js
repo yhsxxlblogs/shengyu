@@ -491,4 +491,88 @@ router.delete('/admin/delete/:post_id', (req, res) => {
   );
 });
 
+// 获取热门帖子（按点赞数和评论数排序）
+router.get('/popular', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    let currentUserId = null;
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, 'secret_key');
+        currentUserId = decoded.id;
+      } catch (error) {
+        // token无效，继续作为未登录用户处理
+      }
+    }
+
+    // 优先从Redis缓存获取
+    const redis = require('../config/redis');
+    const cachedPosts = await redis.getAsync('popular:posts');
+    
+    if (cachedPosts) {
+      let posts = JSON.parse(cachedPosts);
+      
+      // 如果用户已登录，查询该用户的点赞状态
+      if (currentUserId) {
+        const postIds = posts.map(p => p.id);
+        if (postIds.length > 0) {
+          const likedQuery = `SELECT post_id FROM likes WHERE user_id = ? AND post_id IN (?)`;
+          db.query(likedQuery, [currentUserId, postIds], (err, likedResults) => {
+            if (err) {
+              console.error('查询点赞状态失败:', err);
+            } else {
+              const likedSet = new Set(likedResults.map(r => r.post_id));
+              posts = posts.map(p => ({
+                ...p,
+                liked: likedSet.has(p.id)
+              }));
+            }
+            return res.status(200).json({ posts });
+          });
+        } else {
+          return res.status(200).json({ posts });
+        }
+      } else {
+        return res.status(200).json({ posts });
+      }
+      return;
+    }
+
+    // 缓存未命中，从数据库查询
+    let query = `
+      SELECT p.*, u.username, u.avatar
+             ${currentUserId ? `, EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = p.user_id) as is_following` : ''}
+             ${currentUserId ? `, EXISTS(SELECT 1 FROM likes WHERE user_id = ? AND post_id = p.id) as liked` : ''}
+      FROM posts p
+      LEFT JOIN users u ON p.user_id = u.id
+      ORDER BY (p.like_count + p.comment_count) DESC, p.created_at DESC
+      LIMIT 10
+    `;
+
+    let params = [];
+    if (currentUserId) {
+      params.push(currentUserId);
+      params.push(currentUserId);
+    }
+
+    db.query(query, params, (err, results) => {
+      if (err) {
+        console.error('获取热门帖子失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      
+      // 存入Redis缓存
+      redis.setAsync('popular:posts', JSON.stringify(results), 300).catch(err => {
+        console.error('缓存热门帖子失败:', err);
+      });
+      
+      res.status(200).json({ posts: results });
+    });
+  } catch (error) {
+    console.error('获取热门帖子出错:', error);
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
 module.exports = router;

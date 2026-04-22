@@ -1,4 +1,22 @@
-const { getAsync, setAsync, delAsync, client, CACHE_KEYS, CACHE_TTL } = require('../config/redis');
+let redisModule;
+let redisAvailable = false;
+
+try {
+  redisModule = require('../config/redis');
+  redisAvailable = true;
+} catch (error) {
+  console.warn('Redis模块加载失败，缓存功能将不可用:', error.message);
+  redisModule = {
+    getAsync: () => Promise.resolve(null),
+    setAsync: () => Promise.resolve(),
+    delAsync: () => Promise.resolve(),
+    client: null,
+    CACHE_KEYS: {},
+    CACHE_TTL: {}
+  };
+}
+
+const { getAsync, setAsync, delAsync, client, CACHE_KEYS, CACHE_TTL } = redisModule;
 
 /**
  * 缓存中间件 - 用于缓存API响应
@@ -8,6 +26,11 @@ const { getAsync, setAsync, delAsync, client, CACHE_KEYS, CACHE_TTL } = require(
  */
 const cacheMiddleware = (keyPrefix, ttl, keyGenerator = null) => {
   return async (req, res, next) => {
+    // 如果Redis不可用，直接跳过缓存
+    if (!redisAvailable) {
+      return next();
+    }
+
     try {
       // 生成缓存键
       let cacheKey;
@@ -52,6 +75,10 @@ const cacheMiddleware = (keyPrefix, ttl, keyGenerator = null) => {
  * @param {string} pattern - 缓存键模式（支持通配符）
  */
 const clearCache = async (pattern) => {
+  if (!redisAvailable || !client) {
+    return;
+  }
+  
   try {
     client.keys(pattern, (err, keys) => {
       if (err) {

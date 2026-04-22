@@ -536,8 +536,44 @@ function processScheduledNotifications() {
   );
 }
 
+// 定时更新热门帖子到Redis
+async function updatePopularPostsCache() {
+  try {
+    const query = `
+      SELECT p.*, u.username, u.avatar
+      FROM posts p
+      LEFT JOIN users u ON p.user_id = u.id
+      ORDER BY (p.like_count + p.comment_count) DESC, p.created_at DESC
+      LIMIT 10
+    `;
+    
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error('更新热门帖子缓存失败:', err);
+        return;
+      }
+      
+      // 将热门帖子存入Redis，设置10分钟过期
+      const redis = require('./config/redis');
+      redis.setAsync('popular:posts', JSON.stringify(results), 600)
+        .then(() => {
+          console.log(`[${new Date().toLocaleString()}] 热门帖子缓存已更新，共 ${results.length} 条`);
+        })
+        .catch(err => {
+          console.error('Redis缓存失败:', err);
+        });
+    });
+  } catch (error) {
+    console.error('更新热门帖子缓存出错:', error);
+  }
+}
+
 setInterval(processScheduledNotifications, 60000);
 processScheduledNotifications();
+
+// 每5分钟更新一次热门帖子缓存
+setInterval(updatePopularPostsCache, 5 * 60 * 1000);
+updatePopularPostsCache();
 
 server.listen(port, () => {
   console.log(`HTTP 服务已启动在端口 ${port}`);

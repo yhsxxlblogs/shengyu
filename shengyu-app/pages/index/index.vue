@@ -51,6 +51,63 @@
         </view>
       </view>
     </view>
+
+    <!-- 热门推荐区域 -->
+    <view class="recommend-section">
+      <view class="section-header">
+        <text class="section-title">热门推荐</text>
+        <view class="more-btn" @click="goCommunity">
+          <text class="more-text">更多</text>
+          <SvgIcon name="arrow-right" :size="24" class="more-icon" />
+        </view>
+      </view>
+
+      <!-- 加载状态 -->
+      <view v-if="popularLoading" class="loading">
+        <text>加载中...</text>
+      </view>
+
+      <!-- 推荐列表 -->
+      <view v-else class="recommend-list">
+        <view
+          v-for="(post, index) in popularPosts"
+          :key="post.id"
+          class="recommend-item"
+          @click="goPostDetail(post.id)"
+        >
+          <view class="recommend-rank" :class="{ 'rank-top': index < 3 }">{{ index + 1 }}</view>
+          <view class="recommend-content">
+            <text class="recommend-text">{{ post.content }}</text>
+            <view class="recommend-meta">
+              <view class="recommend-author">
+                <image v-if="post.avatar" :src="getAvatarUrl(post.avatar)" class="author-avatar" mode="aspectFill" />
+                <view v-else class="author-avatar-placeholder">
+                  <SvgIcon name="user" :size="24" />
+                </view>
+                <text class="author-name">{{ post.username }}</text>
+              </view>
+              <view class="recommend-stats">
+                <view class="stat-item">
+                  <SvgIcon name="heart" :size="20" class="stat-icon" />
+                  <text class="stat-num">{{ post.like_count || 0 }}</text>
+                </view>
+                <view class="stat-item">
+                  <SvgIcon name="message" :size="20" class="stat-icon" />
+                  <text class="stat-num">{{ post.comment_count || 0 }}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+          <image v-if="post.image_url" :src="getImageUrl(post.image_url)" class="recommend-image" mode="aspectFill" />
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view v-if="!popularLoading && popularPosts.length === 0" class="empty-state">
+        <SvgIcon name="info" :size="48" class="empty-icon" />
+        <text class="empty-text">暂无热门帖子</text>
+      </view>
+    </view>
     
     <!-- 通知弹窗 -->
     <view v-if="showNotification" class="notification-popup" @click="closeNotification">
@@ -109,7 +166,9 @@ export default {
         content: ''
       },
       dismissedNotifications: [],
-      unreadMessageCount: 0
+      unreadMessageCount: 0,
+      popularPosts: [],
+      popularLoading: false
     };
   },
 
@@ -118,14 +177,17 @@ export default {
     this.loadDismissedNotifications();
     this.checkNotifications();
     this.loadUnreadCount();
+    this.getPopularPosts();
   },
   onShow() {
     this.getPopularAnimals();
     this.checkNotifications();
     this.loadUnreadCount();
+    this.getPopularPosts();
   },
   onPullDownRefresh() {
     this.getPopularAnimals();
+    this.getPopularPosts();
     uni.stopPullDownRefresh();
   },
   methods: {
@@ -264,6 +326,45 @@ export default {
         }
       }
       this.showNotification = false;
+    },
+    // 获取热门帖子
+    async getPopularPosts() {
+      this.popularLoading = true;
+      try {
+        const token = uni.getStorageSync('token');
+        const res = await uni.request({
+          url: 'http://shengyu.supersyh.xyz/api/post/popular',
+          method: 'GET',
+          header: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (res.statusCode === 200 && res.data.posts) {
+          this.popularPosts = res.data.posts;
+        }
+      } catch (error) {
+        console.error('获取热门帖子失败:', error);
+      } finally {
+        this.popularLoading = false;
+      }
+    },
+    // 跳转到帖子详情
+    goPostDetail(postId) {
+      uni.navigateTo({ url: `/pages/post-detail/post-detail?id=${postId}` });
+    },
+    // 跳转到社区页面
+    goCommunity() {
+      uni.switchTab({ url: '/pages/community/community' });
+    },
+    // 获取图片URL
+    getImageUrl(url) {
+      if (!url) return '';
+      if (url.startsWith('http')) return url;
+      return `http://shengyu.supersyh.xyz${url}`;
+    },
+    // 获取头像URL
+    getAvatarUrl(url) {
+      if (!url) return '';
+      if (url.startsWith('http')) return url;
+      return `http://shengyu.supersyh.xyz${url}`;
     }
   }
 };
@@ -804,6 +905,189 @@ export default {
 
 .notification-btn-secondary .btn-text {
   color: #666666;
+}
+
+/* 推荐区域 */
+.recommend-section {
+  margin-top: 20rpx;
+  margin-bottom: 40rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.more-btn {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 8rpx 16rpx;
+  background: rgba(255, 154, 158, 0.1);
+  border-radius: 24rpx;
+  transition: all 0.3s ease;
+}
+
+.more-btn:active {
+  background: rgba(255, 154, 158, 0.2);
+  transform: scale(0.95);
+}
+
+.more-text {
+  font-size: 24rpx;
+  color: #FF6B9D;
+  font-weight: 500;
+}
+
+.more-icon {
+  color: #FF6B9D;
+}
+
+.recommend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.recommend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.recommend-item:active {
+  transform: translateY(-2rpx);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+}
+
+.recommend-rank {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 12rpx;
+  background: #F5F5F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: bold;
+  color: #888888;
+  flex-shrink: 0;
+}
+
+.recommend-rank.rank-top {
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+  color: #FFFFFF;
+}
+
+.recommend-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.recommend-text {
+  font-size: 28rpx;
+  color: #333333;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recommend-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recommend-author {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.author-avatar {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #F5F5F5;
+}
+
+.author-avatar-placeholder {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #F5F5F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #CCCCCC;
+}
+
+.author-name {
+  font-size: 22rpx;
+  color: #888888;
+}
+
+.recommend-stats {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.stat-icon {
+  color: #FF9A9E;
+}
+
+.stat-num {
+  font-size: 22rpx;
+  color: #888888;
+}
+
+.recommend-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+  background: #F5F5F5;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 0;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+}
+
+.empty-icon {
+  color: #CCCCCC;
+  margin-bottom: 16rpx;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #999999;
 }
 
 /* 更新弹窗 */
