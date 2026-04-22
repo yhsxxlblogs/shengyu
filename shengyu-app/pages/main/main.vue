@@ -992,6 +992,11 @@ export default {
       this.bannerCurrentIndex = e.detail.current
     },
 
+    // 轮播图过渡事件（空实现，消除警告）
+    onBannerTransition() {
+      // 过渡动画事件，无需处理
+    },
+
     // 轮播图位置计算
     getBannerPosition(index) {
       const current = this.bannerCurrentIndex

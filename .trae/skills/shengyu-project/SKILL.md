@@ -183,6 +183,7 @@ shengyu-backend/
 |------|------|------|
 | POST | /create | 发布帖子 |
 | GET | /list | 帖子列表 |
+| GET | /popular | 热门帖子（按点赞+评论排序，前10条） |
 | POST | /like/:post_id | 点赞/取消点赞 |
 | POST | /comment/:post_id | 发表评论 |
 | GET | /comments/:post_id | 获取评论 |
@@ -239,6 +240,7 @@ ws://106.14.248.12:3001?token={JWT_TOKEN}&userId={USER_ID}
 |--------|----------|------|
 | posts:list:* | 5分钟 | 帖子列表 |
 | post:detail:* | 5分钟 | 帖子详情 |
+| popular:posts | 10分钟 | 热门帖子（每5分钟自动更新） |
 | popular:sounds | 10分钟 | 热门声音 |
 | sounds:animal:* | 5分钟 | 分类声音 |
 | follow:stats:* | 10分钟 | 关注统计 |
@@ -305,6 +307,7 @@ ws://106.14.248.12:3001?token={JWT_TOKEN}&userId={USER_ID}
 4. 数据库读写分离
 5. API限流防刷
 6. 单元测试覆盖
+7. 热门帖子算法优化（考虑时间衰减因子）
 
 ## 文档资源
 
