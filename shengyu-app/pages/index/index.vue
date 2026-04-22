@@ -540,7 +540,7 @@ export default {
 }
 
 .icon {
-  font-size: 36rpx;
+  font-size: 52rpx;
   transition: transform 0.3s ease;
 }
 

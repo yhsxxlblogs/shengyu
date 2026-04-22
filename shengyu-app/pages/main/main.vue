@@ -32,13 +32,15 @@
                 class="banner-swiper"
                 :current="bannerCurrentIndex"
                 @change="onBannerChange"
-                :autoplay="bannerList.length > 1"
+                @touchstart="onBannerTouchStart"
+                @touchend="onBannerTouchEnd"
+                :autoplay="bannerList.length > 1 && !isUserInteracting"
                 :interval="4000"
-                :duration="400"
+                :duration="350"
                 :circular="bannerList.length > 1"
                 :indicator-dots="false"
-                previous-margin="40rpx"
-                next-margin="40rpx"
+                previous-margin="20rpx"
+                next-margin="20rpx"
                 display-multiple-items="1"
               >
                 <swiper-item
@@ -477,6 +479,8 @@ export default {
       bannerList: [],
       bannerCurrentIndex: 0,
       bannerLoading: false,
+      isUserInteracting: false,
+      userInteractionTimer: null,
 
       // 社区数据
       posts: [],
@@ -931,7 +935,24 @@ export default {
     onBannerChange(e) {
       this.bannerCurrentIndex = e.detail.current
     },
-    
+
+    // 轮播图触摸开始 - 用户交互时暂停自动播放
+    onBannerTouchStart() {
+      this.isUserInteracting = true
+      // 清除之前的定时器
+      if (this.userInteractionTimer) {
+        clearTimeout(this.userInteractionTimer)
+      }
+    },
+
+    // 轮播图触摸结束 - 延迟恢复自动播放
+    onBannerTouchEnd() {
+      // 2秒后恢复自动播放
+      this.userInteractionTimer = setTimeout(() => {
+        this.isUserInteracting = false
+      }, 2000)
+    },
+
     // 轮播图图片加载失败
     onBannerImageError(index) {
       console.error(`轮播图${index + 1}图片加载失败，URL: ${this.bannerList[index]?.fullImageUrl}`)
@@ -1909,8 +1930,9 @@ export default {
   align-items: center;
   justify-content: center;
   margin-bottom: 8rpx;
-  font-size: 36rpx;
+  font-size: 52rpx;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
 
 .animal-name {
