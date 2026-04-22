@@ -1981,7 +1981,7 @@ export default {
 .animal-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12rpx;
+  gap: 8rpx;
 }
 
 .animal-item {
@@ -1989,39 +1989,39 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12rpx 8rpx;
+  padding: 8rpx 4rpx;
   background: transparent;
-  border-radius: 16rpx;
+  border-radius: 12rpx;
   aspect-ratio: 1;
 }
 
 .animal-icon {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: 16rpx;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 14rpx;
   background: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8rpx;
-  font-size: 52rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  margin-bottom: 6rpx;
+  font-size: 48rpx;
+  box-shadow: 0 3rpx 10rpx rgba(0, 0, 0, 0.06);
   overflow: hidden;
 }
 
 .animal-name {
-  font-size: 20rpx;
+  font-size: 18rpx;
   color: #555555;
 }
 
 .popular-section, .other-section, .category-section {
-  margin-bottom: 40rpx;
+  margin-bottom: 24rpx;
 }
 
 /* 推荐区域 */
 .recommend-section {
-  margin-top: 24rpx;
-  margin-bottom: 32rpx;
+  margin-top: 40rpx;
+  margin-bottom: 40rpx;
 }
 
 .section-header {
@@ -2059,7 +2059,7 @@ export default {
 .recommend-list {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
 .recommend-item {
