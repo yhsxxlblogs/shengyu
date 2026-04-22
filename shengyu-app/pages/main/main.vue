@@ -26,7 +26,7 @@
               </view>
             </view>
 
-            <!-- 轮播图区域 -->
+            <!-- 轮播图区域 - 层叠卡片式 -->
             <view class="banner-section" v-if="bannerList.length > 0">
               <swiper
                 class="banner-swiper"
@@ -34,28 +34,40 @@
                 @change="onBannerChange"
                 :autoplay="bannerList.length > 1"
                 :interval="4000"
-                :duration="300"
+                :duration="500"
                 :circular="bannerList.length > 1"
                 :indicator-dots="false"
+                previous-margin="60rpx"
+                next-margin="60rpx"
+                display-multiple-items="1"
               >
                 <swiper-item
                   v-for="(banner, index) in bannerList"
                   :key="banner.id"
-                  class="banner-item"
+                  class="banner-item-wrapper"
                   @click="handleBannerClick(banner)"
                 >
-                  <image
-                    v-if="banner.fullImageUrl"
-                    :src="banner.fullImageUrl"
-                    class="banner-image"
-                    mode="aspectFill"
-                    @error="onBannerImageError(index)"
-                  />
-                  <view v-else class="banner-placeholder">
-                    <text class="placeholder-text">{{ banner.title || '轮播图 ' + (index + 1) }}</text>
-                  </view>
-                  <view v-if="banner.title" class="banner-title-wrapper">
-                    <text class="banner-title">{{ banner.title }}</text>
+                  <view 
+                    class="banner-card"
+                    :class="{ 
+                      'banner-active': bannerCurrentIndex === index,
+                      'banner-prev': bannerCurrentIndex === index + 1 || (bannerCurrentIndex === 0 && index === bannerList.length - 1),
+                      'banner-next': bannerCurrentIndex === index - 1 || (bannerCurrentIndex === bannerList.length - 1 && index === 0)
+                    }"
+                  >
+                    <image
+                      v-if="banner.fullImageUrl"
+                      :src="banner.fullImageUrl"
+                      class="banner-image"
+                      mode="aspectFill"
+                      @error="onBannerImageError(index)"
+                    />
+                    <view v-else class="banner-placeholder">
+                      <text class="placeholder-text">{{ banner.title || '轮播图 ' + (index + 1) }}</text>
+                    </view>
+                    <view v-if="banner.title" class="banner-title-wrapper">
+                      <text class="banner-title">{{ banner.title }}</text>
+                    </view>
                   </view>
                 </swiper-item>
               </swiper>
@@ -66,6 +78,7 @@
                   :key="index"
                   class="indicator-dot"
                   :class="{ active: bannerCurrentIndex === index }"
+                  @click="bannerCurrentIndex = index"
                 ></view>
               </view>
             </view>
@@ -1736,54 +1749,60 @@ export default {
   color: #FFFFFF;
 }
 
-/* 轮播图样式 - 3D立体效果 */
+/* 轮播图样式 - 层叠卡片式 */
 .banner-section {
-  margin: 30rpx 16rpx 40rpx;
-  border-radius: 20rpx;
-  overflow: visible;
+  margin: 30rpx 0 50rpx;
   position: relative;
-  perspective: 1000rpx;
 }
 
 .banner-swiper {
-  height: 340rpx;
-  border-radius: 20rpx;
+  height: 360rpx;
   overflow: visible;
 }
 
-.banner-swiper swiper-item {
+.banner-item-wrapper {
   width: 100%;
   height: 100%;
-  padding: 0 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0 10rpx;
 }
 
-.banner-item {
+.banner-card {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   overflow: hidden;
   background: #FFFFFF;
-  box-shadow: 
-    0 10rpx 40rpx rgba(0, 0, 0, 0.15),
-    0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-  transform-style: preserve-3d;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+  transform: scale(0.85);
+  opacity: 0.6;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.banner-swiper swiper-item.swiper-item-active .banner-item {
-  transform: scale(1.02) translateZ(20rpx);
+.banner-card.banner-active {
+  transform: scale(1);
+  opacity: 1;
   box-shadow: 
-    0 20rpx 60rpx rgba(0, 0, 0, 0.2),
-    0 8rpx 20rpx rgba(0, 0, 0, 0.1);
+    0 20rpx 60rpx rgba(0, 0, 0, 0.25),
+    0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.banner-card.banner-prev,
+.banner-card.banner-next {
+  transform: scale(0.9);
+  opacity: 0.8;
+  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.15);
 }
 
 .banner-image {
   width: 100%;
   height: 100%;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   object-fit: cover;
 }
 
@@ -1796,7 +1815,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
 }
 
 @keyframes gradient-shift {
@@ -1818,7 +1837,7 @@ export default {
   right: 0;
   padding: 50rpx 30rpx 30rpx;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, transparent 100%);
-  border-radius: 0 0 20rpx 20rpx;
+  border-radius: 0 0 24rpx 24rpx;
 }
 
 .banner-title {
@@ -1830,17 +1849,10 @@ export default {
 }
 
 .banner-indicators {
-  position: absolute;
-  bottom: -30rpx;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
-  gap: 16rpx;
-  z-index: 10;
-  padding: 10rpx 20rpx;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 20rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  gap: 12rpx;
+  margin-top: 20rpx;
 }
 
 .indicator-dot {
