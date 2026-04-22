@@ -1736,47 +1736,73 @@ export default {
   color: #FFFFFF;
 }
 
-/* 轮播图样式 */
+/* 轮播图样式 - 3D立体效果 */
 .banner-section {
-  margin: 30rpx 0 40rpx;
-  border-radius: 24rpx;
-  overflow: hidden;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  margin: 30rpx 16rpx 40rpx;
+  border-radius: 20rpx;
+  overflow: visible;
   position: relative;
+  perspective: 1000rpx;
 }
 
 .banner-swiper {
-  height: 320rpx;
-  border-radius: 24rpx;
+  height: 340rpx;
+  border-radius: 20rpx;
+  overflow: visible;
 }
 
 .banner-swiper swiper-item {
   width: 100%;
   height: 100%;
+  padding: 0 8rpx;
+  box-sizing: border-box;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .banner-item {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
   overflow: hidden;
+  background: #FFFFFF;
+  box-shadow: 
+    0 10rpx 40rpx rgba(0, 0, 0, 0.15),
+    0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.banner-swiper swiper-item.swiper-item-active .banner-item {
+  transform: scale(1.02) translateZ(20rpx);
+  box-shadow: 
+    0 20rpx 60rpx rgba(0, 0, 0, 0.2),
+    0 8rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
 .banner-image {
   width: 100%;
   height: 100%;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
+  object-fit: cover;
 }
 
 .banner-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #FFE5E8 0%, #FFF0F3 100%);
+  background: linear-gradient(135deg, #FFE5E8 0%, #FFF0F3 50%, #FFE5E8 100%);
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24rpx;
+  border-radius: 20rpx;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .placeholder-text {
@@ -1790,40 +1816,45 @@ export default {
   left: 0;
   bottom: 0;
   right: 0;
-  padding: 40rpx 30rpx 30rpx;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
-  border-radius: 0 0 24rpx 24rpx;
+  padding: 50rpx 30rpx 30rpx;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, transparent 100%);
+  border-radius: 0 0 20rpx 20rpx;
 }
 
 .banner-title {
   font-size: 32rpx;
   color: #FFFFFF;
   font-weight: 600;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
+  letter-spacing: 1rpx;
 }
 
 .banner-indicators {
   position: absolute;
-  bottom: 20rpx;
+  bottom: -30rpx;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 12rpx;
+  gap: 16rpx;
   z-index: 10;
+  padding: 10rpx 20rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
 .indicator-dot {
-  width: 16rpx;
-  height: 16rpx;
+  width: 8rpx;
+  height: 8rpx;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.5);
-  transition: all 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .indicator-dot.active {
-  background-color: #FF6B9D;
-  width: 32rpx;
-  border-radius: 8rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FF6B9D 100%);
+  width: 24rpx;
+  border-radius: 4rpx;
 }
 
 .section-title {
@@ -1852,8 +1883,8 @@ export default {
 }
 
 .animal-icon {
-  width: 88rpx;
-  height: 88rpx;
+  width: 96rpx;
+  height: 96rpx;
   border-radius: 16rpx;
   background: #FFFFFF;
   display: flex;

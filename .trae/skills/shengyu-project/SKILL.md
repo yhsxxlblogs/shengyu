@@ -74,11 +74,13 @@ shengyu-app/
 │   ├── chat/                  # 聊天页面
 │   ├── follows/               # 关注/粉丝列表
 │   ├── user-profile/          # 用户主页
+│   ├── scan/                  # 二维码扫描页
 │   └── about/                 # 关于我们
 ├── components/                # 公共组件
 │   ├── custom-tabbar/         # 自定义TabBar
 │   ├── cute-modal/            # 模态框组件
-│   └── cute-toast/            # Toast组件
+│   ├── cute-toast/            # Toast组件
+│   └── SvgIcon/               # SVG图标组件
 ├── utils/                     # 工具函数
 │   ├── api.js                 # API接口配置
 │   └── websocket.js           # WebSocket封装

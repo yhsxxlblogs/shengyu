@@ -522,8 +522,8 @@ export default {
 
 /* 动物图标 - 白色背景 */
 .animal-icon {
-  width: 88rpx;
-  height: 88rpx;
+  width: 96rpx;
+  height: 96rpx;
   border-radius: 16rpx;
   background: #FFFFFF;
   display: flex;
