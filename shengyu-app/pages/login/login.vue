@@ -208,13 +208,8 @@ export default {
       uni.showToast({ title: '功能开发中', icon: 'none' });
     },
     async wechatLogin() {
-      const { wechatAuth } = await import('@/utils/wechat-auth.js');
-      await wechatAuth.init();
-      const result = await wechatAuth.login();
-
-      if (result.success) {
-        uni.reLaunch({ url: '/pages/main/main' });
-      }
+      // 微信登录功能开发中
+      uni.showToast({ title: '微信登录功能开发中', icon: 'none' });
     },
     async loadFollowingList(token) {
       try {
