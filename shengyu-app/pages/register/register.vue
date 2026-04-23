@@ -12,21 +12,21 @@
       <view class="form-section">
         <view class="form-item">
           <view class="input-wrapper">
-            <text class="input-icon">👤</text>
+            <SvgIcon name="user" :size="36" class="input-icon-svg" />
             <input type="text" v-model="form.username" placeholder="请输入用户名" class="input" />
           </view>
         </view>
         <view class="form-item">
           <view class="input-wrapper">
-            <text class="input-icon">📧</text>
+            <SvgIcon name="email" :size="36" class="input-icon-svg" />
             <input type="email" v-model="form.email" placeholder="请输入邮箱" class="input" />
           </view>
         </view>
         <view class="form-item">
           <view class="input-wrapper">
-            <text class="input-icon">🔒</text>
+            <SvgIcon name="lock" :size="36" class="input-icon-svg" />
             <input :type="showPassword ? 'text' : 'password'" v-model="form.password" placeholder="请输入密码" class="input" />
-            <text class="toggle-password" @click="showPassword = !showPassword">{{ showPassword ? '👁️' : '👁️‍🗨️' }}</text>
+            <SvgIcon :name="showPassword ? 'eye' : 'eye-off'" :size="32" class="toggle-password" @click="showPassword = !showPassword" />
           </view>
         </view>
         <button class="register-btn" @click="register" :disabled="loading" :class="{ 'btn-loading': loading }">
@@ -222,9 +222,9 @@ export default {
   transform: translateY(-2rpx);
 }
 
-.input-icon {
-  font-size: 36rpx;
+.input-icon-svg {
   margin-right: 20rpx;
+  color: #999;
 }
 
 .input {
@@ -235,10 +235,10 @@ export default {
 }
 
 .toggle-password {
-  font-size: 32rpx;
   padding: 10rpx;
   cursor: pointer;
   transition: all 0.3s ease;
+  color: #999;
 }
 
 .toggle-password:active {

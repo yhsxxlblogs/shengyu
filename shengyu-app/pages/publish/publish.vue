@@ -7,33 +7,33 @@
       <text class="section-title">选择已录制的音频</text>
       <scroll-view class="sounds-scroll" scroll-x="true">
         <view class="sound-item" v-for="(sound, index) in mySounds" :key="index" :class="{ 'sound-selected': selectedSoundIndex === index }" @click="selectSound(index)">
-          <text class="sound-icon">🎵</text>
+          <SvgIcon name="music" :size="40" class="sound-icon-svg" />
           <text class="sound-name">{{ sound.name }}</text>
         </view>
       </scroll-view>
     </view>
-    
+
     <view class="upload-section">
       <view class="upload-item" @click="chooseImage">
-        <text class="upload-icon">📷</text>
+        <SvgIcon name="camera" :size="48" class="upload-icon-svg" />
         <text class="upload-text">上传图片</text>
       </view>
       <view class="upload-item" @click="chooseSound">
-        <text class="upload-icon">🎤</text>
+        <SvgIcon name="microphone" :size="48" class="upload-icon-svg" />
         <text class="upload-text">录制音频</text>
       </view>
       <view class="upload-item" @click="chooseLocalSound">
-        <text class="upload-icon">📁</text>
+        <SvgIcon name="folder" :size="48" class="upload-icon-svg" />
         <text class="upload-text">选择本地</text>
       </view>
     </view>
-    
+
     <view class="preview-section" v-if="imageUrl || soundUrl">
       <image v-if="imageUrl" :src="imageUrl" class="preview-image" mode="aspectFit" @click="previewImage"></image>
       <view v-if="soundUrl" class="audio-container" @click="playSound(soundUrl)">
-        <text class="audio-icon">🎵</text>
+        <SvgIcon name="play" :size="40" class="audio-icon-svg" />
         <text class="audio-text">点击播放声音</text>
-        <text class="audio-remove" @click.stop="removeSound">✕</text>
+        <SvgIcon name="close" :size="32" class="audio-remove" @click.stop="removeSound" />
       </view>
     </view>
     
@@ -255,9 +255,9 @@ export default {
   box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.15);
 }
 
-.sound-icon {
-  font-size: 48rpx;
+.sound-icon-svg {
   margin-bottom: 8rpx;
+  color: #FF9A9E;
 }
 
 .sound-name {
@@ -293,9 +293,9 @@ export default {
   box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.12);
 }
 
-.upload-icon {
-  font-size: 52rpx;
+.upload-icon-svg {
   margin-bottom: 16rpx;
+  color: #FF9A9E;
 }
 
 .upload-text {
@@ -333,9 +333,9 @@ export default {
   position: relative;
 }
 
-.audio-icon {
-  font-size: 36rpx;
+.audio-icon-svg {
   margin-right: 16rpx;
+  color: #FF9A9E;
 }
 
 .audio-text {
@@ -345,7 +345,6 @@ export default {
 }
 
 .audio-remove {
-  font-size: 36rpx;
   color: #999999;
   padding: 10rpx;
   transition: all 0.3s ease;

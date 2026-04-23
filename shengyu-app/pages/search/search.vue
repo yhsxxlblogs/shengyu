@@ -5,9 +5,9 @@
       <button class="search-btn" @click="search" :loading="loading">搜索</button>
     </view>
     
-    <!-- 实时🔍结果 -->
+    <!-- 实时搜索结果 -->
     <view class="realtime-results" v-if="showRealtime">
-      <!-- 动物类型🔍结果 -->
+      <!-- 动物类型搜索结果 -->
       <view class="result-section" v-if="realtimeResults.animalTypes.length > 0">
         <text class="section-title">动物类型</text>
         <view class="result-item animal-item" v-for="animal in realtimeResults.animalTypes" :key="animal.id" @click="goSoundDetail(animal.type)">
@@ -16,7 +16,7 @@
             <text class="result-name">{{ animal.name }}</text>
             <text class="result-desc">{{ animal.description || '动物类型' }}</text>
           </view>
-          <text class="arrow">›</text>
+          <SvgIcon name="arrow-right" :size="28" class="arrow-svg" />
         </view>
       </view>
       
@@ -30,22 +30,22 @@
             <text class="result-name">{{ user.username }}</text>
             <text class="result-desc">用户</text>
           </view>
-          <text class="arrow">›</text>
+          <SvgIcon name="arrow-right" :size="28" class="arrow-svg" />
         </view>
       </view>
-      
+
       <view class="result-section" v-if="realtimeResults.posts.length > 0">
         <text class="section-title">帖子</text>
         <view class="result-item post-item" v-for="post in realtimeResults.posts" :key="post.id" @click="goPostDetail(post.id)">
-          <text class="result-icon">📝</text>
+          <SvgIcon name="file" :size="36" class="result-icon-svg" />
           <view class="result-info">
             <text class="result-name">{{ post.content.substring(0, 20) }}{{ post.content.length > 20 ? '...' : '' }}</text>
             <text class="result-desc">来自 {{ post.username }}</text>
           </view>
-          <text class="arrow">›</text>
+          <SvgIcon name="arrow-right" :size="28" class="arrow-svg" />
         </view>
       </view>
-      
+
       <view class="result-section" v-if="realtimeResults.sounds.length > 0">
         <text class="section-title">音频</text>
         <view class="result-item sound-item" v-for="sound in realtimeResults.sounds" :key="sound.id" @click="goSoundDetail(sound.animal_type)">
@@ -54,21 +54,21 @@
             <text class="result-name">{{ getAnimalName(sound.animal_type) }}</text>
             <text class="result-desc">{{ sound.emotion }}</text>
           </view>
-          <text class="arrow">›</text>
+          <SvgIcon name="arrow-right" :size="28" class="arrow-svg" />
         </view>
       </view>
-      
-      <!-- 无🔍结果提示 -->
+
+      <!-- 无搜索结果提示 -->
       <view class="no-result" v-if="realtimeResults.animalTypes.length === 0 && realtimeResults.users.length === 0 && realtimeResults.posts.length === 0 && realtimeResults.sounds.length === 0 && keyword.trim()">
-        <text class="no-result-icon">🔍</text>
+        <SvgIcon name="search" :size="80" class="no-result-icon-svg" />
         <text class="no-result-text">没有找到相关结果</text>
-        <text class="no-result-tip">试试🔍其他关键词</text>
+        <text class="no-result-tip">试试搜索其他关键词</text>
       </view>
     </view>
-    
-    <!-- 🔍结果 -->
+
+    <!-- 搜索结果 -->
     <view class="search-results" v-if="showResults">
-      <!-- 动物类型🔍结果 -->
+      <!-- 动物类型搜索结果 -->
       <view class="result-section" v-if="results.animalTypes.length > 0">
         <text class="section-title">动物类型</text>
         <view class="result-item animal-item" v-for="animal in results.animalTypes" :key="animal.id" @click="goSoundDetail(animal.type)">
@@ -77,10 +77,10 @@
             <text class="result-name">{{ animal.name }}</text>
             <text class="result-desc">{{ animal.description || '动物类型' }}</text>
           </view>
-          <text class="arrow">›</text>
+          <SvgIcon name="arrow-right" :size="28" class="arrow-svg" />
         </view>
       </view>
-      
+
       <view class="result-section" v-if="results.users.length > 0">
         <text class="section-title">用户</text>
         <view class="result-item user-item" v-for="user in results.users" :key="user.id" @click="goUserProfile(user.id)">
@@ -91,19 +91,19 @@
             <text class="result-name">{{ user.username }}</text>
             <text class="result-desc">用户</text>
           </view>
-          <text class="arrow">›</text>
+          <SvgIcon name="arrow-right" :size="28" class="arrow-svg" />
         </view>
       </view>
-      
+
       <view class="result-section" v-if="results.posts.length > 0">
         <text class="section-title">帖子</text>
         <view class="result-item post-item" v-for="post in results.posts" :key="post.id" @click="goPostDetail(post.id)">
-          <text class="result-icon">📝</text>
+          <SvgIcon name="file" :size="36" class="result-icon-svg" />
           <view class="result-info">
             <text class="result-name">{{ post.content.substring(0, 20) }}{{ post.content.length > 20 ? '...' : '' }}</text>
             <text class="result-desc">来自 {{ post.username }}</text>
           </view>
-          <text class="arrow">›</text>
+          <SvgIcon name="arrow-right" :size="28" class="arrow-svg" />
         </view>
       </view>
       
@@ -115,15 +115,15 @@
             <text class="result-name">{{ getAnimalName(sound.animal_type) }}</text>
             <text class="result-desc">{{ sound.emotion }}</text>
           </view>
-          <text class="arrow">›</text>
+          <SvgIcon name="arrow-right" :size="28" class="arrow-svg" />
         </view>
       </view>
-      
-      <!-- 无🔍结果提示 -->
+
+      <!-- 无搜索结果提示 -->
       <view class="no-result" v-if="results.animalTypes.length === 0 && results.users.length === 0 && results.posts.length === 0 && results.sounds.length === 0">
-        <text class="no-result-icon">🔍</text>
+        <SvgIcon name="search" :size="80" class="no-result-icon-svg" />
         <text class="no-result-text">没有找到相关结果</text>
-        <text class="no-result-tip">试试🔍其他关键词</text>
+        <text class="no-result-tip">试试搜索其他关键词</text>
       </view>
     </view>
   </view>
@@ -473,24 +473,36 @@ export default {
   margin-right: 20rpx;
 }
 
+.result-icon-svg {
+  margin-right: 20rpx;
+  color: #FF9A9E;
+}
+
 .result-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .result-name {
-  font-size: 28rpx;
-  font-weight: bold;
-  color: #333333;
-  margin-bottom: 5rpx;
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 6rpx;
 }
 
 .result-desc {
   font-size: 24rpx;
-  color: #666666;
+  color: #999;
 }
 
 .arrow {
   font-size: 32rpx;
+  color: #CCCCCC;
+  margin-left: 10rpx;
+}
+
+.arrow-svg {
   color: #CCCCCC;
   margin-left: 10rpx;
 }
@@ -521,6 +533,12 @@ export default {
 .no-result-icon {
   font-size: 100rpx;
   margin-bottom: 24rpx;
+  animation: float 3s ease-in-out infinite;
+}
+
+.no-result-icon-svg {
+  margin-bottom: 24rpx;
+  color: #ddd;
   animation: float 3s ease-in-out infinite;
 }
 

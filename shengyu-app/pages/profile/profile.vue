@@ -41,7 +41,7 @@
               <text class="user-email">{{ user.email || '' }}</text>
             </view>
             <view class="edit-icon" @click="changeAvatar">
-              <text class="edit-emoji">📷</text>
+              <SvgIcon name="camera" :size="28" class="edit-icon-svg" />
             </view>
           </view>
           
@@ -81,62 +81,62 @@
           
           <view class="menu-item" @click="myPosts">
             <view class="menu-icon-wrapper">
-              <text class="menu-icon">📝</text>
+              <SvgIcon name="file" :size="32" class="menu-icon-svg" />
             </view>
             <text class="menu-text">我的帖子</text>
-            <text class="menu-arrow">›</text>
+            <SvgIcon name="arrow-right" :size="28" class="menu-arrow-svg" />
           </view>
-          
+
           <view class="menu-item" @click="mySounds">
-            <view class="menu-icon-wrapper">
-              <text class="menu-icon">🎵</text>
+            <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+              <SvgIcon name="music" :size="32" class="menu-icon-svg" />
             </view>
             <text class="menu-text">我的声音</text>
-            <text class="menu-arrow">›</text>
+            <SvgIcon name="arrow-right" :size="28" class="menu-arrow-svg" />
           </view>
-          
+
           <view class="menu-item" @click="myLikes">
-            <view class="menu-icon-wrapper">
-              <text class="menu-icon">♥</text>
+            <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+              <SvgIcon name="heart" :size="32" class="menu-icon-svg" />
             </view>
             <text class="menu-text">我的点赞</text>
-            <text class="menu-arrow">›</text>
+            <SvgIcon name="arrow-right" :size="28" class="menu-arrow-svg" />
           </view>
-          
+
           <view class="menu-item" @click="goToFollows">
             <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-              <text class="menu-icon">👥</text>
+              <SvgIcon name="users" :size="32" class="menu-icon-svg" />
             </view>
             <text class="menu-text">我的关注</text>
-            <text class="menu-arrow">›</text>
+            <SvgIcon name="arrow-right" :size="28" class="menu-arrow-svg" />
           </view>
-          
+
           <view class="menu-item" @click="goToFollowers">
             <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-              <text class="menu-icon">🌟</text>
+              <SvgIcon name="star" :size="32" class="menu-icon-svg" />
             </view>
             <text class="menu-text">我的粉丝</text>
-            <text class="menu-arrow">›</text>
+            <SvgIcon name="arrow-right" :size="28" class="menu-arrow-svg" />
           </view>
         </view>
-        
+
         <view class="menu-section">
           <text class="menu-title">设置与帮助</text>
-          
+
           <view class="menu-item" @click="settings">
             <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-              <text class="menu-icon">⚙️</text>
+              <SvgIcon name="settings" :size="32" class="menu-icon-svg" />
             </view>
             <text class="menu-text">设置</text>
-            <text class="menu-arrow">›</text>
+            <SvgIcon name="arrow-right" :size="28" class="menu-arrow-svg" />
           </view>
-          
+
           <view class="menu-item" @click="about">
             <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-              <text class="menu-icon">ℹ️</text>
+              <SvgIcon name="info" :size="32" class="menu-icon-svg" />
             </view>
             <text class="menu-text">关于我们</text>
-            <text class="menu-arrow">›</text>
+            <SvgIcon name="arrow-right" :size="28" class="menu-arrow-svg" />
           </view>
         </view>
         
@@ -648,8 +648,8 @@ export default {
   justify-content: center;
 }
 
-.edit-emoji {
-  font-size: 32rpx;
+.edit-icon-svg {
+  color: #fff;
 }
 
 .stats-row {
@@ -767,25 +767,23 @@ export default {
   box-shadow: 0 6rpx 16rpx rgba(255, 154, 158, 0.3);
 }
 
-.menu-icon {
-  font-size: 36rpx;
+.menu-icon-svg {
+  color: #fff;
 }
 
 .menu-text {
   flex: 1;
   font-size: 28rpx;
-  color: #444;
+  color: #333;
   font-weight: 500;
 }
 
-.menu-arrow {
-  font-size: 32rpx;
+.menu-arrow-svg {
   color: #ccc;
-  font-weight: 300;
   transition: all 0.3s ease;
 }
 
-.menu-item:active .menu-arrow {
+.menu-item:active .menu-arrow-svg {
   transform: translateX(4rpx);
   color: #FF9A9E;
 }
