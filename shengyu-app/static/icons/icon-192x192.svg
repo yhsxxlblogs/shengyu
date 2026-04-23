@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="grad192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9A9E"/>
+      <stop offset="50%" style="stop-color:#FECFEF"/>
+      <stop offset="100%" style="stop-color:#FF9A9E"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="44" fill="url(#grad192)"/>
+  <!-- 爪印 -->
+  <ellipse cx="96" cy="112" rx="32" ry="26" fill="white"/>
+  <ellipse cx="64" cy="74" rx="13" ry="16" fill="white"/>
+  <ellipse cx="96" cy="64" rx="13" ry="16" fill="white"/>
+  <ellipse cx="128" cy="74" rx="13" ry="16" fill="white"/>
+  <ellipse cx="54" cy="106" rx="10" ry="13" fill="white"/>
+  <ellipse cx="138" cy="106" rx="10" ry="13" fill="white"/>
+</svg>
