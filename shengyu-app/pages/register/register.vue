@@ -9,13 +9,19 @@
         <text class="app-title">声愈</text>
         <text class="app-subtitle">发现身边的美好声音</text>
       </view>
-      
+
       <!-- 表单区域 -->
       <view class="form-section">
         <view class="form-item">
           <view class="input-wrapper">
-            <view class="input-icon">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+            <view class="input-icon gradient-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="url(#gradient1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <defs>
+                  <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#FF9A9E"/>
+                    <stop offset="100%" style="stop-color:#FF6B9D"/>
+                  </linearGradient>
+                </defs>
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
@@ -29,11 +35,17 @@
             />
           </view>
         </view>
-        
+
         <view class="form-item">
           <view class="input-wrapper">
-            <view class="input-icon">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+            <view class="input-icon gradient-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="url(#gradient2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <defs>
+                  <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#FF9A9E"/>
+                    <stop offset="100%" style="stop-color:#FF6B9D"/>
+                  </linearGradient>
+                </defs>
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <polyline points="22,6 12,13 2,6"/>
               </svg>
@@ -47,11 +59,17 @@
             />
           </view>
         </view>
-        
+
         <view class="form-item">
           <view class="input-wrapper">
-            <view class="input-icon">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+            <view class="input-icon gradient-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="url(#gradient3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <defs>
+                  <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#FF9A9E"/>
+                    <stop offset="100%" style="stop-color:#FF6B9D"/>
+                  </linearGradient>
+                </defs>
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
@@ -75,7 +93,7 @@
             </view>
           </view>
         </view>
-        
+
         <button 
           class="register-btn" 
           @click="register" 
@@ -89,7 +107,7 @@
           </view>
         </button>
       </view>
-      
+
       <!-- 底部区域 -->
       <view class="footer-section">
         <text class="footer-text">已有账号？</text>
@@ -176,7 +194,7 @@ export default {
 <style scoped>
 .register-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #FFF5F7 0%, #FFFFFF 100%);
+  background: linear-gradient(180deg, #FFF0F5 0%, #FFF8FA 50%, #FFFFFF 100%);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -188,7 +206,7 @@ export default {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 640rpx;
+  max-width: 600rpx;
 }
 
 /* 头部区域 */
@@ -196,47 +214,50 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 60rpx;
+  margin-bottom: 50rpx;
 }
 
 .app-icon {
-  width: 160rpx;
-  height: 160rpx;
-  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
-  border-radius: 40rpx;
+  width: 140rpx;
+  height: 140rpx;
+  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 50%, #FFD1DC 100%);
+  border-radius: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12rpx 40rpx rgba(255, 182, 193, 0.3);
-  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(255, 182, 193, 0.4);
+  margin-bottom: 24rpx;
   overflow: hidden;
 }
 
 .app-logo {
-  width: 120rpx;
-  height: 120rpx;
+  width: 100rpx;
+  height: 100rpx;
 }
 
 .app-title {
-  font-size: 48rpx;
+  font-size: 44rpx;
   font-weight: 700;
-  color: #FF6B9D;
-  margin-bottom: 12rpx;
-  letter-spacing: 4rpx;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8rpx;
+  letter-spacing: 2rpx;
 }
 
 .app-subtitle {
-  font-size: 28rpx;
-  color: #999;
+  font-size: 26rpx;
+  color: #AAA;
 }
 
 /* 表单区域 */
 .form-section {
-  margin-bottom: 40rpx;
+  margin-bottom: 30rpx;
 }
 
 .form-item {
-  margin-bottom: 24rpx;
+  margin-bottom: 20rpx;
 }
 
 .input-wrapper {
@@ -244,22 +265,26 @@ export default {
   align-items: center;
   background: #FFFFFF;
   border-radius: 16rpx;
-  padding: 0 28rpx;
-  height: 96rpx;
-  border: 2rpx solid #F0F0F0;
+  padding: 0 24rpx;
+  height: 90rpx;
+  border: 2rpx solid #F5F5F5;
   transition: all 0.3s ease;
 }
 
 .input-wrapper:focus-within {
   border-color: #FFB6C1;
-  box-shadow: 0 4rpx 16rpx rgba(255, 182, 193, 0.15);
+  box-shadow: 0 4rpx 20rpx rgba(255, 182, 193, 0.2);
 }
 
 .input-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 20rpx;
+  margin-right: 16rpx;
+}
+
+.gradient-icon {
+  filter: drop-shadow(0 2rpx 4rpx rgba(255, 107, 157, 0.2));
 }
 
 .input {
@@ -270,38 +295,38 @@ export default {
 }
 
 .input-placeholder {
-  color: #BBB;
+  color: #CCC;
 }
 
 .toggle-password {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16rpx;
-  margin-right: -16rpx;
+  padding: 20rpx;
+  margin-right: -20rpx;
 }
 
 /* 注册按钮 */
 .register-btn {
   width: 100%;
-  height: 96rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FFB6C1 100%);
+  height: 90rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FF6B9D 100%);
   color: #fff;
-  border-radius: 48rpx;
+  border-radius: 45rpx;
   font-size: 32rpx;
   font-weight: 600;
-  box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.35);
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   transition: all 0.3s ease;
-  margin-top: 16rpx;
+  margin-top: 10rpx;
 }
 
 .register-btn:active {
   transform: scale(0.98);
-  box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.25);
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 157, 0.25);
 }
 
 .btn-disabled {
@@ -337,16 +362,16 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12rpx;
+  gap: 8rpx;
 }
 
 .footer-text {
-  font-size: 28rpx;
-  color: #666;
+  font-size: 26rpx;
+  color: #888;
 }
 
 .login-link {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #FF6B9D;
   font-weight: 600;
 }
