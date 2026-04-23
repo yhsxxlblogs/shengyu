@@ -75,13 +75,13 @@ shengyu-app/
 │   ├── chat/                  # 聊天页面
 │   ├── follows/               # 关注/粉丝列表
 │   ├── user-profile/          # 用户主页
-│   ├── scan/                  # 二维码扫描页
+│   ├── scan/                  # 二维码扫描页（支持闪光灯、相册识别）
 │   └── about/                 # 关于我们
 ├── components/                # 公共组件
 │   ├── custom-tabbar/         # 自定义TabBar
 │   ├── cute-modal/            # 模态框组件
 │   ├── cute-toast/            # Toast组件
-│   └── SvgIcon/               # SVG图标组件
+│   └── SvgIcon/               # SVG图标组件（支持20+图标，通过image加载SVG文件）
 ├── utils/                     # 工具函数
 │   ├── api.js                 # API接口配置
 │   └── websocket.js           # WebSocket封装
@@ -341,6 +341,8 @@ await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
 5. API限流防刷
 6. 单元测试覆盖
 7. 热门帖子算法优化（考虑时间衰减因子）
+8. 移动端图标显示优化（已完成：使用image组件加载SVG）
+9. 扫码功能安卓兼容性优化（已完成：添加权限检查、生命周期管理）
 
 ## 系统运行流程
 
