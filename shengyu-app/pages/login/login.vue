@@ -40,6 +40,21 @@
       <view class="guest-section">
         <text class="guest-link" @click="guestLogin">游客模式</text>
       </view>
+
+      <!-- 第三方登录 -->
+      <view class="third-party-login">
+        <view class="divider">
+          <view class="divider-line"></view>
+          <text class="divider-text">其他登录方式</text>
+          <view class="divider-line"></view>
+        </view>
+        <view class="third-party-buttons">
+          <view class="third-party-btn wechat" @click="wechatLogin">
+            <SvgIcon name="message" :size="40" class="third-party-icon" />
+            <text class="third-party-text">微信登录</text>
+          </view>
+        </view>
+      </view>
     </view>
   </view>
 </template>
@@ -125,6 +140,21 @@ export default {
       uni.removeStorageSync('token');
       uni.removeStorageSync('user');
       uni.reLaunch({ url: '/pages/main/main' });
+    },
+
+    /**
+     * 微信登录（空壳）
+     * TODO: 接入微信开放平台后完善
+     */
+    async wechatLogin() {
+      // 动态导入微信登录模块
+      const { wechatAuth } = await import('@/utils/wechat-auth.js');
+      await wechatAuth.init();
+      const result = await wechatAuth.login();
+
+      if (result.success) {
+        uni.reLaunch({ url: '/pages/main/main' });
+      }
     },
     // 加载用户的关注列表
     async loadFollowingList(token) {
@@ -385,5 +415,67 @@ export default {
 
 .guest-link:active {
   color: #FF9A9E;
+}
+
+/* 第三方登录 */
+.third-party-login {
+  margin-top: 60rpx;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 40rpx;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, #ddd, transparent);
+}
+
+.divider-text {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.third-party-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 40rpx;
+}
+
+.third-party-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx 40rpx;
+  border-radius: 16rpx;
+  background: #f8f8f8;
+  transition: all 0.3s ease;
+}
+
+.third-party-btn:active {
+  transform: scale(0.95);
+  background: #f0f0f0;
+}
+
+.third-party-btn.wechat {
+  background: #f0f9f4;
+}
+
+.third-party-btn.wechat:active {
+  background: #e0f0e8;
+}
+
+.third-party-icon {
+  color: #07C160;
+}
+
+.third-party-text {
+  font-size: 24rpx;
+  color: #666;
 }
 </style>

@@ -511,6 +511,7 @@ const postRoutes = require('./routes/post');
 const adminRoutes = require('./routes/admin');
 const socialRoutes = require('./routes/social');
 const bannerRoutes = require('./routes/banner');
+const wechatRoutes = require('./routes/wechat');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/sound', soundRoutes);
@@ -518,6 +519,7 @@ app.use('/api/post', postRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/social', socialRoutes);
 app.use('/api/banner', bannerRoutes);
+app.use('/api/wechat', wechatRoutes);
 
 function processScheduledNotifications() {
   db.query(
