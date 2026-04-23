@@ -99,9 +99,11 @@ router.get('/list',
       }
     }
 
-    // 使用反规范化字段 like_count 和 comment_count，避免子查询
+    // 使用子查询获取点赞数和评论数（规范化设计）
     let query = `
-      SELECT p.*, u.username, u.avatar
+      SELECT p.*, u.username, u.avatar,
+             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
              ${currentUserId ? `, EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = p.user_id) as is_following` : ''}
              ${currentUserId ? `, EXISTS(SELECT 1 FROM likes WHERE user_id = ? AND post_id = p.id) as liked` : ''}
       FROM posts p
@@ -241,10 +243,12 @@ router.get('/my', (req, res) => {
   try {
     const decoded = jwt.verify(token, 'secret_key');
     
-    // 使用反规范化字段 like_count 和 comment_count
+    // 使用子查询获取点赞数和评论数（规范化设计）
     db.query(
       `
-        SELECT p.*, u.username, u.avatar
+        SELECT p.*, u.username, u.avatar,
+               (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+               (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
         FROM posts p
         LEFT JOIN users u ON p.user_id = u.id
         WHERE p.user_id = ?
@@ -269,10 +273,12 @@ router.get('/likes', (req, res) => {
   try {
     const decoded = jwt.verify(token, 'secret_key');
 
-    // 使用反规范化字段 like_count 和 comment_count
+    // 使用子查询获取点赞数和评论数（规范化设计）
     db.query(
       `
         SELECT p.*, u.username, u.avatar,
+               (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+               (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count,
                (SELECT JSON_ARRAYAGG(JSON_OBJECT('id', l.id, 'username', lu.username, 'avatar', lu.avatar))
                 FROM likes l
                 LEFT JOIN users lu ON l.user_id = lu.id
@@ -392,9 +398,11 @@ router.get('/detail/:post_id',
       }
     }
 
-    // 使用反规范化字段 like_count 和 comment_count
+    // 使用子查询获取点赞数和评论数（规范化设计）
     let query = `
-      SELECT p.*, u.username, u.avatar
+      SELECT p.*, u.username, u.avatar,
+             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
              ${currentUserId ? `, EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = p.user_id) as is_following` : ''}
              ${currentUserId ? `, EXISTS(SELECT 1 FROM likes WHERE user_id = ? AND post_id = p.id) as liked` : ''}
       FROM posts p
@@ -425,10 +433,12 @@ router.get('/search', (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: '请输入搜索关键词' });
 
-  // 使用反规范化字段 like_count 和 comment_count
+  // 使用子查询获取点赞数和评论数（规范化设计）
   db.query(
     `
-      SELECT p.*, u.username, u.avatar
+      SELECT p.*, u.username, u.avatar,
+             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
       FROM posts p
       LEFT JOIN users u ON p.user_id = u.id
       WHERE p.content LIKE ? OR u.username LIKE ?
@@ -545,13 +555,19 @@ router.get('/popular', async (req, res) => {
     }
 
     // 缓存未命中，从数据库查询
+    // 使用子查询计算热度分数（规范化设计）
     let query = `
-      SELECT p.*, u.username, u.avatar
+      SELECT p.*, u.username, u.avatar,
+             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count,
+             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) * 2 +
+             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) * 3 as heat_score
              ${currentUserId ? `, EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = p.user_id) as is_following` : ''}
              ${currentUserId ? `, EXISTS(SELECT 1 FROM likes WHERE user_id = ? AND post_id = p.id) as liked` : ''}
       FROM posts p
       LEFT JOIN users u ON p.user_id = u.id
-      ORDER BY (p.like_count + p.comment_count) DESC, p.created_at DESC
+      HAVING heat_score > 0
+      ORDER BY heat_score DESC, p.created_at DESC
       LIMIT 10
     `;
 

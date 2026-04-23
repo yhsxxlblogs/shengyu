@@ -167,10 +167,12 @@ router.get('/follow-stats/:userId',
   (req, res) => {
     const userId = req.params.userId;
 
-    // 使用反规范化字段，避免子查询
+    // 使用子查询获取关注统计数据（规范化设计）
     db.query(
-      'SELECT following_count, followers_count FROM users WHERE id = ?',
-      [userId],
+      `SELECT
+        (SELECT COUNT(*) FROM follows WHERE follower_id = ?) as following_count,
+        (SELECT COUNT(*) FROM follows WHERE following_id = ?) as followers_count`,
+      [userId, userId],
       (err, results) => {
         if (err) {
           console.error('获取关注统计失败:', err);

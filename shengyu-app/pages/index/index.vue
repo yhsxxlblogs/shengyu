@@ -601,7 +601,7 @@ export default {
 .animal-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4rpx;
+  gap: 8rpx;
 }
 
 /* 动物卡片 - 简洁无框 */
@@ -612,7 +612,7 @@ export default {
   justify-content: center;
   background: transparent;
   border-radius: 10rpx;
-  padding: 6rpx 0;
+  padding: 8rpx 0;
   aspect-ratio: 1;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -623,14 +623,14 @@ export default {
 
 /* 动物图标 - 白色背景 */
 .animal-icon {
-  width: 84rpx;
-  height: 84rpx;
+  width: 86rpx;
+  height: 86rpx;
   border-radius: 12rpx;
   background: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 4rpx;
+  margin-bottom: 6rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
@@ -913,8 +913,8 @@ export default {
 
 /* 推荐区域 */
 .recommend-section {
-  margin-top: 40rpx;
-  margin-bottom: 40rpx;
+  margin-top: 30rpx;
+  margin-bottom: 30rpx;
 }
 
 .section-header {
@@ -952,7 +952,7 @@ export default {
 .recommend-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .recommend-item {

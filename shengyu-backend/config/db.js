@@ -37,7 +37,9 @@ function createTables() {
       email VARCHAR(100) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
       avatar VARCHAR(255),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_email (email),
+      INDEX idx_created_at (created_at)
     )
   `;
 
@@ -54,7 +56,11 @@ function createTables() {
       review_status VARCHAR(20) DEFAULT 'none',
       is_official TINYINT(1) DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id)
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      INDEX idx_user_id (user_id),
+      INDEX idx_animal_type (animal_type),
+      INDEX idx_visible (visible),
+      INDEX idx_created_at (created_at)
     )
   `;
 
@@ -68,7 +74,10 @@ function createTables() {
       image_url VARCHAR(255),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id),
-      FOREIGN KEY (sound_id) REFERENCES sounds(id)
+      FOREIGN KEY (sound_id) REFERENCES sounds(id),
+      INDEX idx_user_id (user_id),
+      INDEX idx_created_at (created_at),
+      INDEX idx_user_created (user_id, created_at)
     )
   `;
 
@@ -80,7 +89,11 @@ function createTables() {
       user_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (post_id) REFERENCES posts(id),
-      FOREIGN KEY (user_id) REFERENCES users(id)
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      UNIQUE KEY uk_post_user (post_id, user_id),
+      INDEX idx_post_id (post_id),
+      INDEX idx_user_id (user_id),
+      INDEX idx_post_created (post_id, created_at)
     )
   `;
 
@@ -93,7 +106,10 @@ function createTables() {
       content TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (post_id) REFERENCES posts(id),
-      FOREIGN KEY (user_id) REFERENCES users(id)
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      INDEX idx_post_id (post_id),
+      INDEX idx_user_id (user_id),
+      INDEX idx_post_created (post_id, created_at)
     )
   `;
 
@@ -106,7 +122,10 @@ function createTables() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (follower_id) REFERENCES users(id),
       FOREIGN KEY (following_id) REFERENCES users(id),
-      UNIQUE KEY unique_follow (follower_id, following_id)
+      UNIQUE KEY unique_follow (follower_id, following_id),
+      INDEX idx_follower_id (follower_id),
+      INDEX idx_following_id (following_id),
+      INDEX idx_created_at (created_at)
     )
   `;
 
@@ -120,7 +139,11 @@ function createTables() {
       is_read TINYINT(1) DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (sender_id) REFERENCES users(id),
-      FOREIGN KEY (receiver_id) REFERENCES users(id)
+      FOREIGN KEY (receiver_id) REFERENCES users(id),
+      INDEX idx_sender_receiver (sender_id, receiver_id),
+      INDEX idx_receiver_sender (receiver_id, sender_id),
+      INDEX idx_receiver_read (receiver_id, is_read),
+      INDEX idx_created_at (created_at)
     )
   `;
 
@@ -132,7 +155,9 @@ function createTables() {
       sound_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id),
-      FOREIGN KEY (sound_id) REFERENCES sounds(id)
+      FOREIGN KEY (sound_id) REFERENCES sounds(id),
+      UNIQUE KEY uk_user_sound (user_id, sound_id),
+      INDEX idx_sound_id (sound_id)
     )
   `;
 
@@ -162,7 +187,9 @@ function createTables() {
       description TEXT,
       is_active TINYINT(1) DEFAULT 1,
       sort_order INT DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_category (category),
+      INDEX idx_sort_order (sort_order)
     )
   `;
 

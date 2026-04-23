@@ -134,7 +134,7 @@ shengyu-backend/
 |------|------|----------|
 | users | 用户表 | id, username, email, password, avatar, is_admin |
 | sounds | 声音表 | id, user_id, animal_type, emotion, sound_url, duration, visible, review_status, is_official |
-| posts | 帖子表 | id, user_id, content, image_url, like_count, comment_count |
+| posts | 帖子表 | id, user_id, content, image_url |
 | likes | 点赞表 | id, post_id, user_id |
 | comments | 评论表 | id, post_id, user_id, content |
 | follows | 关注表 | id, follower_id, following_id |
@@ -306,7 +306,7 @@ await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
 ## 性能优化
 
 - **前端**：图片懒加载、分页加载、骨架屏
-- **后端**：Redis缓存、数据库连接池、反规范化
+- **后端**：Redis缓存、数据库连接池、索引优化
 - **数据库**：索引优化、查询优化
 - **部署**：Nginx静态资源缓存、负载均衡（可扩展）
 
@@ -376,7 +376,7 @@ await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
 ## 技术亮点
 
 1. **原生WebSocket实现** - 不依赖Socket.io，手动处理帧解析和握手，深入理解协议原理
-2. **数据库反规范化设计** - 冗余统计字段，减少JOIN查询，提高读取性能10倍+
+2. **数据库规范化设计** - 遵循第三范式，使用视图和索引优化查询性能
 3. **Redis缓存策略** - 缓存热点数据，解决缓存穿透、击穿、雪崩问题
 4. **uni-app跨平台** - 一套代码适配多端，开发效率高
 5. **软删除设计** - 私信功能采用软删除，保证双方数据完整性

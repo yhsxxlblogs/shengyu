@@ -202,10 +202,16 @@ router.get('/user/stats', (req, res) => {
     const decoded = jwt.verify(token, 'secret_key');
     const userId = decoded.id;
 
-    // 使用反规范化字段，直接查询users表获取所有统计数据
+    // 使用子查询获取用户统计数据（规范化设计）
     db.query(
-      'SELECT posts_count, sounds_count, followers_count, following_count, likes_received_count, comments_received_count FROM users WHERE id = ?',
-      [userId],
+      `SELECT
+        (SELECT COUNT(*) FROM posts WHERE user_id = ?) as posts_count,
+        (SELECT COUNT(*) FROM sounds WHERE user_id = ?) as sounds_count,
+        (SELECT COUNT(*) FROM follows WHERE following_id = ?) as followers_count,
+        (SELECT COUNT(*) FROM follows WHERE follower_id = ?) as following_count,
+        (SELECT COUNT(*) FROM likes l JOIN posts p ON l.post_id = p.id WHERE p.user_id = ?) as likes_received_count,
+        (SELECT COUNT(*) FROM comments c JOIN posts p ON c.post_id = p.id WHERE p.user_id = ?) as comments_received_count`,
+      [userId, userId, userId, userId, userId, userId],
       (err, results) => {
         if (err) {
           console.error('获取用户统计失败:', err);
@@ -310,11 +316,17 @@ router.get('/user/:id', (req, res) => {
     
     const user = userResults[0];
     
-    // 使用反规范化字段，直接从users表获取统计数据
+    // 使用子查询获取用户统计数据（规范化设计）
     const getUserStats = new Promise((resolve, reject) => {
       db.query(
-        'SELECT posts_count, sounds_count, likes_received_count, comments_received_count, followers_count, following_count FROM users WHERE id = ?',
-        [id],
+        `SELECT
+          (SELECT COUNT(*) FROM posts WHERE user_id = ?) as posts_count,
+          (SELECT COUNT(*) FROM sounds WHERE user_id = ?) as sounds_count,
+          (SELECT COUNT(*) FROM follows WHERE following_id = ?) as followers_count,
+          (SELECT COUNT(*) FROM follows WHERE follower_id = ?) as following_count,
+          (SELECT COUNT(*) FROM likes l JOIN posts p ON l.post_id = p.id WHERE p.user_id = ?) as likes_received_count,
+          (SELECT COUNT(*) FROM comments c JOIN posts p ON c.post_id = p.id WHERE p.user_id = ?) as comments_received_count`,
+        [id, id, id, id, id, id],
         (err, results) => {
           if (err) reject(err);
           else resolve(results[0] || { posts_count: 0, sounds_count: 0, likes_received_count: 0, comments_received_count: 0, followers_count: 0, following_count: 0 });
@@ -334,10 +346,12 @@ router.get('/user/:id', (req, res) => {
       );
     });
     
-    // 获取用户的帖子（使用反规范化字段）
+    // 获取用户的帖子（使用子查询获取统计数据）
     const getUserPosts = new Promise((resolve, reject) => {
       db.query(
-        `SELECT p.id, p.content, p.image_url, p.created_at, p.like_count, p.comment_count
+        `SELECT p.id, p.content, p.image_url, p.created_at,
+                (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+                (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
          FROM posts p WHERE p.user_id = ? ORDER BY p.created_at DESC LIMIT 20`,
         [id],
         (err, results) => {
