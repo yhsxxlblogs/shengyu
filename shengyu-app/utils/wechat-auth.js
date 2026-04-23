@@ -4,7 +4,8 @@
  * 文档参考：https://uniapp.dcloud.net.cn/tutorial/app-oauth-weixin.html
  */
 
-import { API_BASE } from './api.js'
+const BASE_URL = 'http://shengyu.supersyh.xyz'
+const API_BASE = `${BASE_URL}/api`
 
 class WechatAuth {
     constructor() {
