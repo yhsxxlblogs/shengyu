@@ -8,70 +8,293 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
--- 1. 删除反规范化统计字段
+-- 1. 删除反规范化统计字段 (MySQL 5.7 兼容版本)
 -- ============================================
 
 -- 1.1 移除 users 表的统计字段
-ALTER TABLE users 
-DROP COLUMN IF EXISTS posts_count,
-DROP COLUMN IF EXISTS sounds_count,
-DROP COLUMN IF EXISTS followers_count,
-DROP COLUMN IF EXISTS following_count,
-DROP COLUMN IF EXISTS likes_received_count,
-DROP COLUMN IF EXISTS comments_received_count;
+-- 使用存储过程检查列是否存在
+DELIMITER //
 
--- 1.2 移除 posts 表的统计字段
-ALTER TABLE posts
-DROP COLUMN IF EXISTS like_count,
-DROP COLUMN IF EXISTS comment_count;
+DROP PROCEDURE IF EXISTS DropColumnIfExists//
+CREATE PROCEDURE DropColumnIfExists(IN tableName VARCHAR(64), IN columnName VARCHAR(64))
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = DATABASE() 
+        AND table_name = tableName 
+        AND column_name = columnName
+    ) THEN
+        SET @sql = CONCAT('ALTER TABLE ', tableName, ' DROP COLUMN ', columnName);
+        PREPARE stmt FROM @sql;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+END//
+
+DELIMITER ;
+
+-- 删除 users 表的统计字段
+CALL DropColumnIfExists('users', 'posts_count');
+CALL DropColumnIfExists('users', 'sounds_count');
+CALL DropColumnIfExists('users', 'followers_count');
+CALL DropColumnIfExists('users', 'following_count');
+CALL DropColumnIfExists('users', 'likes_received_count');
+CALL DropColumnIfExists('users', 'comments_received_count');
+
+-- 删除 posts 表的统计字段
+CALL DropColumnIfExists('posts', 'like_count');
+CALL DropColumnIfExists('posts', 'comment_count');
+
+-- 删除存储过程
+DROP PROCEDURE IF EXISTS DropColumnIfExists;
 
 -- ============================================
--- 2. 核心索引优化
+-- 2. 核心索引优化 (MySQL 5.7 兼容版本)
 -- ============================================
 
 -- 2.1 users 表索引
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
+-- 检查索引是否存在，不存在则创建
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'users' 
+                   AND index_name = 'idx_users_email');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_users_email ON users(email)', 'SELECT "Index idx_users_email already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'users' 
+                   AND index_name = 'idx_users_created_at');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_users_created_at ON users(created_at)', 'SELECT "Index idx_users_created_at already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- 2.2 posts 表索引
-CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
-CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at);
-CREATE INDEX IF NOT EXISTS idx_posts_user_created ON posts(user_id, created_at);
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'posts' 
+                   AND index_name = 'idx_posts_user_id');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_posts_user_id ON posts(user_id)', 'SELECT "Index idx_posts_user_id already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
--- 2.3 likes 表索引（覆盖点赞查询）
-CREATE INDEX IF NOT EXISTS idx_likes_post_user ON likes(post_id, user_id);
-CREATE INDEX IF NOT EXISTS idx_likes_user_id ON likes(user_id);
-CREATE INDEX IF NOT EXISTS idx_likes_post_created ON likes(post_id, created_at);
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'posts' 
+                   AND index_name = 'idx_posts_created_at');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_posts_created_at ON posts(created_at)', 'SELECT "Index idx_posts_created_at already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
--- 2.4 comments 表索引（覆盖评论查询）
-CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
-CREATE INDEX IF NOT EXISTS idx_comments_user_id ON comments(user_id);
-CREATE INDEX IF NOT EXISTS idx_comments_post_created ON comments(post_id, created_at);
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'posts' 
+                   AND index_name = 'idx_posts_user_created');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_posts_user_created ON posts(user_id, created_at)', 'SELECT "Index idx_posts_user_created already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
--- 2.5 follows 表索引（覆盖关注查询）
-CREATE INDEX IF NOT EXISTS idx_follows_follower_following ON follows(follower_id, following_id);
-CREATE INDEX IF NOT EXISTS idx_follows_following_follower ON follows(following_id, follower_id);
-CREATE INDEX IF NOT EXISTS idx_follows_created_at ON follows(created_at);
+-- 2.3 likes 表索引
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'likes' 
+                   AND index_name = 'idx_likes_post_user');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_likes_post_user ON likes(post_id, user_id)', 'SELECT "Index idx_likes_post_user already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'likes' 
+                   AND index_name = 'idx_likes_user_id');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_likes_user_id ON likes(user_id)', 'SELECT "Index idx_likes_user_id already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'likes' 
+                   AND index_name = 'idx_likes_post_created');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_likes_post_created ON likes(post_id, created_at)', 'SELECT "Index idx_likes_post_created already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- 2.4 comments 表索引
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'comments' 
+                   AND index_name = 'idx_comments_post_id');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_comments_post_id ON comments(post_id)', 'SELECT "Index idx_comments_post_id already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'comments' 
+                   AND index_name = 'idx_comments_user_id');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_comments_user_id ON comments(user_id)', 'SELECT "Index idx_comments_user_id already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'comments' 
+                   AND index_name = 'idx_comments_post_created');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_comments_post_created ON comments(post_id, created_at)', 'SELECT "Index idx_comments_post_created already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- 2.5 follows 表索引
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'follows' 
+                   AND index_name = 'idx_follows_follower_following');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_follows_follower_following ON follows(follower_id, following_id)', 'SELECT "Index idx_follows_follower_following already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'follows' 
+                   AND index_name = 'idx_follows_following_follower');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_follows_following_follower ON follows(following_id, follower_id)', 'SELECT "Index idx_follows_following_follower already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'follows' 
+                   AND index_name = 'idx_follows_created_at');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_follows_created_at ON follows(created_at)', 'SELECT "Index idx_follows_created_at already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- 2.6 sounds 表索引
-CREATE INDEX IF NOT EXISTS idx_sounds_user_id ON sounds(user_id);
-CREATE INDEX IF NOT EXISTS idx_sounds_animal_type ON sounds(animal_type);
-CREATE INDEX IF NOT EXISTS idx_sounds_visible ON sounds(visible);
-CREATE INDEX IF NOT EXISTS idx_sounds_created_at ON sounds(created_at);
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'sounds' 
+                   AND index_name = 'idx_sounds_user_id');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_sounds_user_id ON sounds(user_id)', 'SELECT "Index idx_sounds_user_id already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'sounds' 
+                   AND index_name = 'idx_sounds_animal_type');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_sounds_animal_type ON sounds(animal_type)', 'SELECT "Index idx_sounds_animal_type already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'sounds' 
+                   AND index_name = 'idx_sounds_visible');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_sounds_visible ON sounds(visible)', 'SELECT "Index idx_sounds_visible already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'sounds' 
+                   AND index_name = 'idx_sounds_created_at');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_sounds_created_at ON sounds(created_at)', 'SELECT "Index idx_sounds_created_at already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- 2.7 messages 表索引
-CREATE INDEX IF NOT EXISTS idx_messages_sender_receiver ON messages(sender_id, receiver_id);
-CREATE INDEX IF NOT EXISTS idx_messages_receiver_sender ON messages(receiver_id, sender_id);
-CREATE INDEX IF NOT EXISTS idx_messages_receiver_read ON messages(receiver_id, is_read);
-CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'messages' 
+                   AND index_name = 'idx_messages_sender_receiver');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_messages_sender_receiver ON messages(sender_id, receiver_id)', 'SELECT "Index idx_messages_sender_receiver already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'messages' 
+                   AND index_name = 'idx_messages_receiver_sender');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_messages_receiver_sender ON messages(receiver_id, sender_id)', 'SELECT "Index idx_messages_receiver_sender already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'messages' 
+                   AND index_name = 'idx_messages_receiver_read');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_messages_receiver_read ON messages(receiver_id, is_read)', 'SELECT "Index idx_messages_receiver_read already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'messages' 
+                   AND index_name = 'idx_messages_created_at');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_messages_created_at ON messages(created_at)', 'SELECT "Index idx_messages_created_at already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- 2.8 favorites 表索引
-CREATE INDEX IF NOT EXISTS idx_favorites_user_sound ON favorites(user_id, sound_id);
-CREATE INDEX IF NOT EXISTS idx_favorites_sound_id ON favorites(sound_id);
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'favorites' 
+                   AND index_name = 'idx_favorites_user_sound');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_favorites_user_sound ON favorites(user_id, sound_id)', 'SELECT "Index idx_favorites_user_sound already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'favorites' 
+                   AND index_name = 'idx_favorites_sound_id');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_favorites_sound_id ON favorites(sound_id)', 'SELECT "Index idx_favorites_sound_id already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- 2.9 animal_types 表索引
-CREATE INDEX IF NOT EXISTS idx_animal_types_category ON animal_types(category);
-CREATE INDEX IF NOT EXISTS idx_animal_types_sort ON animal_types(sort_order);
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'animal_types' 
+                   AND index_name = 'idx_animal_types_category');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_animal_types_category ON animal_types(category)', 'SELECT "Index idx_animal_types_category already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
+                   WHERE table_schema = DATABASE() 
+                   AND table_name = 'animal_types' 
+                   AND index_name = 'idx_animal_types_sort');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_animal_types_sort ON animal_types(sort_order)', 'SELECT "Index idx_animal_types_sort already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ============================================
 -- 3. 删除触发器（不再需要维护统计字段）
@@ -169,71 +392,7 @@ HAVING heat_score > 0
 ORDER BY heat_score DESC, p.created_at DESC;
 
 -- ============================================
--- 5. 创建高效查询函数（可选，用于复杂统计）
--- ============================================
-
--- 5.1 获取用户统计函数
-DELIMITER //
-
-DROP FUNCTION IF EXISTS fn_get_user_stats//
-CREATE FUNCTION fn_get_user_stats(user_id INT, stat_type VARCHAR(20))
-RETURNS INT
-DETERMINISTIC
-READS SQL DATA
-BEGIN
-    DECLARE result INT DEFAULT 0;
-    
-    CASE stat_type
-        WHEN 'posts' THEN
-            SELECT COUNT(*) INTO result FROM posts WHERE user_id = user_id;
-        WHEN 'sounds' THEN
-            SELECT COUNT(*) INTO result FROM sounds WHERE user_id = user_id;
-        WHEN 'followers' THEN
-            SELECT COUNT(*) INTO result FROM follows WHERE following_id = user_id;
-        WHEN 'following' THEN
-            SELECT COUNT(*) INTO result FROM follows WHERE follower_id = user_id;
-        WHEN 'likes_received' THEN
-            SELECT COUNT(*) INTO result 
-            FROM likes l 
-            JOIN posts p ON l.post_id = p.id 
-            WHERE p.user_id = user_id;
-        WHEN 'comments_received' THEN
-            SELECT COUNT(*) INTO result 
-            FROM comments c 
-            JOIN posts p ON c.post_id = p.id 
-            WHERE p.user_id = user_id;
-        ELSE
-            SET result = 0;
-    END CASE;
-    
-    RETURN result;
-END//
-
--- 5.2 获取帖子统计函数
-DROP FUNCTION IF EXISTS fn_get_post_stats//
-CREATE FUNCTION fn_get_post_stats(post_id INT, stat_type VARCHAR(20))
-RETURNS INT
-DETERMINISTIC
-READS SQL DATA
-BEGIN
-    DECLARE result INT DEFAULT 0;
-    
-    CASE stat_type
-        WHEN 'likes' THEN
-            SELECT COUNT(*) INTO result FROM likes WHERE post_id = post_id;
-        WHEN 'comments' THEN
-            SELECT COUNT(*) INTO result FROM comments WHERE post_id = post_id;
-        ELSE
-            SET result = 0;
-    END CASE;
-    
-    RETURN result;
-END//
-
-DELIMITER ;
-
--- ============================================
--- 6. 查询优化提示
+-- 5. 查询优化提示
 -- ============================================
 
 /*
