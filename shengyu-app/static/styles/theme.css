@@ -1,4 +1,11 @@
-/* 全局主题样式 - 成熟优雅风格 */
+/* 全局主题样式 - 现代炫彩风格 */
+
+/* 全局字体配置 - 现代主流字体 */
+page, view, text, input, textarea, button, label, navigator {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 /* 主渐变色定义 */
 :root {
@@ -29,12 +36,13 @@
   --spacing-lg: 32rpx;
   --spacing-xl: 40rpx;
   
-  /* 字体大小 */
-  --font-xs: 20rpx;
-  --font-sm: 24rpx;
-  --font-md: 28rpx;
-  --font-lg: 32rpx;
-  --font-xl: 40rpx;
+  /* 字体大小 - 现代规范 */
+  --font-xs: 22rpx;
+  --font-sm: 26rpx;
+  --font-md: 30rpx;
+  --font-lg: 34rpx;
+  --font-xl: 42rpx;
+  --font-2xl: 48rpx;
   
   /* 圆角 */
   --radius-sm: 12rpx;

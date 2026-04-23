@@ -1,4 +1,4 @@
-﻿<template>
+﻿﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -81,22 +81,24 @@
               </view>
             </view>
 
-            <!-- 动态分类区域 -->
-            <view v-for="(categoryData, categoryKey) in animalCategories" :key="categoryKey" class="category-section">
-              <text class="section-title">{{ categoryData.display_name }}</text>
-              <view v-if="indexLoading" class="loading">
-                <text>加载中...</text>
-              </view>
-              <view v-else-if="indexError" class="error">
-                <text>{{ indexError }}</text>
-                <button @click="loadIndexData" class="retry-btn">重试</button>
-              </view>
-              <view v-else class="animal-grid">
-                <view class="animal-item" v-for="animal in categoryData.items" :key="animal.id" @click="goSoundDetail(animal.type)">
-                  <view class="animal-icon">
-                    <text class="icon">{{ animal.icon }}</text>
+            <!-- 应用小程序式分类区域 -->
+            <view class="app-grid-container">
+              <view v-for="(categoryData, categoryKey) in animalCategories" :key="categoryKey" class="category-app-section">
+                <text class="category-app-title">{{ categoryData.display_name }}</text>
+                <view v-if="indexLoading" class="app-loading">
+                  <text>加载中...</text>
+                </view>
+                <view v-else-if="indexError" class="app-error">
+                  <text>{{ indexError }}</text>
+                  <button @click="loadIndexData" class="app-retry-btn">重试</button>
+                </view>
+                <view v-else class="app-grid">
+                  <view class="app-item" v-for="animal in categoryData.items" :key="animal.id" @click="goSoundDetail(animal.type)">
+                    <view class="app-icon-wrapper">
+                      <text class="app-icon-emoji">{{ animal.icon }}</text>
+                    </view>
+                    <text class="app-name">{{ animal.name }}</text>
                   </view>
-                  <text class="animal-name">{{ animal.name }}</text>
                 </view>
               </view>
             </view>
@@ -1979,55 +1981,191 @@ export default {
   border-radius: 3rpx;
 }
 
-.section-title {
-  font-size: 30rpx;
-  font-weight: bold;
+/* 小程序应用式分类区域 */
+.app-grid-container {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  margin: 20rpx 0;
+  padding: 24rpx 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.category-app-section {
+  margin-bottom: 24rpx;
+}
+
+.category-app-section:last-child {
+  margin-bottom: 0;
+}
+
+.category-app-title {
+  font-size: 26rpx;
+  font-weight: 600;
   color: #333333;
-  margin-bottom: 20rpx;
+  margin-bottom: 16rpx;
   display: block;
+  padding-left: 8rpx;
 }
 
-.animal-grid {
+.app-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8rpx;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12rpx 8rpx;
 }
 
-.animal-item {
+.app-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 8rpx 0;
-  background: transparent;
-  border-radius: 10rpx;
-  aspect-ratio: 1;
+  justify-content: flex-start;
+  padding: 8rpx 4rpx;
 }
 
-.animal-icon {
-  width: 86rpx;
-  height: 86rpx;
-  border-radius: 12rpx;
-  background: #FFFFFF;
+.app-icon-wrapper {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 28rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 6rpx;
-  font-size: 46rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  margin-bottom: 10rpx;
+  transition: transform 0.2s ease;
+}
+
+/* 淡淡的炫彩渐变配色 */
+.app-item:nth-child(6n+1) .app-icon-wrapper {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7b8f0 100%);
+  box-shadow: 0 6rpx 20rpx rgba(199, 184, 240, 0.35);
+}
+
+.app-item:nth-child(6n+2) .app-icon-wrapper {
+  background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+  box-shadow: 0 6rpx 20rpx rgba(248, 187, 217, 0.35);
+}
+
+.app-item:nth-child(6n+3) .app-icon-wrapper {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  box-shadow: 0 6rpx 20rpx rgba(187, 222, 251, 0.35);
+}
+
+.app-item:nth-child(6n+4) .app-icon-wrapper {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  box-shadow: 0 6rpx 20rpx rgba(200, 230, 201, 0.35);
+}
+
+.app-item:nth-child(6n+5) .app-icon-wrapper {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  box-shadow: 0 6rpx 20rpx rgba(255, 224, 178, 0.35);
+}
+
+.app-item:nth-child(6n+6) .app-icon-wrapper {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+  box-shadow: 0 6rpx 20rpx rgba(225, 190, 231, 0.35);
+}
+
+.app-item:active .app-icon-wrapper {
+  transform: scale(0.92);
+}
+
+.app-icon-emoji {
+  font-size: 50rpx;
+  line-height: 1;
+}
+
+.app-name {
+  font-size: 20rpx;
+  color: #555555;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.app-loading, .app-error {
+  text-align: center;
+  padding: 40rpx 0;
+}
+
+.app-retry-btn {
+  margin-top: 16rpx;
+  padding: 12rpx 32rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+  color: #FFFFFF;
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  border: none;
+}
+
+/* 小程序式热门推荐区域 */
+/* 通知弹窗 */
+.notification-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.notification-content {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  width: 80%;
+  max-width: 600rpx;
   overflow: hidden;
 }
 
-.animal-name {
-  font-size: 17rpx;
-  color: #555555;
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #EEEEEE;
 }
 
-.popular-section, .other-section, .category-section {
-  margin-bottom: 20rpx;
+.notification-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333333;
 }
 
-/* 推荐区域 */
+.notification-close {
+  font-size: 40rpx;
+  color: #999999;
+  padding: 0 10rpx;
+}
+
+.notification-body {
+  padding: 30rpx;
+  font-size: 28rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+.notification-footer {
+  display: flex;
+  padding: 20rpx 30rpx 30rpx;
+  gap: 20rpx;
+}
+
+.notification-btn {
+  flex: 1;
+  padding: 14rpx 0;
+  border-radius: 10rpx;
+  font-size: 24rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+  color: #FFFFFF;
+  border: none;
+}
+
+.notification-btn-secondary {
+  background: #F5F5F5;
+  color: #666666;
+}
+
+/* 热门推荐区域 */
 .recommend-section {
   margin-top: 30rpx;
   margin-bottom: 30rpx;
@@ -2183,15 +2321,6 @@ export default {
   color: #888888;
 }
 
-.recommend-image {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 12rpx;
-  flex-shrink: 0;
-  background: #F5F5F5;
-  margin-left: 8rpx;
-}
-
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -2211,76 +2340,6 @@ export default {
 .empty-text {
   font-size: 24rpx;
   color: #999999;
-}
-
-/* 通知弹窗 */
-.notification-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.notification-content {
-  background: #FFFFFF;
-  border-radius: 24rpx;
-  width: 80%;
-  max-width: 600rpx;
-  overflow: hidden;
-}
-
-.notification-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 30rpx;
-  border-bottom: 1rpx solid #EEEEEE;
-}
-
-.notification-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333333;
-}
-
-.notification-close {
-  font-size: 40rpx;
-  color: #999999;
-  padding: 0 10rpx;
-}
-
-.notification-body {
-  padding: 30rpx;
-  font-size: 28rpx;
-  color: #666666;
-  line-height: 1.6;
-}
-
-.notification-footer {
-  display: flex;
-  padding: 20rpx 30rpx 30rpx;
-  gap: 20rpx;
-}
-
-.notification-btn {
-  flex: 1;
-  padding: 20rpx 0;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
-  color: #FFFFFF;
-  border: none;
-}
-
-.notification-btn-secondary {
-  background: #F5F5F5;
-  color: #666666;
 }
 
 /* 社区样式 */

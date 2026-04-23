@@ -121,18 +121,9 @@ export default {
   },
   onLoad() {
     this.getPosts();
-    this.startAutoUpdate();
     this.loadUnreadCount();
   },
-  onUnload() {
-    if (this.updateTimer) {
-      clearInterval(this.updateTimer);
-    }
-  },
   onShow() {
-    this.page = 1;
-    this.hasMore = true;
-    this.getPosts();
     this.closeCommentPopup();
   },
   methods: {
@@ -161,13 +152,7 @@ export default {
         uni.redirectTo({ url: '/pages/profile/profile' });
       }
     },
-    startAutoUpdate() {
-      this.updateTimer = setInterval(() => {
-        this.page = 1;
-        this.hasMore = true;
-        this.getPosts();
-      }, 30000);
-    },
+
     onPullDownRefresh() {
       this.page = 1;
       this.hasMore = true;
