@@ -15,7 +15,7 @@
         <view class="form-item">
           <view class="input-wrapper">
             <view class="input-icon">
-              <text class="iconfont icon-user"></text>
+              <uni-icons type="person" size="20" color="#FF9A9E"></uni-icons>
             </view>
             <input 
               type="text" 
@@ -30,7 +30,7 @@
         <view class="form-item">
           <view class="input-wrapper">
             <view class="input-icon">
-              <text class="iconfont icon-mail"></text>
+              <uni-icons type="email" size="20" color="#FF9A9E"></uni-icons>
             </view>
             <input 
               type="email" 
@@ -45,7 +45,7 @@
         <view class="form-item">
           <view class="input-wrapper">
             <view class="input-icon">
-              <text class="iconfont icon-lock"></text>
+              <uni-icons type="locked" size="20" color="#FF9A9E"></uni-icons>
             </view>
             <input 
               :type="showPassword ? 'text' : 'password'" 
@@ -55,7 +55,7 @@
               placeholder-class="input-placeholder"
             />
             <view class="toggle-password" @click="showPassword = !showPassword">
-              <text class="iconfont" :class="showPassword ? 'icon-eye' : 'icon-eye-off'"></text>
+              <uni-icons :type="showPassword ? 'eye-filled' : 'eye-slash-filled'" size="18" color="#999"></uni-icons>
             </view>
           </view>
         </view>
@@ -158,9 +158,6 @@ export default {
 </script>
 
 <style scoped>
-/* 引入图标字体 */
-@import url('/static/iconfont.css');
-
 .register-page {
   min-height: 100vh;
   background: linear-gradient(180deg, #FFF0F5 0%, #FFF8FA 50%, #FFFFFF 100%);
@@ -252,11 +249,6 @@ export default {
   margin-right: 16rpx;
 }
 
-.iconfont {
-  font-size: 40rpx;
-  color: #FF9A9E;
-}
-
 .input {
   flex: 1;
   height: 100%;
@@ -274,11 +266,6 @@ export default {
   justify-content: center;
   padding: 20rpx;
   margin-right: -20rpx;
-}
-
-.toggle-password .iconfont {
-  font-size: 36rpx;
-  color: #999;
 }
 
 /* 注册按钮 */
