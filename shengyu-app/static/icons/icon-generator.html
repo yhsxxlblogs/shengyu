@@ -13,17 +13,25 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
+            background: linear-gradient(135deg, #FFF5F7 0%, #FFE8EC 100%);
             padding: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 40px;
+            min-height: 100vh;
         }
         
         h1 {
-            color: #333;
-            font-size: 28px;
+            color: #FF9A9E;
+            font-size: 32px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            color: #888;
+            font-size: 16px;
+            margin-top: -30px;
         }
         
         .icons-container {
@@ -39,9 +47,9 @@
             align-items: center;
             gap: 16px;
             background: white;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 32px;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(255, 154, 158, 0.15);
         }
         
         .icon-label {
@@ -50,77 +58,70 @@
             font-weight: 500;
         }
         
-        /* 72x72 图标 */
-        .icon-72 {
-            width: 72px;
-            height: 72px;
-        }
+        .icon-72 { width: 72px; height: 72px; }
+        .icon-96 { width: 96px; height: 96px; }
+        .icon-144 { width: 144px; height: 144px; }
+        .icon-192 { width: 192px; height: 192px; }
         
-        /* 96x96 图标 */
-        .icon-96 {
-            width: 96px;
-            height: 96px;
-        }
-        
-        /* 144x144 图标 */
-        .icon-144 {
-            width: 144px;
-            height: 144px;
-        }
-        
-        /* 192x192 图标 */
-        .icon-192 {
-            width: 192px;
-            height: 192px;
-        }
-        
-        .instructions {
+        .design-info {
             max-width: 600px;
             background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
         }
         
-        .instructions h2 {
-            font-size: 18px;
+        .design-info h2 {
+            font-size: 20px;
             color: #333;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .instructions ol {
+        .design-info ul {
             padding-left: 20px;
             color: #666;
-            line-height: 1.8;
+            line-height: 2;
         }
         
-        .instructions li {
-            margin-bottom: 8px;
+        .design-info li {
+            margin-bottom: 4px;
+        }
+        
+        .color-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
         }
     </style>
 </head>
 <body>
-    <h1>🐾 声愈应用图标</h1>
+    <h1>声愈</h1>
+    <p class="subtitle">治愈系动物声音社交应用</p>
     
     <div class="icons-container">
         <!-- 72x72 -->
         <div class="icon-wrapper">
             <svg class="icon-72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <linearGradient id="grad72" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="bg72" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFF5F7"/>
+                        <stop offset="100%" style="stop-color:#FFE8EC"/>
+                    </linearGradient>
+                    <linearGradient id="wave72" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" style="stop-color:#FF9A9E"/>
-                        <stop offset="50%" style="stop-color:#FECFEF"/>
-                        <stop offset="100%" style="stop-color:#FF9A9E"/>
+                        <stop offset="100%" style="stop-color:#FFB4B8"/>
                     </linearGradient>
                 </defs>
-                <rect width="72" height="72" rx="16" fill="url(#grad72)"/>
-                <!-- 爪印 -->
-                <ellipse cx="36" cy="42" rx="12" ry="10" fill="white"/>
-                <ellipse cx="24" cy="28" rx="5" ry="6" fill="white"/>
-                <ellipse cx="36" cy="24" rx="5" ry="6" fill="white"/>
-                <ellipse cx="48" cy="28" rx="5" ry="6" fill="white"/>
-                <ellipse cx="20" cy="40" rx="4" ry="5" fill="white"/>
-                <ellipse cx="52" cy="40" rx="4" ry="5" fill="white"/>
+                <rect width="72" height="72" rx="18" fill="url(#bg72)"/>
+                <path d="M20 36 Q26 28, 32 36 T44 36 T56 36" stroke="url(#wave72)" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <path d="M24 42 Q30 34, 36 42 T48 42" stroke="#FFC8CB" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+                <ellipse cx="52" cy="24" rx="4" ry="6" fill="#A8E6CF" transform="rotate(30 52 24)"/>
+                <ellipse cx="58" cy="28" rx="3" ry="5" fill="#A8E6CF" transform="rotate(-20 58 28)"/>
             </svg>
             <span class="icon-label">72 x 72</span>
         </div>
@@ -129,20 +130,20 @@
         <div class="icon-wrapper">
             <svg class="icon-96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <linearGradient id="grad96" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="bg96" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFF5F7"/>
+                        <stop offset="100%" style="stop-color:#FFE8EC"/>
+                    </linearGradient>
+                    <linearGradient id="wave96" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" style="stop-color:#FF9A9E"/>
-                        <stop offset="50%" style="stop-color:#FECFEF"/>
-                        <stop offset="100%" style="stop-color:#FF9A9E"/>
+                        <stop offset="100%" style="stop-color:#FFB4B8"/>
                     </linearGradient>
                 </defs>
-                <rect width="96" height="96" rx="22" fill="url(#grad96)"/>
-                <!-- 爪印 -->
-                <ellipse cx="48" cy="56" rx="16" ry="13" fill="white"/>
-                <ellipse cx="32" cy="37" rx="7" ry="8" fill="white"/>
-                <ellipse cx="48" cy="32" rx="7" ry="8" fill="white"/>
-                <ellipse cx="64" cy="37" rx="7" ry="8" fill="white"/>
-                <ellipse cx="27" cy="53" rx="5" ry="7" fill="white"/>
-                <ellipse cx="69" cy="53" rx="5" ry="7" fill="white"/>
+                <rect width="96" height="96" rx="24" fill="url(#bg96)"/>
+                <path d="M26 48 Q34 36, 42 48 T58 48 T74 48" stroke="url(#wave96)" stroke-width="4" fill="none" stroke-linecap="round"/>
+                <path d="M32 56 Q40 44, 48 56 T64 56" stroke="#FFC8CB" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+                <ellipse cx="70" cy="32" rx="5" ry="8" fill="#A8E6CF" transform="rotate(30 70 32)"/>
+                <ellipse cx="78" cy="38" rx="4" ry="6" fill="#A8E6CF" transform="rotate(-20 78 38)"/>
             </svg>
             <span class="icon-label">96 x 96</span>
         </div>
@@ -151,20 +152,20 @@
         <div class="icon-wrapper">
             <svg class="icon-144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <linearGradient id="grad144" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="bg144" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFF5F7"/>
+                        <stop offset="100%" style="stop-color:#FFE8EC"/>
+                    </linearGradient>
+                    <linearGradient id="wave144" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" style="stop-color:#FF9A9E"/>
-                        <stop offset="50%" style="stop-color:#FECFEF"/>
-                        <stop offset="100%" style="stop-color:#FF9A9E"/>
+                        <stop offset="100%" style="stop-color:#FFB4B8"/>
                     </linearGradient>
                 </defs>
-                <rect width="144" height="144" rx="32" fill="url(#grad144)"/>
-                <!-- 爪印 -->
-                <ellipse cx="72" cy="84" rx="24" ry="20" fill="white"/>
-                <ellipse cx="48" cy="56" rx="10" ry="12" fill="white"/>
-                <ellipse cx="72" cy="48" rx="10" ry="12" fill="white"/>
-                <ellipse cx="96" cy="56" rx="10" ry="12" fill="white"/>
-                <ellipse cx="40" cy="80" rx="8" ry="10" fill="white"/>
-                <ellipse cx="104" cy="80" rx="8" ry="10" fill="white"/>
+                <rect width="144" height="144" rx="36" fill="url(#bg144)"/>
+                <path d="M38 72 Q50 54, 62 72 T86 72 T110 72" stroke="url(#wave144)" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <path d="M48 84 Q60 66, 72 84 T96 84" stroke="#FFC8CB" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.7"/>
+                <ellipse cx="104" cy="48" rx="8" ry="12" fill="#A8E6CF" transform="rotate(30 104 48)"/>
+                <ellipse cx="116" cy="56" rx="6" ry="9" fill="#A8E6CF" transform="rotate(-20 116 56)"/>
             </svg>
             <span class="icon-label">144 x 144</span>
         </div>
@@ -173,35 +174,34 @@
         <div class="icon-wrapper">
             <svg class="icon-192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <linearGradient id="grad192" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="bg192" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFF5F7"/>
+                        <stop offset="100%" style="stop-color:#FFE8EC"/>
+                    </linearGradient>
+                    <linearGradient id="wave192" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" style="stop-color:#FF9A9E"/>
-                        <stop offset="50%" style="stop-color:#FECFEF"/>
-                        <stop offset="100%" style="stop-color:#FF9A9E"/>
+                        <stop offset="100%" style="stop-color:#FFB4B8"/>
                     </linearGradient>
                 </defs>
-                <rect width="192" height="192" rx="44" fill="url(#grad192)"/>
-                <!-- 爪印 -->
-                <ellipse cx="96" cy="112" rx="32" ry="26" fill="white"/>
-                <ellipse cx="64" cy="74" rx="13" ry="16" fill="white"/>
-                <ellipse cx="96" cy="64" rx="13" ry="16" fill="white"/>
-                <ellipse cx="128" cy="74" rx="13" ry="16" fill="white"/>
-                <ellipse cx="54" cy="106" rx="10" ry="13" fill="white"/>
-                <ellipse cx="138" cy="106" rx="10" ry="13" fill="white"/>
+                <rect width="192" height="192" rx="48" fill="url(#bg192)"/>
+                <path d="M50 96 Q66 72, 82 96 T114 96 T146 96" stroke="url(#wave192)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                <path d="M64 112 Q80 88, 96 112 T128 112" stroke="#FFC8CB" stroke-width="6.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+                <ellipse cx="138" cy="64" rx="10" ry="16" fill="#A8E6CF" transform="rotate(30 138 64)"/>
+                <ellipse cx="154" cy="76" rx="8" ry="12" fill="#A8E6CF" transform="rotate(-20 154 76)"/>
             </svg>
             <span class="icon-label">192 x 192</span>
         </div>
     </div>
     
-    <div class="instructions">
-        <h2>📸 如何保存图标</h2>
-        <ol>
-            <li>使用浏览器打开此文件</li>
-            <li>按 F12 打开开发者工具</li>
-            <li>右键点击要保存的 SVG 图标</li>
-            <li>选择 "在新标签页中打开图片"</li>
-            <li>右键保存为 PNG 格式</li>
-            <li>或使用在线转换工具将 SVG 转换为 PNG</li>
-        </ol>
+    <div class="design-info">
+        <h2>🎨 设计理念</h2>
+        <ul>
+            <li><span class="color-dot" style="background:#FFF5F7"></span>柔和粉色背景 - 营造温馨治愈氛围</li>
+            <li><span class="color-dot" style="background:#FF9A9E"></span>声波线条 - 代表声音传播与疗愈</li>
+            <li><span class="color-dot" style="background:#A8E6CF"></span>薄荷绿叶子 - 自然、生机、治愈</li>
+            <li>圆润线条设计 - 传递温暖友好的感觉</li>
+            <li>简约而不简单 - 优雅自然的视觉体验</li>
+        </ul>
     </div>
 </body>
 </html>

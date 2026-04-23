@@ -15,11 +15,8 @@
             "autoclose" : true,
             "delay" : 0
         },
-
         "modules" : {},
-   
         "distribute" : {
- 
             "android" : {
                 "permissions" : [
                     "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
@@ -43,15 +40,14 @@
                     "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>"
                 ]
             },
-  
             "ios" : {},
- 
-            "sdkConfigs" : {}
+            "sdkConfigs" : {},
+            "splashscreen" : {
+                "androidStyle" : "default"
+            }
         }
     },
-
     "quickapp" : {},
-
     "mp-weixin" : {
         "appid" : "",
         "setting" : {

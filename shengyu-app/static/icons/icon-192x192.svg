@@ -1,17 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
   <defs>
-    <linearGradient id="grad192" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bg192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF5F7"/>
+      <stop offset="100%" style="stop-color:#FFE8EC"/>
+    </linearGradient>
+    <linearGradient id="wave192" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#FF9A9E"/>
-      <stop offset="50%" style="stop-color:#FECFEF"/>
-      <stop offset="100%" style="stop-color:#FF9A9E"/>
+      <stop offset="100%" style="stop-color:#FFB4B8"/>
     </linearGradient>
   </defs>
-  <rect width="192" height="192" rx="44" fill="url(#grad192)"/>
-  <!-- 爪印 -->
-  <ellipse cx="96" cy="112" rx="32" ry="26" fill="white"/>
-  <ellipse cx="64" cy="74" rx="13" ry="16" fill="white"/>
-  <ellipse cx="96" cy="64" rx="13" ry="16" fill="white"/>
-  <ellipse cx="128" cy="74" rx="13" ry="16" fill="white"/>
-  <ellipse cx="54" cy="106" rx="10" ry="13" fill="white"/>
-  <ellipse cx="138" cy="106" rx="10" ry="13" fill="white"/>
+  <!-- 背景 -->
+  <rect width="192" height="192" rx="48" fill="url(#bg192)"/>
+  <!-- 声波 -->
+  <path d="M50 96 Q66 72, 82 96 T114 96 T146 96" stroke="url(#wave192)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M64 112 Q80 88, 96 112 T128 112" stroke="#FFC8CB" stroke-width="6.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <!-- 小叶子装饰 -->
+  <ellipse cx="138" cy="64" rx="10" ry="16" fill="#A8E6CF" transform="rotate(30 138 64)"/>
+  <ellipse cx="154" cy="76" rx="8" ry="12" fill="#A8E6CF" transform="rotate(-20 154 76)"/>
 </svg>
