@@ -147,7 +147,7 @@
                       </view>
                     </view>
                   </view>
-                  <image v-if="post.image_url" :src="getImageUrl(post.image_url)" class="recommend-image" mode="aspectFill" />
+                  <image v-if="post.image_url" :src="getRecommendImageUrl(post.image_url)" class="recommend-image" mode="aspectFill" />
                 </view>
               </view>
 
@@ -966,11 +966,19 @@ export default {
         // 没有图片URL，返回默认占位图
         return 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=colorful%20animal%20sound%20app%20banner%20with%20cute%20animals&image_size=landscape_16_9'
       }
-      
+
       // 使用api.js中的getImageUrl函数处理图片URL
       return getImageUrl(imageUrl)
     },
-    
+
+    // 处理推荐帖子图片URL - 暴露给模板使用
+    getRecommendImageUrl(imageUrl) {
+      if (!imageUrl || imageUrl === '') {
+        return ''
+      }
+      return getImageUrl(imageUrl)
+    },
+
     // 轮播图点击事件
     handleBannerClick(banner) {
       console.log('点击轮播图:', banner)
