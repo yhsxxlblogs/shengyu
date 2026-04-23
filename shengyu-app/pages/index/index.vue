@@ -952,23 +952,23 @@ export default {
 .recommend-list {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
 .recommend-item {
   display: flex;
   align-items: flex-start;
-  gap: 12rpx;
+  gap: 16rpx;
   background: #FFFFFF;
-  border-radius: 12rpx;
-  padding: 14rpx 16rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-radius: 16rpx;
+  padding: 18rpx 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
 }
 
 .recommend-item:active {
   transform: translateY(-2rpx);
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.1);
 }
 
 .recommend-rank {
@@ -996,13 +996,14 @@ export default {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 12rpx;
+  padding-left: 8rpx;
 }
 
 .recommend-text {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #333333;
-  line-height: 1.4;
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1067,11 +1068,12 @@ export default {
 }
 
 .recommend-image {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 6rpx;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 12rpx;
   flex-shrink: 0;
   background: #F5F5F5;
+  margin-left: 8rpx;
 }
 
 .empty-state {
