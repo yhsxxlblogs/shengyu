@@ -1,40 +1,96 @@
 <template>
-  <view class="register-page page-enter">
+  <view class="register-page">
     <view class="register-container">
+      <!-- 头部区域 -->
       <view class="header-section">
         <view class="app-icon">
-          <text class="icon-emoji">🐾</text>
+          <image src="/static/icons/icon-144x144.png" mode="aspectFit" class="app-logo" />
         </view>
         <text class="app-title">声愈</text>
         <text class="app-subtitle">发现身边的美好声音</text>
       </view>
       
+      <!-- 表单区域 -->
       <view class="form-section">
         <view class="form-item">
           <view class="input-wrapper">
-            <SvgIcon name="user" :size="36" class="input-icon-svg" />
-            <input type="text" v-model="form.username" placeholder="请输入用户名" class="input" />
+            <view class="input-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </view>
+            <input 
+              type="text" 
+              v-model="form.username" 
+              placeholder="请输入用户名" 
+              class="input"
+              placeholder-class="input-placeholder"
+            />
           </view>
         </view>
+        
         <view class="form-item">
           <view class="input-wrapper">
-            <SvgIcon name="email" :size="36" class="input-icon-svg" />
-            <input type="email" v-model="form.email" placeholder="请输入邮箱" class="input" />
+            <view class="input-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </view>
+            <input 
+              type="email" 
+              v-model="form.email" 
+              placeholder="请输入邮箱" 
+              class="input"
+              placeholder-class="input-placeholder"
+            />
           </view>
         </view>
+        
         <view class="form-item">
           <view class="input-wrapper">
-            <SvgIcon name="lock" :size="36" class="input-icon-svg" />
-            <input :type="showPassword ? 'text' : 'password'" v-model="form.password" placeholder="请输入密码" class="input" />
-            <SvgIcon :name="showPassword ? 'eye' : 'eye-off'" :size="32" class="toggle-password" @click="showPassword = !showPassword" />
+            <view class="input-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </view>
+            <input 
+              :type="showPassword ? 'text' : 'password'" 
+              v-model="form.password" 
+              placeholder="请输入密码" 
+              class="input"
+              placeholder-class="input-placeholder"
+            />
+            <view class="toggle-password" @click="showPassword = !showPassword">
+              <svg v-if="showPassword" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </view>
           </view>
         </view>
-        <button class="register-btn" @click="register" :disabled="loading" :class="{ 'btn-loading': loading }">
+        
+        <button 
+          class="register-btn" 
+          @click="register" 
+          :disabled="loading || !isFormValid"
+          :class="{ 'btn-disabled': !isFormValid, 'btn-loading': loading }"
+        >
           <text v-if="!loading">注册</text>
-          <text v-else class="loading-text">注册中...</text>
+          <view v-else class="loading-spinner">
+            <view class="spinner"></view>
+            <text>注册中...</text>
+          </view>
         </button>
       </view>
       
+      <!-- 底部区域 -->
       <view class="footer-section">
         <text class="footer-text">已有账号？</text>
         <text class="login-link" @click="goToLogin">立即登录</text>
@@ -55,6 +111,11 @@ export default {
       loading: false,
       showPassword: false
     };
+  },
+  computed: {
+    isFormValid() {
+      return this.form.username && this.form.email && this.form.password;
+    }
   },
   methods: {
     async register() {
@@ -113,215 +174,180 @@ export default {
 </script>
 
 <style scoped>
-@import '/static/styles/theme.css';
-
 .register-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #FFF0F3 0%, #F8F8F8 50%, #FFFFFF 100%);
+  background: linear-gradient(180deg, #FFF5F7 0%, #FFFFFF 100%);
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 20rpx;
-  padding-top: 60rpx;
+  padding: 40rpx;
+  padding-top: 80rpx;
 }
 
 .register-container {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 600rpx;
+  max-width: 640rpx;
 }
 
+/* 头部区域 */
 .header-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 40rpx;
-}
-
-/* App图标 - 流动渐变 */
-.app-icon {
-  width: 180rpx;
-  height: 180rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
-  background-size: 200% 200%;
-  animation: gradient-flow 4s ease infinite;
-  border-radius: 48rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 16rpx 48rpx rgba(255, 154, 158, 0.35);
-  margin-bottom: 40rpx;
-  position: relative;
-  overflow: hidden;
-}
-
-.app-icon::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 70%
-  );
-  animation: shimmer 3s infinite;
-}
-
-.icon-emoji {
-  font-size: 90rpx;
-  position: relative;
-  z-index: 1;
-}
-
-.app-title {
-  font-size: 52rpx;
-  font-weight: 700;
-  background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 12rpx;
-}
-
-.app-subtitle {
-  font-size: 26rpx;
-  color: #888;
-}
-
-.form-section {
   margin-bottom: 60rpx;
 }
 
-.form-item {
-  margin-bottom: 30rpx;
+.app-icon {
+  width: 160rpx;
+  height: 160rpx;
+  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+  border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12rpx 40rpx rgba(255, 182, 193, 0.3);
+  margin-bottom: 32rpx;
+  overflow: hidden;
 }
 
-/* 输入框 - 玻璃拟态 */
+.app-logo {
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.app-title {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #FF6B9D;
+  margin-bottom: 12rpx;
+  letter-spacing: 4rpx;
+}
+
+.app-subtitle {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 表单区域 */
+.form-section {
+  margin-bottom: 40rpx;
+}
+
+.form-item {
+  margin-bottom: 24rpx;
+}
+
 .input-wrapper {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10rpx);
-  -webkit-backdrop-filter: blur(10rpx);
-  border-radius: 24rpx;
-  padding: 0 32rpx;
-  height: 104rpx;
-  border: 2rpx solid rgba(255, 154, 158, 0.15);
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 0 28rpx;
+  height: 96rpx;
+  border: 2rpx solid #F0F0F0;
   transition: all 0.3s ease;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
 }
 
 .input-wrapper:focus-within {
-  border-color: rgba(255, 154, 158, 0.4);
-  box-shadow: 0 4rpx 20rpx rgba(255, 154, 158, 0.15);
-  transform: translateY(-2rpx);
+  border-color: #FFB6C1;
+  box-shadow: 0 4rpx 16rpx rgba(255, 182, 193, 0.15);
 }
 
-.input-icon-svg {
+.input-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-right: 20rpx;
-  color: #999;
 }
 
 .input {
   flex: 1;
   height: 100%;
   font-size: 28rpx;
-  color: #444;
+  color: #333;
+}
+
+.input-placeholder {
+  color: #BBB;
 }
 
 .toggle-password {
-  padding: 10rpx;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16rpx;
+  margin-right: -16rpx;
 }
 
-.toggle-password:active {
-  transform: scale(0.9);
-}
-
-/* 注册按钮 - 流动渐变 */
+/* 注册按钮 */
 .register-btn {
   width: 100%;
-  height: 104rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
-  background-size: 200% 200%;
-  animation: gradient-flow 3s ease infinite;
+  height: 96rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FFB6C1 100%);
   color: #fff;
-  border-radius: 52rpx;
-  font-size: 34rpx;
+  border-radius: 48rpx;
+  font-size: 32rpx;
   font-weight: 600;
-  box-shadow: 0 12rpx 32rpx rgba(255, 154, 158, 0.4);
+  box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.register-btn::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.3) 50%,
-    transparent 70%
-  );
-  animation: shimmer 3s infinite;
+  margin-top: 16rpx;
 }
 
 .register-btn:active {
   transform: scale(0.98);
-  box-shadow: 0 6rpx 20rpx rgba(255, 154, 158, 0.3);
+  box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.25);
 }
 
-.register-btn:disabled {
-  opacity: 0.7;
+.btn-disabled {
+  opacity: 0.5;
+  box-shadow: none;
 }
 
 .btn-loading {
   opacity: 0.8;
 }
 
-.loading-text {
-  font-size: 28rpx;
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
 }
 
+.spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 底部区域 */
 .footer-section {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10rpx;
+  gap: 12rpx;
 }
 
 .footer-text {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #666;
 }
 
 .login-link {
-  font-size: 26rpx;
-  background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 28rpx;
+  color: #FF6B9D;
   font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.login-link:active {
-  opacity: 0.7;
 }
 </style>
