@@ -1006,6 +1006,7 @@ async function loadBanners() {
         <td>
           <div class="table-actions">
             <button class="btn btn-sm btn-primary" onclick="editBanner(${banner.id})">编辑</button>
+            <button class="btn btn-sm ${banner.is_active ? 'btn-warning' : 'btn-success'}" onclick="toggleBannerStatus(${banner.id}, ${banner.is_active ? 1 : 0})">${banner.is_active ? '禁用' : '启用'}</button>
             <button class="btn btn-sm btn-danger" onclick="deleteBanner(${banner.id})">删除</button>
           </div>
         </td>
@@ -1043,8 +1044,133 @@ function showAddBannerModal() {
 }
 
 async function editBanner(id) {
-  // 简化处理，实际应该获取详情
-  showToast('编辑功能开发中...');
+  try {
+    // 获取轮播图详情
+    const response = await fetch(`${API_BASE_URL}/banner/admin/${id}`);
+    if (!response.ok) {
+      showToast('获取轮播图信息失败', 'error');
+      return;
+    }
+    
+    const data = await response.json();
+    const banner = data.banner;
+    
+    if (!banner) {
+      showToast('轮播图不存在', 'error');
+      return;
+    }
+    
+    showEditBannerModal(banner);
+  } catch (error) {
+    console.error('获取轮播图详情失败:', error);
+    showToast('获取轮播图信息失败', 'error');
+  }
+}
+
+function showEditBannerModal(banner) {
+  const modal = document.getElementById('modal');
+  document.getElementById('modal-title').textContent = '编辑轮播图';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="form-group">
+      <label>当前图片</label>
+      <div style="margin-bottom: 10px;">
+        <img src="${banner.image_url.startsWith('http') ? banner.image_url : window.location.origin + banner.image_url}" 
+             alt="当前图片" 
+             style="max-width: 200px; max-height: 100px; border-radius: 8px; object-fit: cover;">
+      </div>
+      <label>更换图片（不选则保留原图）</label>
+      <input type="file" id="banner-image" class="form-control" accept="image/*">
+    </div>
+    <div class="form-group">
+      <label>标题（左下角文字）</label>
+      <input type="text" id="banner-title" class="form-control" placeholder="例如: 热门推荐" value="${escapeHtml(banner.title || '')}">
+    </div>
+    <div class="form-group">
+      <label>链接</label>
+      <input type="text" id="banner-link" class="form-control" placeholder="例如: https://..." value="${escapeHtml(banner.link_url || '')}">
+    </div>
+    <div class="form-group">
+      <label>排序</label>
+      <input type="number" id="banner-sort" class="form-control" value="${banner.sort_order || 0}">
+    </div>
+    <div class="form-group">
+      <label>状态</label>
+      <select id="banner-active" class="form-control">
+        <option value="1" ${banner.is_active ? 'selected' : ''}>启用</option>
+        <option value="0" ${!banner.is_active ? 'selected' : ''}>禁用</option>
+      </select>
+    </div>
+  `;
+  modal.setAttribute('data-type', 'editBanner');
+  modal.setAttribute('data-id', banner.id);
+  modal.classList.add('active');
+}
+
+async function updateBanner() {
+  const modal = document.getElementById('modal');
+  const id = modal.getAttribute('data-id');
+  
+  const imageFile = document.getElementById('banner-image')?.files[0];
+  const title = document.getElementById('banner-title')?.value.trim();
+  const link_url = document.getElementById('banner-link')?.value.trim();
+  const sort_order = parseInt(document.getElementById('banner-sort')?.value || '0');
+  const is_active = parseInt(document.getElementById('banner-active')?.value || '1');
+
+  const formData = new FormData();
+  if (imageFile) {
+    formData.append('image', imageFile);
+  }
+  formData.append('title', title);
+  formData.append('link_url', link_url);
+  formData.append('sort_order', sort_order);
+  formData.append('is_active', is_active);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/banner/admin/update/${id}`, {
+      method: 'PUT',
+      body: formData
+    });
+
+    if (response.ok) {
+      showToast('轮播图更新成功');
+      closeModal();
+      loadBanners();
+    } else {
+      const error = await response.json();
+      showToast(error.error || '更新失败', 'error');
+    }
+  } catch (error) {
+    console.error('更新轮播图失败:', error);
+    showToast('更新失败', 'error');
+  }
+}
+
+async function toggleBannerStatus(id, currentStatus) {
+  const newStatus = currentStatus ? 0 : 1;
+  const actionText = newStatus ? '启用' : '禁用';
+  
+  if (!confirm(`确定要${actionText}这个轮播图吗？`)) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/banner/admin/toggle/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_active: newStatus })
+    });
+
+    if (response.ok) {
+      showToast(`轮播图已${actionText}`);
+      loadBanners();
+    } else {
+      const error = await response.json();
+      showToast(error.error || '操作失败', 'error');
+    }
+  } catch (error) {
+    console.error('切换轮播图状态失败:', error);
+    showToast('操作失败', 'error');
+  }
 }
 
 async function deleteBanner(id) {
@@ -1204,6 +1330,9 @@ function confirmModal() {
       break;
     case 'addBanner':
       saveBanner();
+      break;
+    case 'editBanner':
+      updateBanner();
       break;
     case 'addNotification':
       saveNotification();
