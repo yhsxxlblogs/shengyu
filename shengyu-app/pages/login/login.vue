@@ -83,7 +83,7 @@
         <view class="third-party-buttons">
           <view class="third-party-btn wechat" @click="wechatLogin">
             <view class="wechat-icon">
-              <image src="/static/icons/wechat.png" mode="aspectFit" class="wechat-img"></image>
+              <svg-icon name="wechat" :size="48" color="#07C160" />
             </view>
             <text class="third-party-text">微信登录</text>
           </view>

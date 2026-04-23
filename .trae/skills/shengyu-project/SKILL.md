@@ -81,7 +81,7 @@ shengyu-app/
 │   ├── custom-tabbar/         # 自定义TabBar
 │   ├── cute-modal/            # 模态框组件
 │   ├── cute-toast/            # Toast组件
-│   └── SvgIcon/               # SVG图标组件（支持20+图标，通过image加载SVG文件）
+│   └── SvgIcon/               # SVG图标组件（支持28+图标，统一1.8px线条风格）
 ├── utils/                     # 工具函数
 │   ├── api.js                 # API接口配置
 │   └── websocket.js           # WebSocket封装
@@ -341,8 +341,10 @@ await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
 5. API限流防刷
 6. 单元测试覆盖
 7. 热门帖子算法优化（考虑时间衰减因子）
-8. 移动端图标显示优化（已完成：使用image组件加载SVG）
+8. 移动端图标显示优化（已完成：使用SVG图标组件，统一1.8px线条风格）
 9. 扫码功能安卓兼容性优化（已完成：添加权限检查、生命周期管理）
+10. 轮播图UI优化（已完成：圆角24rpx，中心放大1.08倍，阴影效果）
+11. 热门推荐UI优化（已完成：隐藏帖子图片，突出文字内容）
 
 ## 系统运行流程
 

@@ -32,6 +32,15 @@ const iconMap = {
   'settings': '/static/icons/svg/settings.svg',
   'flashlight': '/static/icons/svg/flashlight.svg',
   'image': '/static/icons/svg/image.svg',
+  'wechat': '/static/icons/svg/wechat.svg',
+  'file': '/static/icons/svg/file.svg',
+  'music': '/static/icons/svg/music.svg',
+  'info': '/static/icons/svg/info.svg',
+  'edit': '/static/icons/svg/edit.svg',
+  'sound': '/static/icons/svg/sound.svg',
+  'users': '/static/icons/svg/users.svg',
+  'star': '/static/icons/svg/star.svg',
+  'folder': '/static/icons/svg/folder.svg',
 }
 
 export default {

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -11,18 +11,18 @@
         <view class="page-container">
           <!-- 录制声音按钮 -->
           <view class="publish-btn" @click="goRecord">
-            <SvgIcon name="plus" :size="40" class="publish-icon-svg" />
+            <svg-icon name="plus" :size="40" class="publish-icon-svg" />
           </view>
           <view class="index-content">
             <view class="search-bar">
               <view class="search-input-wrapper" @click="goSearch">
                 <view class="search-input">
-                  <SvgIcon name="search" :size="28" class="search-icon-svg" />
+                  <svg-icon name="search" :size="28" class="search-icon-svg" />
                   <text class="search-placeholder">搜索声音、帖子、用户...</text>
                 </view>
               </view>
               <view class="scan-btn" @click="goScan">
-                <SvgIcon name="scan" :size="32" class="scan-icon-svg" />
+                <svg-icon name="scan" :size="32" class="scan-icon-svg" />
               </view>
             </view>
 
@@ -107,7 +107,7 @@
                 <text class="section-title">热门推荐</text>
                 <view class="more-btn" @click="goCommunity">
                   <text class="more-text">更多</text>
-                  <SvgIcon name="arrow-right" :size="24" class="more-icon" />
+                  <svg-icon name="arrow-right" :size="24" class="more-icon" />
                 </view>
               </view>
 
@@ -131,29 +131,29 @@
                       <view class="recommend-author">
                         <image v-if="post.avatar" :src="getAvatarUrl(post.avatar)" class="author-avatar" mode="aspectFill" />
                         <view v-else class="author-avatar-placeholder">
-                          <SvgIcon name="user" :size="24" />
+                          <svg-icon name="user" :size="24" />
                         </view>
                         <text class="author-name">{{ post.username }}</text>
                       </view>
                       <view class="recommend-stats">
                         <view class="stat-item">
-                          <SvgIcon name="heart" :size="20" class="stat-icon" />
+                          <svg-icon name="heart" :size="20" class="stat-icon" />
                           <text class="stat-num">{{ post.like_count || 0 }}</text>
                         </view>
                         <view class="stat-item">
-                          <SvgIcon name="message" :size="20" class="stat-icon" />
+                          <svg-icon name="message" :size="20" class="stat-icon" />
                           <text class="stat-num">{{ post.comment_count || 0 }}</text>
                         </view>
                       </view>
                     </view>
                   </view>
-                  <image v-if="post.image_url" :src="getRecommendImageUrl(post.image_url)" class="recommend-image" mode="aspectFill" />
+                  <!-- 热门推荐不显示图片 -->
                 </view>
               </view>
 
               <!-- 空状态 -->
               <view v-if="!popularLoading && popularPosts.length === 0" class="empty-state">
-                <SvgIcon name="info" :size="48" class="empty-icon" />
+                <svg-icon name="info" :size="48" class="empty-icon" />
                 <text class="empty-text">暂无热门帖子</text>
               </view>
             </view>
@@ -196,7 +196,7 @@
             <!-- 社区内容 -->
             <view v-if="communityTab === 'community'" class="community-panel">
               <view class="publish-btn" @click="goPublish">
-                <SvgIcon name="plus" :size="40" class="publish-icon-svg" />
+                <svg-icon name="plus" :size="40" class="publish-icon-svg" />
               </view>
 
               <view class="community-header">
@@ -246,17 +246,17 @@
                       <text class="content">{{ post.content }}</text>
                       <image v-if="post.image_url" :src="getAvatarUrl(post.image_url)" class="post-image" mode="aspectFit"></image>
                       <view v-if="post.sound_url" class="audio-container" @click.stop="playSound(post.sound_url)">
-                        <SvgIcon name="play" :size="28" class="audio-icon-svg" />
+                        <svg-icon name="play" :size="28" class="audio-icon-svg" />
                         <text class="audio-text">点击播放声音</text>
                       </view>
                     </view>
                     <view class="post-footer">
                       <view class="action-item" @click.stop="likePost(post.id)">
-                        <SvgIcon :name="post.liked ? 'heart' : 'heart-o'" :size="28" class="action-icon-svg" :class="{ liked: post.liked }" />
+                        <svg-icon :name="post.liked ? 'heart' : 'heart-o'" :size="28" class="action-icon-svg" :class="{ liked: post.liked }" />
                         <text class="action-text">{{ post.like_count || 0 }}</text>
                       </view>
                       <view class="action-item" @click.stop="showComments(post.id)">
-                        <SvgIcon name="message" :size="28" class="action-icon-svg" />
+                        <svg-icon name="message" :size="28" class="action-icon-svg" />
                         <text class="action-text">{{ post.comment_count || 0 }}</text>
                       </view>
                     </view>
@@ -290,7 +290,7 @@
                 <text class="loading-text">加载中...</text>
               </view>
               <view v-else-if="messageList.length === 0" class="empty-messages">
-                <SvgIcon name="message" :size="80" class="empty-icon-svg" />
+                <svg-icon name="message" :size="80" class="empty-icon-svg" />
                 <text class="empty-text">还没有私信</text>
                 <text class="empty-subtext">去社区关注感兴趣的人吧</text>
               </view>
@@ -322,7 +322,7 @@
             <view class="comment-popup-header">
               <text class="comment-popup-title">评论</text>
               <view class="comment-popup-close" @click="closeCommentPopup">
-                <SvgIcon name="close" :size="32" />
+                <svg-icon name="close" :size="32" />
               </view>
             </view>
             <view class="comment-list">
@@ -386,7 +386,7 @@
             <!-- 未登录状态 -->
             <view v-else-if="!isLoggedIn" class="not-logged-in">
               <view class="empty-avatar">
-                <SvgIcon name="user" :size="80" class="empty-icon-svg" />
+                <svg-icon name="user" :size="80" class="empty-icon-svg" />
               </view>
               <text class="empty-title">登录后享受更多功能</text>
               <text class="empty-desc">记录动物声音、发布帖子、互动交流</text>
@@ -403,7 +403,7 @@
                     <text class="user-email">{{ userInfo.email || '' }}</text>
                   </view>
                   <view class="edit-icon" @click="changeAvatar">
-                    <SvgIcon name="camera" :size="28" class="edit-icon-svg" />
+                    <svg-icon name="camera" :size="28" class="edit-icon-svg" />
                   </view>
                 </view>
 
@@ -441,38 +441,38 @@
                 <text class="menu-title">我的功能</text>
                 <view class="menu-item" @click="goToMyPosts">
                   <view class="menu-icon-wrapper">
-                    <SvgIcon name="edit" :size="32" class="menu-icon-svg" />
+                    <svg-icon name="edit" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">我的帖子</text>
-                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
+                  <svg-icon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
                 <view class="menu-item" @click="goToMySounds">
                   <view class="menu-icon-wrapper">
-                    <SvgIcon name="sound" :size="32" class="menu-icon-svg" />
+                    <svg-icon name="sound" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">我的声音</text>
-                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
+                  <svg-icon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
                 <view class="menu-item" @click="goToMyLikes">
                   <view class="menu-icon-wrapper">
-                    <SvgIcon name="heart" :size="32" class="menu-icon-svg" />
+                    <svg-icon name="heart" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">我的点赞</text>
-                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
+                  <svg-icon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
                 <view class="menu-item" @click="goToFollows">
                   <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                    <SvgIcon name="users" :size="32" class="menu-icon-svg" />
+                    <svg-icon name="users" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">我的关注</text>
-                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
+                  <svg-icon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
                 <view class="menu-item" @click="goToFollowers">
                   <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                    <SvgIcon name="star" :size="32" class="menu-icon-svg" />
+                    <svg-icon name="star" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">我的粉丝</text>
-                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
+                  <svg-icon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
               </view>
 
@@ -480,17 +480,17 @@
                 <text class="menu-title">设置与帮助</text>
                 <view class="menu-item" @click="goToSettings">
                   <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <SvgIcon name="settings" :size="32" class="menu-icon-svg" />
+                    <svg-icon name="settings" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">设置</text>
-                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
+                  <svg-icon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
                 <view class="menu-item" @click="goToAbout">
                   <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    <SvgIcon name="info" :size="32" class="menu-icon-svg" />
+                    <svg-icon name="info" :size="32" class="menu-icon-svg" />
                   </view>
                   <text class="menu-text">关于我们</text>
-                  <SvgIcon name="arrow-right" :size="24" class="menu-arrow-svg" />
+                  <svg-icon name="arrow-right" :size="24" class="menu-arrow-svg" />
                 </view>
               </view>
 
@@ -1884,15 +1884,16 @@ export default {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 16rpx;
+  border-radius: 24rpx;
   overflow: hidden;
   background: #FFFFFF;
   transition: transform 0.35s ease, opacity 0.35s ease;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
 }
 
 /* 中心激活状态 */
 .banner-item-wrapper.banner-active .banner-card {
-  transform: scale(1);
+  transform: scale(1.08);
   opacity: 1;
 }
 
@@ -1917,7 +1918,7 @@ export default {
 .banner-image {
   width: 100%;
   height: 100%;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
 }
 
 .banner-placeholder {
@@ -1927,7 +1928,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
 }
 
 .placeholder-text {

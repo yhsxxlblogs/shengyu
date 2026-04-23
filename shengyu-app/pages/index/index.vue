@@ -1,26 +1,26 @@
-<template>
+﻿<template>
   <view class="index-container page-enter">
     <view class="search-bar">
       <view class="search-input-wrapper" @click="goSearch">
         <view class="search-input">
-          <SvgIcon name="search" :size="28" class="search-icon-svg" />
+          <svg-icon name="search" :size="28" class="search-icon-svg" />
           <text class="search-placeholder">搜索声音、帖子、用户...</text>
         </view>
       </view>
       <view class="scan-btn" @click="goScan">
-        <SvgIcon name="scan" :size="32" class="scan-icon-svg" />
+        <svg-icon name="scan" :size="32" class="scan-icon-svg" />
       </view>
     </view>
     
     <!-- 录制声音按钮 -->
     <view class="record-btn" @click="goRecord">
-      <SvgIcon name="plus" :size="40" class="record-btn-icon-svg" />
+      <svg-icon name="plus" :size="40" class="record-btn-icon-svg" />
     </view>
     
     <!-- 录制声音区域 -->
     <view class="record-section" @click="goRecord">
       <view class="record-circle">
-        <SvgIcon name="plus" :size="48" class="record-icon-svg" />
+        <svg-icon name="plus" :size="48" class="record-icon-svg" />
         <text class="record-text">录制声音</text>
       </view>
       <text class="record-desc">点击录制你的声音</text>
@@ -58,7 +58,7 @@
         <text class="section-title">热门推荐</text>
         <view class="more-btn" @click="goCommunity">
           <text class="more-text">更多</text>
-          <SvgIcon name="arrow-right" :size="24" class="more-icon" />
+          <svg-icon name="arrow-right" :size="24" class="more-icon" />
         </view>
       </view>
 
@@ -82,17 +82,17 @@
               <view class="recommend-author">
                 <image v-if="post.avatar" :src="getAvatarUrl(post.avatar)" class="author-avatar" mode="aspectFill" />
                 <view v-else class="author-avatar-placeholder">
-                  <SvgIcon name="user" :size="24" />
+                  <svg-icon name="user" :size="24" />
                 </view>
                 <text class="author-name">{{ post.username }}</text>
               </view>
               <view class="recommend-stats">
                 <view class="stat-item">
-                  <SvgIcon name="heart" :size="20" class="stat-icon" />
+                  <svg-icon name="heart" :size="20" class="stat-icon" />
                   <text class="stat-num">{{ post.like_count || 0 }}</text>
                 </view>
                 <view class="stat-item">
-                  <SvgIcon name="message" :size="20" class="stat-icon" />
+                  <svg-icon name="message" :size="20" class="stat-icon" />
                   <text class="stat-num">{{ post.comment_count || 0 }}</text>
                 </view>
               </view>
@@ -104,7 +104,7 @@
 
       <!-- 空状态 -->
       <view v-if="!popularLoading && popularPosts.length === 0" class="empty-state">
-        <SvgIcon name="info" :size="48" class="empty-icon" />
+        <svg-icon name="info" :size="48" class="empty-icon" />
         <text class="empty-text">暂无热门帖子</text>
       </view>
     </view>
@@ -118,13 +118,13 @@
         <!-- 图标区域 -->
         <view class="notification-icon-wrapper">
           <view class="notification-icon">
-            <SvgIcon name="settings" :size="48" class="notification-icon-svg" />
+            <svg-icon name="settings" :size="48" class="notification-icon-svg" />
           </view>
         </view>
         
         <!-- 关闭按钮 -->
         <view class="notification-close" @click="closeNotification">
-          <SvgIcon name="close" :size="32" />
+          <svg-icon name="close" :size="32" />
         </view>
         
         <!-- 标题 -->
