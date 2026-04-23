@@ -1,5 +1,5 @@
 {
-    "name" : "animal-sound-app",
+    "name" : "声愈",
     "appid" : "__UNI__F18E899",
     "description" : "",
     "versionName" : "1.0.0",
@@ -15,9 +15,13 @@
             "autoclose" : true,
             "delay" : 0
         },
-        "modules" : {},
+        "modules" : {
+            "Payment" : {}
+        },
         "distribute" : {
             "android" : {
+                "package" : "xyz.supersyh.shengyu",
+                "abiFilters" : ["armeabi-v7a", "arm64-v8a"],
                 "permissions" : [
                     "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
                     "<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\"/>",
@@ -41,9 +45,23 @@
                 ]
             },
             "ios" : {},
-            "sdkConfigs" : {},
+            "sdkConfigs" : {
+                "payment" : {
+                    "alipay" : {
+                        "__platform__" : [ "android" ]
+                    }
+                }
+            },
             "splashscreen" : {
                 "androidStyle" : "default"
+            },
+            "icons" : {
+                "android" : {
+                    "hdpi" : "static/icons/icon-72x72.png",
+                    "xhdpi" : "static/icons/icon-96x96.png",
+                    "xxhdpi" : "static/icons/icon-144x144.png",
+                    "xxxhdpi" : "static/icons/icon-192x192.png"
+                }
             }
         }
     },
