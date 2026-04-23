@@ -20,7 +20,6 @@
         },
         "distribute" : {
             "android" : {
-                "packagename" : "xyz.supersyh.shengyu",
                 "permissions" : [
                     "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
                     "<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\"/>",
@@ -87,5 +86,6 @@
     "uniStatistics" : {
         "enable" : false
     },
-    "vueVersion" : "3"
+    "vueVersion" : "3",
+    "locale" : "zh-Hans"
 }
