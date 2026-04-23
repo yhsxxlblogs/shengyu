@@ -14,17 +14,8 @@
       <view class="form-section">
         <view class="form-item">
           <view class="input-wrapper">
-            <view class="input-icon gradient-icon">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="url(#gradient1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <defs>
-                  <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#FF9A9E"/>
-                    <stop offset="100%" style="stop-color:#FF6B9D"/>
-                  </linearGradient>
-                </defs>
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
+            <view class="input-icon">
+              <text class="iconfont icon-user"></text>
             </view>
             <input 
               type="text" 
@@ -38,17 +29,8 @@
         
         <view class="form-item">
           <view class="input-wrapper">
-            <view class="input-icon gradient-icon">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="url(#gradient2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <defs>
-                  <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#FF9A9E"/>
-                    <stop offset="100%" style="stop-color:#FF6B9D"/>
-                  </linearGradient>
-                </defs>
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
+            <view class="input-icon">
+              <text class="iconfont icon-lock"></text>
             </view>
             <input 
               :type="showPassword ? 'text' : 'password'" 
@@ -58,14 +40,7 @@
               placeholder-class="input-placeholder"
             />
             <view class="toggle-password" @click="showPassword = !showPassword">
-              <svg v-if="showPassword" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-              <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                <line x1="1" y1="1" x2="23" y2="23"/>
-              </svg>
+              <text class="iconfont" :class="showPassword ? 'icon-eye' : 'icon-eye-off'"></text>
             </view>
           </view>
         </view>
@@ -108,15 +83,7 @@
         <view class="third-party-buttons">
           <view class="third-party-btn wechat" @click="wechatLogin">
             <view class="wechat-icon">
-              <svg viewBox="0 0 24 24" width="32" height="32">
-                <defs>
-                  <linearGradient id="wechatGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#07C160"/>
-                    <stop offset="100%" style="stop-color:#05a350"/>
-                  </linearGradient>
-                </defs>
-                <path fill="url(#wechatGradient)" d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.045c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.032zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
-              </svg>
+              <image src="/static/icons/wechat.png" mode="aspectFit" class="wechat-img"></image>
             </view>
             <text class="third-party-text">微信登录</text>
           </view>
@@ -232,6 +199,9 @@ export default {
 </script>
 
 <style scoped>
+/* 引入图标字体 */
+@import url('/static/iconfont.css');
+
 .login-page {
   min-height: 100vh;
   background: linear-gradient(180deg, #FFF0F5 0%, #FFF8FA 50%, #FFFFFF 100%);
@@ -323,8 +293,9 @@ export default {
   margin-right: 16rpx;
 }
 
-.gradient-icon {
-  filter: drop-shadow(0 2rpx 4rpx rgba(255, 107, 157, 0.2));
+.iconfont {
+  font-size: 40rpx;
+  color: #FF9A9E;
 }
 
 .input {
@@ -344,6 +315,11 @@ export default {
   justify-content: center;
   padding: 20rpx;
   margin-right: -20rpx;
+}
+
+.toggle-password .iconfont {
+  font-size: 36rpx;
+  color: #999;
 }
 
 .forgot-password {
@@ -484,7 +460,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 2rpx 4rpx rgba(7, 193, 96, 0.2));
+}
+
+.wechat-img {
+  width: 64rpx;
+  height: 64rpx;
 }
 
 .third-party-text {
