@@ -1,37 +1,82 @@
 <template>
-  <view class="login-page page-enter">
+  <view class="login-page">
     <view class="login-container">
+      <!-- 头部区域 -->
       <view class="header-section">
         <view class="app-icon">
-          <text class="icon-emoji">🐾</text>
+          <image src="/static/icons/icon-144x144.png" mode="aspectFit" class="app-logo" />
         </view>
         <text class="app-title">声愈</text>
         <text class="app-subtitle">发现身边的美好声音</text>
       </view>
       
+      <!-- 表单区域 -->
       <view class="form-section">
         <view class="form-item">
           <view class="input-wrapper">
-            <SvgIcon name="user" :size="36" class="input-icon-svg" />
-            <input type="text" v-model="form.email" placeholder="请输入用户名或邮箱" class="input" />
+            <view class="input-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </view>
+            <input 
+              type="text" 
+              v-model="form.email" 
+              placeholder="请输入用户名或邮箱" 
+              class="input"
+              placeholder-class="input-placeholder"
+            />
           </view>
         </view>
+        
         <view class="form-item">
           <view class="input-wrapper">
-            <SvgIcon name="lock" :size="36" class="input-icon-svg" />
-            <input :type="showPassword ? 'text' : 'password'" v-model="form.password" placeholder="请输入密码" class="input" />
-            <SvgIcon :name="showPassword ? 'eye' : 'eye-off'" :size="32" class="toggle-password" @click="showPassword = !showPassword" />
+            <view class="input-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </view>
+            <input 
+              :type="showPassword ? 'text' : 'password'" 
+              v-model="form.password" 
+              placeholder="请输入密码" 
+              class="input"
+              placeholder-class="input-placeholder"
+            />
+            <view class="toggle-password" @click="showPassword = !showPassword">
+              <svg v-if="showPassword" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </view>
           </view>
         </view>
+        
         <view class="forgot-password">
-          <text class="forgot-text">忘记密码？</text>
+          <text class="forgot-text" @click="forgotPassword">忘记密码？</text>
         </view>
-        <button class="login-btn" @click="login" :disabled="loading" :class="{ 'btn-loading': loading }">
+        
+        <button 
+          class="login-btn" 
+          @click="login" 
+          :disabled="loading || !form.email || !form.password"
+          :class="{ 'btn-disabled': !form.email || !form.password, 'btn-loading': loading }"
+        >
           <text v-if="!loading">登录</text>
-          <text v-else class="loading-text">登录中...</text>
+          <view v-else class="loading-spinner">
+            <view class="spinner"></view>
+            <text>登录中...</text>
+          </view>
         </button>
       </view>
       
+      <!-- 底部区域 -->
       <view class="footer-section">
         <text class="footer-text">还没有账号？</text>
         <text class="register-link" @click="goToRegister">立即注册</text>
@@ -50,7 +95,11 @@
         </view>
         <view class="third-party-buttons">
           <view class="third-party-btn wechat" @click="wechatLogin">
-            <SvgIcon name="message" :size="40" class="third-party-icon" />
+            <view class="wechat-icon">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="#07C160">
+                <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.045c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.032zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
+              </svg>
+            </view>
             <text class="third-party-text">微信登录</text>
           </view>
         </view>
@@ -88,7 +137,6 @@ export default {
         
         const responseData = res.data;
         if (responseData.message === '登录成功') {
-          // 先存储登录状态，再显示提示
           uni.setStorageSync('token', responseData.token);
           uni.setStorageSync('user', responseData.user);
           uni.setStorageSync('userId', responseData.user.id);
@@ -96,7 +144,6 @@ export default {
           uni.setStorageSync('isLoggedIn', true);
           uni.removeStorageSync('guest');
           
-          // 获取用户的关注列表并存储
           this.loadFollowingList(responseData.token);
           
           uni.showToast({ 
@@ -104,7 +151,6 @@ export default {
             icon: 'success',
             duration: 1500,
             complete: () => {
-              // 确保状态存储完成后再跳转
               setTimeout(() => {
                 uni.reLaunch({ 
                   url: '/pages/main/main',
@@ -113,7 +159,6 @@ export default {
                   },
                   fail: (err) => {
                     console.error('登录跳转失败:', err)
-                    // 如果跳转失败，尝试使用 switchTab
                     uni.switchTab({
                       url: '/pages/main/main'
                     })
@@ -141,13 +186,10 @@ export default {
       uni.removeStorageSync('user');
       uni.reLaunch({ url: '/pages/main/main' });
     },
-
-    /**
-     * 微信登录（空壳）
-     * TODO: 接入微信开放平台后完善
-     */
+    forgotPassword() {
+      uni.showToast({ title: '功能开发中', icon: 'none' });
+    },
     async wechatLogin() {
-      // 动态导入微信登录模块
       const { wechatAuth } = await import('@/utils/wechat-auth.js');
       await wechatAuth.init();
       const result = await wechatAuth.login();
@@ -156,7 +198,6 @@ export default {
         uni.reLaunch({ url: '/pages/main/main' });
       }
     },
-    // 加载用户的关注列表
     async loadFollowingList(token) {
       try {
         const res = await uni.request({
@@ -165,7 +206,6 @@ export default {
           header: { Authorization: `Bearer ${token}` }
         });
         if (res.statusCode === 200 && res.data.follows) {
-          // 将关注列表转换为 Set 存储，方便快速查找
           const followingSet = new Set(res.data.follows.map(f => String(f.id)));
           uni.setStorageSync('followingSet', Array.from(followingSet));
           console.log('关注列表已缓存:', followingSet);
@@ -179,271 +219,230 @@ export default {
 </script>
 
 <style scoped>
-@import '/static/styles/theme.css';
-
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #FFF0F3 0%, #F8F8F8 50%, #FFFFFF 100%);
+  background: linear-gradient(180deg, #FFF5F7 0%, #FFFFFF 100%);
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 20rpx;
-  padding-top: 80rpx;
+  padding: 40rpx;
+  padding-top: 100rpx;
 }
 
 .login-container {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 600rpx;
+  max-width: 640rpx;
 }
 
+/* 头部区域 */
 .header-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 40rpx;
-}
-
-/* App图标 - 流动渐变 */
-.app-icon {
-  width: 180rpx;
-  height: 180rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
-  background-size: 200% 200%;
-  animation: gradient-flow 4s ease infinite;
-  border-radius: 48rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 16rpx 48rpx rgba(255, 154, 158, 0.35);
-  margin-bottom: 40rpx;
-  position: relative;
-  overflow: hidden;
-}
-
-.app-icon::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 70%
-  );
-  animation: shimmer 3s infinite;
-}
-
-.icon-emoji {
-  font-size: 90rpx;
-  position: relative;
-  z-index: 1;
-}
-
-.app-title {
-  font-size: 52rpx;
-  font-weight: 700;
-  background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 12rpx;
-}
-
-.app-subtitle {
-  font-size: 26rpx;
-  color: #888;
-}
-
-.form-section {
   margin-bottom: 60rpx;
 }
 
-.form-item {
-  margin-bottom: 30rpx;
+.app-icon {
+  width: 160rpx;
+  height: 160rpx;
+  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+  border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12rpx 40rpx rgba(255, 182, 193, 0.3);
+  margin-bottom: 32rpx;
+  overflow: hidden;
 }
 
-/* 输入框 - 玻璃拟态 */
+.app-logo {
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.app-title {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #FF6B9D;
+  margin-bottom: 12rpx;
+  letter-spacing: 4rpx;
+}
+
+.app-subtitle {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 表单区域 */
+.form-section {
+  margin-bottom: 40rpx;
+}
+
+.form-item {
+  margin-bottom: 24rpx;
+}
+
 .input-wrapper {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10rpx);
-  -webkit-backdrop-filter: blur(10rpx);
-  border-radius: 24rpx;
-  padding: 0 32rpx;
-  height: 104rpx;
-  border: 2rpx solid rgba(255, 154, 158, 0.15);
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 0 28rpx;
+  height: 96rpx;
+  border: 2rpx solid #F0F0F0;
   transition: all 0.3s ease;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
 }
 
 .input-wrapper:focus-within {
-  border-color: rgba(255, 154, 158, 0.4);
-  box-shadow: 0 4rpx 20rpx rgba(255, 154, 158, 0.15);
-  transform: translateY(-2rpx);
+  border-color: #FFB6C1;
+  box-shadow: 0 4rpx 16rpx rgba(255, 182, 193, 0.15);
 }
 
-.input-icon-svg {
+.input-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-right: 20rpx;
-  color: #999;
 }
 
 .input {
   flex: 1;
   height: 100%;
   font-size: 28rpx;
-  color: #444;
+  color: #333;
+}
+
+.input-placeholder {
+  color: #BBB;
 }
 
 .toggle-password {
-  padding: 10rpx;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: #999;
-}
-
-.toggle-password:active {
-  transform: scale(0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16rpx;
+  margin-right: -16rpx;
 }
 
 .forgot-password {
   text-align: right;
   margin-bottom: 40rpx;
+  margin-top: 8rpx;
 }
 
 .forgot-text {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #FF9A9E;
-  font-weight: 500;
 }
 
-/* 登录按钮 - 流动渐变 */
+/* 登录按钮 */
 .login-btn {
   width: 100%;
-  height: 104rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
-  background-size: 200% 200%;
-  animation: gradient-flow 3s ease infinite;
+  height: 96rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FFB6C1 100%);
   color: #fff;
-  border-radius: 52rpx;
-  font-size: 34rpx;
+  border-radius: 48rpx;
+  font-size: 32rpx;
   font-weight: 600;
-  box-shadow: 0 12rpx 32rpx rgba(255, 154, 158, 0.4);
+  box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.login-btn::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.3) 50%,
-    transparent 70%
-  );
-  animation: shimmer 3s infinite;
 }
 
 .login-btn:active {
   transform: scale(0.98);
-  box-shadow: 0 6rpx 20rpx rgba(255, 154, 158, 0.3);
+  box-shadow: 0 4rpx 16rpx rgba(255, 154, 158, 0.25);
 }
 
-.login-btn:disabled {
-  opacity: 0.7;
+.btn-disabled {
+  opacity: 0.5;
+  box-shadow: none;
 }
 
 .btn-loading {
   opacity: 0.8;
 }
 
-.loading-text {
-  font-size: 28rpx;
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
 }
 
+.spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 底部区域 */
 .footer-section {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10rpx;
-  margin-bottom: 30rpx;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
 }
 
 .footer-text {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #666;
 }
 
 .register-link {
-  font-size: 26rpx;
-  background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 28rpx;
+  color: #FF6B9D;
   font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.register-link:active {
-  opacity: 0.7;
 }
 
 .guest-section {
   text-align: center;
+  margin-bottom: 60rpx;
 }
 
 .guest-link {
-  font-size: 26rpx;
-  color: #888;
-  transition: all 0.3s ease;
-}
-
-.guest-link:active {
-  color: #FF9A9E;
+  font-size: 28rpx;
+  color: #999;
 }
 
 /* 第三方登录 */
 .third-party-login {
-  margin-top: 60rpx;
+  margin-top: auto;
 }
 
 .divider {
   display: flex;
   align-items: center;
-  gap: 20rpx;
-  margin-bottom: 40rpx;
+  gap: 24rpx;
+  margin-bottom: 32rpx;
 }
 
 .divider-line {
   flex: 1;
   height: 1rpx;
-  background: linear-gradient(90deg, transparent, #ddd, transparent);
+  background: #EEE;
 }
 
 .divider-text {
   font-size: 24rpx;
-  color: #999;
+  color: #BBB;
 }
 
 .third-party-buttons {
   display: flex;
   justify-content: center;
-  gap: 40rpx;
 }
 
 .third-party-btn {
@@ -451,27 +450,20 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 12rpx;
-  padding: 20rpx 40rpx;
+  padding: 20rpx 48rpx;
   border-radius: 16rpx;
-  background: #f8f8f8;
+  background: #F8F8F8;
   transition: all 0.3s ease;
 }
 
 .third-party-btn:active {
-  transform: scale(0.95);
-  background: #f0f0f0;
+  background: #F0F0F0;
 }
 
-.third-party-btn.wechat {
-  background: #f0f9f4;
-}
-
-.third-party-btn.wechat:active {
-  background: #e0f0e8;
-}
-
-.third-party-icon {
-  color: #07C160;
+.wechat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .third-party-text {
