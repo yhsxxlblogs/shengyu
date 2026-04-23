@@ -15,7 +15,7 @@
         <view class="form-item">
           <view class="input-wrapper">
             <view class="input-icon">
-              <uni-icons type="person" size="20" color="#FF9A9E"></uni-icons>
+              <svg-icon name="user" :size="40" color="#FF9A9E" />
             </view>
             <input 
               type="text" 
@@ -30,7 +30,7 @@
         <view class="form-item">
           <view class="input-wrapper">
             <view class="input-icon">
-              <uni-icons type="locked" size="20" color="#FF9A9E"></uni-icons>
+              <svg-icon name="lock" :size="40" color="#FF9A9E" />
             </view>
             <input 
               :type="showPassword ? 'text' : 'password'" 
@@ -40,7 +40,7 @@
               placeholder-class="input-placeholder"
             />
             <view class="toggle-password" @click="showPassword = !showPassword">
-              <uni-icons :type="showPassword ? 'eye-filled' : 'eye-slash-filled'" size="18" color="#999"></uni-icons>
+              <svg-icon :name="showPassword ? 'eye' : 'eye-off'" :size="36" color="#999" />
             </view>
           </view>
         </view>

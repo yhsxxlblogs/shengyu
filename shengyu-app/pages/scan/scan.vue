@@ -3,7 +3,7 @@
     <!-- 自定义导航栏 -->
     <view class="custom-nav">
       <view class="nav-back" @click="goBack">
-        <SvgIcon name="arrow-left" :size="36" class="back-icon-svg" />
+        <svg-icon name="arrow-left" :size="36" color="#FFFFFF" />
       </view>
       <text class="nav-title">扫描二维码</text>
       <view class="nav-right"></view>
@@ -25,13 +25,13 @@
     <view class="scan-actions">
       <view class="action-item" @click="toggleFlash">
         <view class="action-icon" :class="{ active: flashOn }">
-          <SvgIcon name="flashlight" :size="44" />
+          <svg-icon name="flashlight" :size="44" color="#FFFFFF" />
         </view>
         <text class="action-text">闪光灯</text>
       </view>
       <view class="action-item" @click="chooseFromAlbum">
         <view class="action-icon">
-          <SvgIcon name="image" :size="44" />
+          <svg-icon name="image" :size="44" color="#FFFFFF" />
         </view>
         <text class="action-text">相册</text>
       </view>
@@ -48,37 +48,44 @@ export default {
     }
   },
   onLoad() {
-    this.startScan()
+    // 延迟启动扫描，确保页面已完全渲染
+    setTimeout(() => {
+      this.startScan()
+    }, 500)
   },
   onUnload() {
     this.stopScan()
   },
+  onHide() {
+    // 页面隐藏时停止扫描
+    this.stopScan()
+  },
+  onShow() {
+    // 页面显示时重新开始扫描
+    if (!this.scanning) {
+      setTimeout(() => {
+        this.startScan()
+      }, 300)
+    }
+  },
   methods: {
     goBack() {
+      this.stopScan()
       uni.navigateBack()
     },
     startScan() {
       // #ifdef APP-PLUS
       this.scanning = true
-      uni.scanCode({
-        onlyFromCamera: true,
-        scanType: ['qrCode', 'barCode'],
-        success: (res) => {
-          this.handleScanResult(res.result)
-        },
-        fail: (err) => {
-          console.error('扫描失败:', err)
-          uni.showToast({
-            title: '扫描失败',
-            icon: 'none'
-          })
-        },
-        complete: () => {
-          if (this.scanning) {
-            // 继续扫描
-            setTimeout(() => this.startScan(), 500)
-          }
-        }
+      
+      // 检查相机权限（安卓需要）
+      this.checkCameraPermission().then(() => {
+        this.doScan()
+      }).catch(() => {
+        uni.showModal({
+          title: '权限提示',
+          content: '需要相机权限才能扫码，请在设置中开启',
+          showCancel: false
+        })
       })
       // #endif
 
@@ -91,23 +98,76 @@ export default {
       // #endif
 
       // #ifdef MP-WEIXIN
+      this.scanning = true
+      this.doScan()
+      // #endif
+    },
+    
+    // 检查相机权限（主要用于安卓）
+    checkCameraPermission() {
+      return new Promise((resolve, reject) => {
+        // #ifdef APP-PLUS
+        const os = plus.os.name
+        if (os === 'Android') {
+          const Camera = plus.android.importClass('android.hardware.Camera')
+          try {
+            const camera = Camera.open(0)
+            camera.release()
+            resolve()
+          } catch (e) {
+            reject()
+          }
+        } else {
+          resolve()
+        }
+        // #endif
+        
+        // #ifndef APP-PLUS
+        resolve()
+        // #endif
+      })
+    },
+    
+    doScan() {
+      if (!this.scanning) return
+      
       uni.scanCode({
         onlyFromCamera: true,
-        scanType: ['qrCode'],
+        scanType: ['qrCode', 'barCode'],
         success: (res) => {
           this.handleScanResult(res.result)
         },
         fail: (err) => {
           console.error('扫描失败:', err)
+          // 用户取消不提示错误
+          if (err.errMsg && err.errMsg.includes('cancel')) {
+            return
+          }
+          uni.showToast({
+            title: '扫描失败',
+            icon: 'none'
+          })
+        },
+        complete: () => {
+          // 继续扫描（如果还在扫描状态）
+          if (this.scanning) {
+            setTimeout(() => {
+              this.doScan()
+            }, 800)
+          }
         }
       })
-      // #endif
     },
+    
     stopScan() {
       this.scanning = false
     },
+    
     handleScanResult(result) {
       console.log('扫描结果:', result)
+      
+      // 停止扫描
+      this.stopScan()
 
       // 解析二维码内容
       if (result.startsWith('http://') || result.startsWith('https://')) {
@@ -116,6 +176,7 @@ export default {
           title: '扫描结果',
           content: result,
           confirmText: '打开',
+          cancelText: '取消',
           success: (res) => {
             if (res.confirm) {
               // #ifdef APP-PLUS
@@ -129,6 +190,9 @@ export default {
                 url: `/pages/webview/webview?url=${encodeURIComponent(result)}`
               })
               // #endif
+            } else {
+              // 用户取消，重新开始扫描
+              this.startScan()
             }
           }
         })
@@ -142,7 +206,8 @@ export default {
         uni.showModal({
           title: '扫描结果',
           content: result,
-          showCancel: false,
+          showCancel: true,
+          cancelText: '取消',
           confirmText: '复制',
           success: (res) => {
             if (res.confirm) {
@@ -156,38 +221,48 @@ export default {
                 }
               })
             }
+            // 重新开始扫描
+            setTimeout(() => {
+              this.startScan()
+            }, 500)
           }
         })
       }
     },
+    
     toggleFlash() {
       this.flashOn = !this.flashOn
+      
       // #ifdef APP-PLUS
-      const Camera = plus.camera.getCamera()
-      if (Camera) {
-        Camera.setFlashMode(this.flashOn ? 'on' : 'off')
+      try {
+        const Camera = plus.camera.getCamera()
+        if (Camera && Camera.setFlashMode) {
+          Camera.setFlashMode(this.flashOn ? 'on' : 'off')
+        }
+      } catch (e) {
+        console.error('闪光灯控制失败:', e)
       }
       // #endif
+      
       uni.showToast({
         title: this.flashOn ? '闪光灯已开启' : '闪光灯已关闭',
         icon: 'none'
       })
     },
+    
     chooseFromAlbum() {
+      // 停止扫描
+      this.stopScan()
+      
       uni.chooseImage({
         count: 1,
         sourceType: ['album'],
         success: (res) => {
           const tempFilePath = res.tempFilePaths[0]
+          
           // #ifdef APP-PLUS
-          plus.barcode.scan(tempFilePath, (type, result) => {
-            this.handleScanResult(result)
-          }, (error) => {
-            uni.showToast({
-              title: '未识别到二维码',
-              icon: 'none'
-            })
-          })
+          // 使用 plus.barcode 识别图片中的二维码
+          this.scanImage(tempFilePath)
           // #endif
 
           // #ifdef MP-WEIXIN
@@ -202,11 +277,57 @@ export default {
                 title: '未识别到二维码',
                 icon: 'none'
               })
+              // 重新开始扫描
+              setTimeout(() => {
+                this.startScan()
+              }, 500)
             }
           })
           // #endif
+        },
+        fail: () => {
+          // 用户取消，重新开始扫描
+          this.startScan()
         }
       })
+    },
+    
+    // APP端识别图片中的二维码
+    scanImage(imagePath) {
+      // #ifdef APP-PLUS
+      // 使用 barcode 模块识别
+      if (plus.barcode && plus.barcode.scan) {
+        plus.barcode.scan(imagePath, (type, result) => {
+          this.handleScanResult(result)
+        }, (error) => {
+          uni.showToast({
+            title: '未识别到二维码',
+            icon: 'none'
+          })
+          // 重新开始扫描
+          setTimeout(() => {
+            this.startScan()
+          }, 500)
+        })
+      } else {
+        // 备用方案：使用 uni.scanCode 的 sourceType
+        uni.scanCode({
+          sourceType: ['album'],
+          success: (res) => {
+            this.handleScanResult(res.result)
+          },
+          fail: () => {
+            uni.showToast({
+              title: '未识别到二维码',
+              icon: 'none'
+            })
+            setTimeout(() => {
+              this.startScan()
+            }, 500)
+          }
+        })
+      }
+      // #endif
     }
   }
 }
@@ -235,10 +356,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.back-icon-svg {
-  color: #fff;
 }
 
 .nav-title {
@@ -352,7 +469,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
   transition: all 0.3s ease;
 }
 
