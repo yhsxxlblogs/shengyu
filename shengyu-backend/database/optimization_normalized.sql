@@ -258,12 +258,12 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
--- 2.8 favorites 表索引
+-- 2.8 favorites 表索引（收藏帖子）
 SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
                    WHERE table_schema = DATABASE() 
                    AND table_name = 'favorites' 
-                   AND index_name = 'idx_favorites_user_sound');
-SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_favorites_user_sound ON favorites(user_id, sound_id)', 'SELECT "Index idx_favorites_user_sound already exists"');
+                   AND index_name = 'idx_favorites_user_post');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_favorites_user_post ON favorites(user_id, post_id)', 'SELECT "Index idx_favorites_user_post already exists"');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
@@ -271,8 +271,8 @@ DEALLOCATE PREPARE stmt;
 SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics 
                    WHERE table_schema = DATABASE() 
                    AND table_name = 'favorites' 
-                   AND index_name = 'idx_favorites_sound_id');
-SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_favorites_sound_id ON favorites(sound_id)', 'SELECT "Index idx_favorites_sound_id already exists"');
+                   AND index_name = 'idx_favorites_post_id');
+SET @sql = IF(@idx_exists = 0, 'CREATE INDEX idx_favorites_post_id ON favorites(post_id)', 'SELECT "Index idx_favorites_post_id already exists"');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
