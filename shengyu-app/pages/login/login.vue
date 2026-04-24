@@ -485,39 +485,39 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8rpx;
-  padding: 24rpx 80rpx;
-  border-radius: 24rpx;
-  background: linear-gradient(135deg, rgba(7, 193, 96, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
-  border: 2rpx solid rgba(7, 193, 96, 0.2);
+  gap: 6rpx;
+  padding: 16rpx 40rpx;
+  border-radius: 16rpx;
+  background: rgba(7, 193, 96, 0.06);
+  border: 1rpx solid rgba(7, 193, 96, 0.15);
   transition: all 0.3s ease;
 }
 
 .third-party-btn:active {
   transform: scale(0.98);
-  background: linear-gradient(135deg, rgba(7, 193, 96, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
-  border-color: rgba(7, 193, 96, 0.3);
+  background: rgba(7, 193, 96, 0.1);
+  border-color: rgba(7, 193, 96, 0.25);
 }
 
 .wechat-icon {
-  width: 72rpx;
-  height: 72rpx;
-  background: linear-gradient(135deg, #07C160 0%, #10B981 100%);
+  width: 56rpx;
+  height: 56rpx;
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.3);
+  box-shadow: 0 2rpx 8rpx rgba(76, 175, 80, 0.2);
 }
 
 .wechat-img {
-  width: 64rpx;
-  height: 64rpx;
+  width: 48rpx;
+  height: 48rpx;
 }
 
 .third-party-text {
-  font-size: 26rpx;
-  color: #07C160;
-  font-weight: 600;
+  font-size: 24rpx;
+  color: #4CAF50;
+  font-weight: 500;
 }
 </style>
