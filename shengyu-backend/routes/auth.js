@@ -246,7 +246,7 @@ router.get('/user', (req, res) => {
 // 获取用户统计数据
 router.get('/user/stats', (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: '未授权' });
+  if (!token) return res.status(401).json({ code: 401, error: '未授权' });
 
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
@@ -265,14 +265,15 @@ router.get('/user/stats', (req, res) => {
       (err, results) => {
         if (err) {
           console.error('获取用户统计失败:', err);
-          return res.status(500).json({ error: '服务器错误' });
+          return res.status(500).json({ code: 500, error: '服务器错误' });
         }
         if (results.length === 0) {
-          return res.status(404).json({ error: '用户不存在' });
+          return res.status(404).json({ code: 404, error: '用户不存在' });
         }
 
         const stats = results[0];
         res.status(200).json({
+          code: 200,
           stats: {
             posts: stats.posts_count,
             sounds: stats.sounds_count,
@@ -285,7 +286,7 @@ router.get('/user/stats', (req, res) => {
       }
     );
   } catch (error) {
-    res.status(401).json({ error: '无效的token' });
+    res.status(401).json({ code: 401, error: '无效的token' });
   }
 });
 

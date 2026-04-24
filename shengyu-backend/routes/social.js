@@ -269,18 +269,17 @@ router.get('/messages', authenticateToken, (req, res) => {
         const otherId = msg.sender_id == userId ? msg.receiver_id : msg.sender_id;
         if (!conversations[otherId]) {
           conversations[otherId] = {
-            user: {
-              id: otherId,
-              username: msg.username,
-              avatar: msg.avatar
-            },
-            lastMessage: msg,
-            unreadCount: 0
+            user_id: otherId,
+            username: msg.username,
+            avatar: msg.avatar,
+            last_message: msg.content,
+            last_time: msg.created_at,
+            unread_count: 0
           };
         }
 
         if (msg.receiver_id == userId && !msg.is_read) {
-          conversations[otherId].unreadCount++;
+          conversations[otherId].unread_count++;
         }
       });
 

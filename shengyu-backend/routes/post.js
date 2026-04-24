@@ -452,7 +452,7 @@ router.get('/detail/:post_id', optionalAuth, (req, res) => {
         return res.status(404).json({ code: 404, error: '帖子不存在' });
       }
 
-      res.status(200).json({ code: 200, data: results[0] });
+      res.status(200).json({ code: 200, post: results[0] });
     }
   );
 });
