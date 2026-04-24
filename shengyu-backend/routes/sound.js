@@ -390,4 +390,233 @@ router.delete('/:id', authenticateToken, (req, res) => {
   );
 });
 
+// ========== 管理后台接口 ==========
+
+// 获取分类列表（管理后台）
+router.get('/admin/categories', authenticateToken, (req, res) => {
+  db.query('SELECT * FROM categories ORDER BY sort_order', (err, results) => {
+    if (err) {
+      console.error('获取分类失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
+    }
+    res.status(200).json({ categories: results });
+  });
+});
+
+// 添加分类
+router.post('/admin/categories', authenticateToken, (req, res) => {
+  const { name, display_name, sort_order } = req.body;
+  db.query(
+    'INSERT INTO categories (name, display_name, sort_order) VALUES (?, ?, ?)',
+    [name, display_name, sort_order || 0],
+    (err, results) => {
+      if (err) {
+        console.error('添加分类失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      res.status(200).json({ message: '添加成功', id: results.insertId });
+    }
+  );
+});
+
+// 更新分类
+router.put('/admin/categories/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { name, display_name, sort_order } = req.body;
+  db.query(
+    'UPDATE categories SET name = ?, display_name = ?, sort_order = ? WHERE id = ?',
+    [name, display_name, sort_order, id],
+    (err) => {
+      if (err) {
+        console.error('更新分类失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      res.status(200).json({ message: '更新成功' });
+    }
+  );
+});
+
+// 删除分类
+router.delete('/admin/categories/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  db.query('DELETE FROM categories WHERE id = ?', [id], (err) => {
+    if (err) {
+      console.error('删除分类失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
+    }
+    res.status(200).json({ message: '删除成功' });
+  });
+});
+
+// 获取动物类型列表（管理后台）
+router.get('/admin/animal-types', authenticateToken, (req, res) => {
+  db.query('SELECT * FROM animal_types ORDER BY sort_order', (err, results) => {
+    if (err) {
+      console.error('获取动物类型失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
+    }
+    res.status(200).json({ animalTypes: results });
+  });
+});
+
+// 添加动物类型
+router.post('/admin/animal-types', authenticateToken, (req, res) => {
+  const { type, name, icon, category, description } = req.body;
+  db.query(
+    'INSERT INTO animal_types (type, name, icon, category, description) VALUES (?, ?, ?, ?, ?)',
+    [type, name, icon, category, description],
+    (err, results) => {
+      if (err) {
+        console.error('添加动物类型失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      res.status(200).json({ message: '添加成功', id: results.insertId });
+    }
+  );
+});
+
+// 更新动物类型
+router.put('/admin/animal-types/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { type, name, icon, category, description } = req.body;
+  db.query(
+    'UPDATE animal_types SET type = ?, name = ?, icon = ?, category = ?, description = ? WHERE id = ?',
+    [type, name, icon, category, description, id],
+    (err) => {
+      if (err) {
+        console.error('更新动物类型失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      res.status(200).json({ message: '更新成功' });
+    }
+  );
+});
+
+// 删除动物类型
+router.delete('/admin/animal-types/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  db.query('DELETE FROM animal_types WHERE id = ?', [id], (err) => {
+    if (err) {
+      console.error('删除动物类型失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
+    }
+    res.status(200).json({ message: '删除成功' });
+  });
+});
+
+// 获取系统声音列表（管理后台）
+router.get('/admin/system-sounds', authenticateToken, (req, res) => {
+  db.query(
+    'SELECT s.*, at.name as animal_type_name FROM sounds s LEFT JOIN animal_types at ON s.animal_type = at.type WHERE s.user_id IS NULL ORDER BY s.id DESC',
+    (err, results) => {
+      if (err) {
+        console.error('获取系统声音失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      res.status(200).json({ sounds: results });
+    }
+  );
+});
+
+// 添加系统声音
+router.post('/admin/system-sounds', authenticateToken, upload.single('sound'), (req, res) => {
+  const { animal_type, emotion, duration } = req.body;
+  const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body.sound_url;
+
+  if (!animal_type || !emotion || !soundUrl) {
+    return res.status(400).json({ error: '缺少必要参数' });
+  }
+
+  db.query(
+    'INSERT INTO sounds (user_id, animal_type, emotion, sound_url, duration, visible) VALUES (NULL, ?, ?, ?, ?, 1)',
+    [animal_type, emotion, soundUrl, duration || 0],
+    (err, results) => {
+      if (err) {
+        console.error('添加系统声音失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      res.status(200).json({ message: '添加成功', id: results.insertId });
+    }
+  );
+});
+
+// 更新系统声音
+router.put('/admin/system-sounds/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { animal_type, emotion, sound_url, duration } = req.body;
+
+  db.query(
+    'UPDATE sounds SET animal_type = ?, emotion = ?, sound_url = ?, duration = ? WHERE id = ? AND user_id IS NULL',
+    [animal_type, emotion, sound_url, duration, id],
+    (err) => {
+      if (err) {
+        console.error('更新系统声音失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      res.status(200).json({ message: '更新成功' });
+    }
+  );
+});
+
+// 删除系统声音
+router.delete('/admin/system-sounds/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  db.query('DELETE FROM sounds WHERE id = ? AND user_id IS NULL', [id], (err) => {
+    if (err) {
+      console.error('删除系统声音失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
+    }
+    res.status(200).json({ message: '删除成功' });
+  });
+});
+
+// 获取用户声音列表（管理后台）
+router.get('/admin/user-sounds', authenticateToken, (req, res) => {
+  db.query(
+    `SELECT s.*, u.username, at.name as animal_type_name 
+     FROM sounds s 
+     LEFT JOIN users u ON s.user_id = u.id 
+     LEFT JOIN animal_types at ON s.animal_type = at.type 
+     WHERE s.user_id IS NOT NULL 
+     ORDER BY s.created_at DESC`,
+    (err, results) => {
+      if (err) {
+        console.error('获取用户声音失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      res.status(200).json({ sounds: results });
+    }
+  );
+});
+
+// 审核用户声音
+router.put('/admin/user-sounds/:id/review', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body; // 'approved' or 'rejected'
+
+  db.query(
+    'UPDATE sounds SET review_status = ? WHERE id = ?',
+    [status, id],
+    (err) => {
+      if (err) {
+        console.error('审核声音失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      res.status(200).json({ message: '审核完成' });
+    }
+  );
+});
+
+// 删除用户声音
+router.delete('/admin/user-sounds/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  db.query('DELETE FROM sounds WHERE id = ?', [id], (err) => {
+    if (err) {
+      console.error('删除用户声音失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
+    }
+    res.status(200).json({ message: '删除成功' });
+  });
+});
+
 module.exports = router;
