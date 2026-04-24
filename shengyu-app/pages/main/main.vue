@@ -1,4 +1,4 @@
-﻿﻿<template>
+﻿﻿﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -641,6 +641,13 @@ export default {
     this.checkLoginStatus()
     this.loadAllData()
     this.checkNotifications()
+    // 如果当前在私信标签页，强制重新加载私信列表以修复样式
+    if (this.communityTab === 'messages') {
+      this.messagePage = 1
+      this.hasMoreMessages = true
+      this.messageList = []
+      this.loadMessageList()
+    }
     // 轮播图自动滚动会在数据加载完成后自动启动
   },
   onHide() {
