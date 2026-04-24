@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
     fileSize: config.upload.maxSoundSize
@@ -39,6 +39,42 @@ const upload = multer({
       cb(new Error('只允许上传音频文件'));
     }
   }
+});
+
+// 获取当前活跃的通知（供前端展示）- 不需要管理员权限
+router.get('/notifications/current', (req, res) => {
+  const now = new Date();
+
+  db.query(
+    `SELECT id, title, content, type, created_at
+     FROM notifications
+     WHERE status = 'active'
+       AND (publish_at IS NULL OR publish_at <= ?)
+       AND (expire_at IS NULL OR expire_at > ?)
+     ORDER BY created_at DESC
+     LIMIT 1`,
+    [now, now],
+    (err, results) => {
+      if (err) {
+        console.error('获取通知失败:', err);
+        return res.status(500).json({ code: 500, error: '服务器错误' });
+      }
+
+      if (results.length > 0) {
+        res.status(200).json({
+          code: 200,
+          hasNotification: true,
+          notification: results[0]
+        });
+      } else {
+        res.status(200).json({
+          code: 200,
+          hasNotification: false,
+          notification: null
+        });
+      }
+    }
+  );
 });
 
 // 所有管理接口都需要管理员权限
@@ -610,42 +646,6 @@ router.delete('/notification/:id', (req, res) => {
     }
     res.status(200).json({ code: 200, message: '通知删除成功' });
   });
-});
-
-// 获取当前活跃的通知（供前端展示）
-router.get('/notifications/current', (req, res) => {
-  const now = new Date();
-  
-  db.query(
-    `SELECT id, title, content, type, created_at 
-     FROM notifications 
-     WHERE status = 'active' 
-       AND (publish_at IS NULL OR publish_at <= ?)
-       AND (expire_at IS NULL OR expire_at > ?)
-     ORDER BY created_at DESC
-     LIMIT 1`,
-    [now, now],
-    (err, results) => {
-      if (err) {
-        console.error('获取通知失败:', err);
-        return res.status(500).json({ code: 500, error: '服务器错误' });
-      }
-      
-      if (results.length > 0) {
-        res.status(200).json({ 
-          code: 200,
-          hasNotification: true,
-          notification: results[0]
-        });
-      } else {
-        res.status(200).json({ 
-          code: 200,
-          hasNotification: false,
-          notification: null
-        });
-      }
-    }
-  );
 });
 
 // 清空所有通知
