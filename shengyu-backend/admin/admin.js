@@ -10,12 +10,13 @@ let cachedToken = null;
 
 // 获取认证头
 function getAuthHeaders() {
-  // 优先使用缓存的 token，避免频繁读取 localStorage
-  if (!cachedToken) {
-    cachedToken = localStorage.getItem('adminToken');
+  // 始终从 localStorage 读取最新 token，同时更新缓存
+  const token = localStorage.getItem('adminToken');
+  if (token) {
+    cachedToken = token;
   }
   
-  if (!cachedToken) {
+  if (!cachedToken && !token) {
     console.error('未找到 adminToken，请重新登录');
     // 重定向到登录页面
     window.location.href = '/admin/login.html';
@@ -26,7 +27,7 @@ function getAuthHeaders() {
   }
   
   return {
-    'Authorization': `Bearer ${cachedToken}`,
+    'Authorization': `Bearer ${cachedToken || token}`,
     'Content-Type': 'application/json'
   };
 }
