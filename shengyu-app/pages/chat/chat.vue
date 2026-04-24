@@ -810,33 +810,33 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 40rpx 32rpx;
+  padding: 24rpx 28rpx;
   background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
-  height: 220rpx;
+  height: 132rpx;
   box-sizing: border-box;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  min-width: 150rpx;
+  gap: 6rpx;
+  min-width: 130rpx;
 }
 
 .back-arrow {
-  font-size: 56rpx;
+  font-size: 48rpx;
   color: #FFFFFF;
   font-weight: 300;
   line-height: 1;
 }
 
 .back-text {
-  font-size: 32rpx;
+  font-size: 28rpx;
   color: #FFFFFF;
   font-weight: 400;
 }
@@ -847,14 +847,14 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
+  gap: 8rpx;
 }
 
 .header-title-text {
-  font-size: 42rpx;
+  font-size: 36rpx;
   font-weight: 600;
   color: #FFFFFF;
-  max-width: 400rpx;
+  max-width: 350rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -867,14 +867,14 @@ export default {
 }
 
 .status-dot {
-  width: 16rpx;
-  height: 16rpx;
+  width: 14rpx;
+  height: 14rpx;
   border-radius: 50%;
 }
 
 .status-dot.online {
   background: #4CAF50;
-  box-shadow: 0 0 8rpx #4CAF50;
+  box-shadow: 0 0 6rpx #4CAF50;
 }
 
 .status-dot.offline {
@@ -882,23 +882,23 @@ export default {
 }
 
 .status-text {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: rgba(255, 255, 255, 0.9);
 }
 
 .header-right {
-  min-width: 150rpx;
+  min-width: 130rpx;
   display: flex;
   justify-content: flex-end;
   align-items: center;
 }
 
 .clear-btn {
-  font-size: 32rpx;
+  font-size: 28rpx;
   color: #FFFFFF;
   font-weight: 500;
-  padding: 12rpx 24rpx;
-  border-radius: 12rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 10rpx;
   transition: all 0.3s ease;
 }
 
@@ -926,7 +926,7 @@ export default {
 
 .chat-messages {
   position: fixed;
-  top: 230rpx;
+  top: 142rpx;
   bottom: 120rpx;
   left: 0;
   right: 0;
