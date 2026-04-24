@@ -440,7 +440,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16rpx;
+  gap: 24rpx;
   margin-top: auto; /* 推到底部 */
   padding-bottom: 20rpx;
 }
@@ -484,7 +484,7 @@ export default {
 /* 第三方登录 */
 .third-party-login {
   width: 100%;
-  margin-top: 8rpx;
+  margin-top: 32rpx;
 }
 
 .divider {
