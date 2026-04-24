@@ -25,7 +25,7 @@ const config = {
     port: 3306,
     user: 'root',
     password: '@Syh20050608',
-    name: 'shengyu',  // 根据你的数据库名修改
+    name: 'animal_sound_app',
     connectionLimit: 10,
     charset: 'utf8mb4',
   },
@@ -34,14 +34,14 @@ const config = {
   redis: {
     host: 'localhost',
     port: 6379,
-    password: '@Syh20050608',  // 你的Redis密码
+    password: '@Syh20050608',
     db: 0,
   },
 
   // JWT配置
   jwt: {
-    secret: 'shengyu_secret_key_change_in_production_2024',
-    expiresIn: '1d',
+    secret: 'your_random_secret_key_here_min_64_chars_long',
+    expiresIn: '24h',
     refreshExpiresIn: '7d',
   },
 
@@ -52,7 +52,7 @@ const config = {
     
     // 速率限制
     rateLimit: {
-      windowMs: 15 * 60 * 1000, // 15分钟
+      windowMs: 15 * 60 * 1000,
       maxRequests: 100,
     },
     
@@ -60,36 +60,29 @@ const config = {
     bcryptRounds: 10,
     
     // 验证码配置
-    captchaExpiry: 5 * 60 * 1000, // 5分钟
+    captchaExpiry: 5 * 60 * 1000,
   },
 
   // 文件上传配置
   upload: {
-    path: path.join(__dirname, '../uploads'),
-    maxFileSize: 5 * 1024 * 1024, // 5MB
-    maxImageSize: 2 * 1024 * 1024, // 2MB
-    maxSoundSize: 10 * 1024 * 1024, // 10MB
+    path: '/www/wwwroot/shengyu/shengyu-backend/uploads',
+    maxFileSize: 5 * 1024 * 1024,
+    maxImageSize: 2 * 1024 * 1024,
+    maxSoundSize: 10 * 1024 * 1024,
     allowedImageTypes: /jpeg|jpg|png|gif|webp/,
     allowedSoundTypes: /wav|mp3|ogg|aac|flac|m4a|webm/,
   },
 
-  // 微信配置 - 需要填写你的微信开放平台配置
+  // 微信配置
   wechat: {
-    appId: '',  // 填写你的微信AppID
-    appSecret: '',  // 填写你的微信AppSecret
+    appId: 'wx4e46471a06b5124c',
+    appSecret: '309618603345d01dbc0c356f52e1e979',
   },
 
   // 日志配置
   log: {
     level: 'info',
     file: './logs/app.log',
-  },
-
-  // 管理员配置
-  admin: {
-    username: 'admin',
-    password: '',
-    email: 'admin@example.com',
   },
 };
 
