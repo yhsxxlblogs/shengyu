@@ -208,6 +208,58 @@ router.get('/validate', (req, res) => {
   }
 });
 
+// 获取用户统计数据 - 必须放在 /user/:id 之前，否则会被当成 :id 参数
+router.get('/user/stats', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  console.log('[/auth/user/stats] 收到请求，token:', token ? '存在' : '不存在');
+  if (!token) return res.status(401).json({ code: 401, error: '未授权' });
+
+  try {
+    const decoded = jwt.verify(token, config.jwt.secret);
+    const userId = decoded.id;
+    console.log('[/auth/user/stats] token解码成功，用户ID:', userId);
+
+    // 使用子查询获取用户统计数据（规范化设计）
+    db.query(
+      `SELECT
+        (SELECT COUNT(*) FROM posts WHERE user_id = ?) as posts_count,
+        (SELECT COUNT(*) FROM sounds WHERE user_id = ?) as sounds_count,
+        (SELECT COUNT(*) FROM follows WHERE following_id = ?) as followers_count,
+        (SELECT COUNT(*) FROM follows WHERE follower_id = ?) as following_count,
+        (SELECT COUNT(*) FROM likes l JOIN posts p ON l.post_id = p.id WHERE p.user_id = ?) as likes_received_count,
+        (SELECT COUNT(*) FROM comments c JOIN posts p ON c.post_id = p.id WHERE p.user_id = ?) as comments_received_count`,
+      [userId, userId, userId, userId, userId, userId],
+      (err, results) => {
+        if (err) {
+          console.error('[/auth/user/stats] 数据库查询错误:', err);
+          return res.status(500).json({ code: 500, error: '服务器错误' });
+        }
+        if (results.length === 0) {
+          console.log('[/auth/user/stats] 用户不存在，ID:', userId);
+          return res.status(404).json({ code: 404, error: '用户不存在' });
+        }
+
+        const stats = results[0];
+        console.log('[/auth/user/stats] 查询成功，统计数据:', stats);
+        res.status(200).json({
+          code: 200,
+          stats: {
+            posts: stats.posts_count,
+            sounds: stats.sounds_count,
+            likes: stats.likes_received_count,
+            comments: stats.comments_received_count,
+            following_count: stats.following_count,
+            follower_count: stats.followers_count
+          }
+        });
+      }
+    );
+  } catch (error) {
+    console.error('[/auth/user/stats] token验证失败:', error.message);
+    res.status(401).json({ code: 401, error: '无效的token' });
+  }
+});
+
 // 获取用户公开信息（不需要token）- 放在 /user 之前，避免被拦截
 router.get('/user/:id', (req, res) => {
   const { id } = req.params;
@@ -351,58 +403,6 @@ router.get('/user', (req, res) => {
     });
   } catch (error) {
     console.error('[/auth/user] token验证失败:', error.message);
-    res.status(401).json({ code: 401, error: '无效的token' });
-  }
-});
-
-// 获取用户统计数据
-router.get('/user/stats', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  console.log('[/auth/user/stats] 收到请求，token:', token ? '存在' : '不存在');
-  if (!token) return res.status(401).json({ code: 401, error: '未授权' });
-
-  try {
-    const decoded = jwt.verify(token, config.jwt.secret);
-    const userId = decoded.id;
-    console.log('[/auth/user/stats] token解码成功，用户ID:', userId);
-
-    // 使用子查询获取用户统计数据（规范化设计）
-    db.query(
-      `SELECT
-        (SELECT COUNT(*) FROM posts WHERE user_id = ?) as posts_count,
-        (SELECT COUNT(*) FROM sounds WHERE user_id = ?) as sounds_count,
-        (SELECT COUNT(*) FROM follows WHERE following_id = ?) as followers_count,
-        (SELECT COUNT(*) FROM follows WHERE follower_id = ?) as following_count,
-        (SELECT COUNT(*) FROM likes l JOIN posts p ON l.post_id = p.id WHERE p.user_id = ?) as likes_received_count,
-        (SELECT COUNT(*) FROM comments c JOIN posts p ON c.post_id = p.id WHERE p.user_id = ?) as comments_received_count`,
-      [userId, userId, userId, userId, userId, userId],
-      (err, results) => {
-        if (err) {
-          console.error('[/auth/user/stats] 数据库查询错误:', err);
-          return res.status(500).json({ code: 500, error: '服务器错误' });
-        }
-        if (results.length === 0) {
-          console.log('[/auth/user/stats] 用户不存在，ID:', userId);
-          return res.status(404).json({ code: 404, error: '用户不存在' });
-        }
-
-        const stats = results[0];
-        console.log('[/auth/user/stats] 查询成功，统计数据:', stats);
-        res.status(200).json({
-          code: 200,
-          stats: {
-            posts: stats.posts_count,
-            sounds: stats.sounds_count,
-            likes: stats.likes_received_count,
-            comments: stats.comments_received_count,
-            following_count: stats.following_count,
-            follower_count: stats.followers_count
-          }
-        });
-      }
-    );
-  } catch (error) {
-    console.error('[/auth/user/stats] token验证失败:', error.message);
     res.status(401).json({ code: 401, error: '无效的token' });
   }
 });
