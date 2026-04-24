@@ -1617,10 +1617,18 @@ async function saveNotification() {
     return;
   }
 
+  // 调试：检查token
+  const token = localStorage.getItem('adminToken');
+  console.log('发送通知 - localStorage token:', token ? '存在' : '不存在');
+  console.log('发送通知 - cachedToken:', cachedToken ? '存在' : '不存在');
+  
+  const headers = getAuthHeaders();
+  console.log('发送通知 - 请求头:', JSON.stringify(headers));
+
   try {
     const response = await fetch(`${API_BASE_URL}/admin/notification`, {
       method: 'POST',
-      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify({ title, content, type })
     });
 
