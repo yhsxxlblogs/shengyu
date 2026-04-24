@@ -151,8 +151,8 @@ shengyu-backend/
 - `login_type`: ENUM('password', 'wechat') - 登录方式
 - `wechat_openid`: VARCHAR(64) UNIQUE - 微信用户唯一标识
 - `wechat_unionid`: VARCHAR(64) - 微信开放平台统一标识
-- `wechat_nickname`: VARCHAR(100) - 微信昵称
-- `wechat_avatar`: VARCHAR(255) - 微信头像URL
+- `wechat_avatar`: VARCHAR(255) - 微信头像URL（保留原始微信头像）
+- `nickname`: VARCHAR(100) - 用户昵称（微信登录时自动填充微信昵称）
 
 ## API接口设计
 
@@ -378,7 +378,8 @@ await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
 9. 扫码功能安卓兼容性优化（已完成：添加权限检查、生命周期管理）
 10. 轮播图UI优化（已完成：圆角24rpx，中心放大1.08倍，阴影效果）
 11. 热门推荐UI优化（已完成：隐藏帖子图片，突出文字内容）
-12. 微信登录功能（已完成：支持OAuth登录和账号绑定/解绑）
+12. 微信登录功能（已完成：支持OAuth登录和账号绑定/解绑，自动使用微信昵称和头像初始化账号）
+13. 密码设置功能（已完成：微信登录用户可在个人中心设置密码，支持用户名+密码登录）
 
 ## 系统运行流程
 
