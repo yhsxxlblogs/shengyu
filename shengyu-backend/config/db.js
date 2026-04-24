@@ -1,6 +1,6 @@
-const mysql = require('mysql2/promise');
+const mysql = require('mysql2');
 
-// 创建数据库连接池（Promise版本）
+// 创建数据库连接池
 const db = mysql.createPool({
   host: 'localhost',
   user: 'root',
@@ -14,24 +14,21 @@ const db = mysql.createPool({
   keepAliveInitialDelay: 10000
 });
 
-// 测试连接（使用Promise语法）
-async function testConnection() {
-  try {
-    const connection = await db.getConnection();
-    console.log('数据库连接成功');
-    connection.release();
-
-    // 创建数据库表
-    await createTables();
-  } catch (err) {
+// 测试连接
+db.getConnection((err, connection) => {
+  if (err) {
     console.error('数据库连接失败:', err);
+    return;
   }
-}
+  console.log('数据库连接成功');
+  connection.release();
 
-testConnection();
+  // 创建数据库表
+  createTables();
+});
 
-// 创建数据库表（使用Promise语法）
-async function createTables() {
+// 创建数据库表
+function createTables() {
   // 用户表
   const createUsersTable = `
     CREATE TABLE IF NOT EXISTS users (
@@ -254,13 +251,26 @@ async function createTables() {
     createSoundEmotionsTable
   ];
 
-  for (let i = 0; i < tables.length; i++) {
-    try {
-      await db.query(tables[i]);
-    } catch (err) {
-      console.error(`创建表失败 (${i + 1}/${tables.length}):`, err.message);
-    }
-  }
+  tables.forEach((tableSql, index) => {
+    db.query(tableSql, (err) => {
+      if (err) {
+        console.error(`创建表失败 (${index + 1}/${tables.length}):`, err);
+      }
+    });
+  });
 }
+
+// 为 wechat.js 提供 Promise 包装的方法
+db.promiseQuery = function(sql, params) {
+  return new Promise((resolve, reject) => {
+    this.query(sql, params, (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve([results]);
+      }
+    });
+  });
+};
 
 module.exports = db;

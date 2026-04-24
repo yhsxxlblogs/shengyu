@@ -521,21 +521,21 @@ app.use('/api/social', socialRoutes);
 app.use('/api/banner', bannerRoutes);
 app.use('/api/wechat', wechatRoutes);
 
-function processScheduledNotifications() {
-  db.query(
-    `UPDATE notifications
-     SET status = 'active'
-     WHERE status = 'pending'
-     AND publish_at IS NOT NULL
-     AND publish_at <= NOW()`,
-    (err, results) => {
-      if (err) {
-        console.error('处理定时发布通知失败:', err);
-      } else if (results.affectedRows > 0) {
-        console.log(`已发布 ${results.affectedRows} 条定时通知`);
-      }
+async function processScheduledNotifications() {
+  try {
+    const [results] = await db.query(
+      `UPDATE notifications
+       SET status = 'active'
+       WHERE status = 'pending'
+       AND publish_at IS NOT NULL
+       AND publish_at <= NOW()`
+    );
+    if (results.affectedRows > 0) {
+      console.log(`已发布 ${results.affectedRows} 条定时通知`);
     }
-  );
+  } catch (err) {
+    console.error('处理定时发布通知失败:', err);
+  }
 }
 
 // 定时更新热门帖子到Redis
@@ -549,26 +549,21 @@ async function updatePopularPostsCache() {
       LIMIT 10
     `;
     
-    db.query(query, async (err, results) => {
-      if (err) {
-        console.error('更新热门帖子缓存失败:', err);
-        return;
-      }
-      
-      // 将热门帖子存入Redis
-      // 使用随机过期时间防止缓存雪崩（5-10分钟）
-      const redis = require('./config/redis');
-      const baseTTL = 300; // 基础5分钟
-      const randomTTL = Math.floor(Math.random() * 300); // 随机0-5分钟
-      const cacheTTL = results.length > 0 ? baseTTL + randomTTL : 60; // 有数据5-10分钟，空数据1分钟
-      
-      try {
-        await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
-        console.log(`[${new Date().toLocaleString()}] 热门帖子缓存已更新，共 ${results.length} 条，TTL: ${cacheTTL}s`);
-      } catch (err) {
-        console.error('Redis缓存失败:', err);
-      }
-    });
+    const [results] = await db.query(query);
+    
+    // 将热门帖子存入Redis
+    // 使用随机过期时间防止缓存雪崩（5-10分钟）
+    const redis = require('./config/redis');
+    const baseTTL = 300; // 基础5分钟
+    const randomTTL = Math.floor(Math.random() * 300); // 随机0-5分钟
+    const cacheTTL = results.length > 0 ? baseTTL + randomTTL : 60; // 有数据5-10分钟，空数据1分钟
+    
+    try {
+      await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
+      console.log(`[${new Date().toLocaleString()}] 热门帖子缓存已更新，共 ${results.length} 条，TTL: ${cacheTTL}s`);
+    } catch (err) {
+      console.error('Redis缓存失败:', err);
+    }
   } catch (error) {
     console.error('更新热门帖子缓存出错:', error);
   }

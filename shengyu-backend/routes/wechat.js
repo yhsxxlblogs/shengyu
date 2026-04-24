@@ -116,7 +116,7 @@ router.post('/login', async (req, res) => {
         }
 
         // 3. 根据 openid 查询用户
-        const [existingWechatUsers] = await db.query(
+        const [existingWechatUsers] = await db.promiseQuery(
             'SELECT * FROM users WHERE wechat_openid = ?',
             [openid]
         );
@@ -131,7 +131,7 @@ router.post('/login', async (req, res) => {
             
             // 更新微信信息
             if (wechatUserInfo) {
-                await db.query(
+                await db.promiseQuery(
                     `UPDATE users SET 
                         wechat_nickname = ?, 
                         wechat_avatar = ?,
@@ -154,7 +154,7 @@ router.post('/login', async (req, res) => {
             const nickname = wechatUserInfo?.nickname || userInfo?.nickName || `微信用户${openid.slice(-6)}`;
             const avatar = wechatUserInfo?.headimgurl || userInfo?.avatarUrl || null;
             
-            const [result] = await db.query(
+            const [result] = await db.promiseQuery(
                 `INSERT INTO users (
                     username, 
                     nickname, 
@@ -179,7 +179,7 @@ router.post('/login', async (req, res) => {
             );
 
             // 获取新创建的用户
-            const [newUsers] = await db.query(
+            const [newUsers] = await db.promiseQuery(
                 'SELECT * FROM users WHERE id = ?',
                 [result.insertId]
             );
@@ -280,7 +280,7 @@ router.post('/bind', authenticateToken, async (req, res) => {
         const { access_token, openid, unionid } = tokenRes;
 
         // 2. 检查该微信是否已被其他用户绑定
-        const [existingWechatUsers] = await db.query(
+        const [existingWechatUsers] = await db.promiseQuery(
             'SELECT * FROM users WHERE wechat_openid = ? AND id != ?',
             [openid, userId]
         );
@@ -305,7 +305,7 @@ router.post('/bind', authenticateToken, async (req, res) => {
         }
 
         // 4. 更新当前用户的微信信息
-        await db.query(
+        await db.promiseQuery(
             `UPDATE users SET 
                 wechat_openid = ?,
                 wechat_unionid = ?,
@@ -369,7 +369,7 @@ router.post('/unbind', authenticateToken, async (req, res) => {
         }
 
         // 检查用户是否有密码，确保解绑后还能登录
-        const [users] = await db.query(
+        const [users] = await db.promiseQuery(
             'SELECT password FROM users WHERE id = ?',
             [userId]
         );
@@ -389,7 +389,7 @@ router.post('/unbind', authenticateToken, async (req, res) => {
         }
 
         // 清除微信绑定信息
-        await db.query(
+        await db.promiseQuery(
             `UPDATE users SET 
                 wechat_openid = NULL,
                 wechat_unionid = NULL,
@@ -429,7 +429,7 @@ router.get('/status', authenticateToken, async (req, res) => {
             return res.status(401).json({ error: '未登录' });
         }
 
-        const [users] = await db.query(
+        const [users] = await db.promiseQuery(
             'SELECT wechat_openid, wechat_nickname, wechat_avatar FROM users WHERE id = ?',
             [userId]
         );
