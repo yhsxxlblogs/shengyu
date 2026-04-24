@@ -1,8 +1,3 @@
----
-name: "shengyu-project"
-description: "声愈项目的技术文档和开发指南。包含项目概述、技术栈、目录结构、核心功能等信息。当用户在声愈项目目录下新开对话时自动预热。"
----
-
 # 声愈项目技能
 
 ## 项目概述
@@ -99,6 +94,7 @@ shengyu-backend/
 ├── index.js                   # 服务入口文件
 ├── package.json               # 项目依赖
 ├── config/                    # 配置文件
+│   ├── index.js               # 统一配置文件
 │   ├── db.js                  # 数据库配置
 │   └── redis.js               # Redis配置
 ├── routes/                    # 路由模块
@@ -107,8 +103,10 @@ shengyu-backend/
 │   ├── post.js                # 帖子路由
 │   ├── social.js              # 社交路由（关注/私信）
 │   ├── admin.js               # 管理后台路由
-│   └── banner.js              # 轮播图路由
+│   ├── banner.js              # 轮播图路由
+│   └── wechat.js              # 微信登录路由
 ├── middleware/                # 中间件
+│   ├── security.js            # 安全中间件（认证、XSS、SQL注入防护）
 │   └── cache.js               # Redis缓存中间件
 ├── utils/                     # 工具函数
 │   └── captcha.js             # 验证码生成
@@ -133,7 +131,7 @@ shengyu-backend/
 
 | 表名 | 说明 | 核心字段 |
 |------|------|----------|
-| users | 用户表 | id, username, email, password, avatar, is_admin |
+| users | 用户表 | id, username, email, password, avatar, is_admin, is_active |
 | sounds | 声音表 | id, user_id, animal_type, emotion, sound_url, duration, visible, review_status, is_official |
 | posts | 帖子表 | id, user_id, content, image_url |
 | likes | 点赞表 | id, post_id, user_id |
@@ -151,8 +149,8 @@ shengyu-backend/
 - `login_type`: ENUM('password', 'wechat') - 登录方式
 - `wechat_openid`: VARCHAR(64) UNIQUE - 微信用户唯一标识
 - `wechat_unionid`: VARCHAR(64) - 微信开放平台统一标识
-- `wechat_avatar`: VARCHAR(255) - 微信头像URL（保留原始微信头像）
-- `nickname`: VARCHAR(100) - 用户昵称（微信登录时自动填充微信昵称）
+- `wechat_avatar`: VARCHAR(255) - 微信头像URL
+- `nickname`: VARCHAR(100) - 用户昵称
 
 ## API接口设计
 
@@ -184,6 +182,21 @@ shengyu-backend/
 | GET | /my | 我的声音 |
 | PUT | /:id/visibility | 切换可见性 |
 | DELETE | /:id | 删除声音 |
+| GET | /admin/categories | 管理后台-获取分类 |
+| POST | /admin/categories | 管理后台-添加分类 |
+| PUT | /admin/categories/:id | 管理后台-更新分类 |
+| DELETE | /admin/categories/:id | 管理后台-删除分类 |
+| GET | /admin/animal-types | 管理后台-获取动物类型 |
+| POST | /admin/animal-types | 管理后台-添加动物类型 |
+| PUT | /admin/animal-types/:id | 管理后台-更新动物类型 |
+| DELETE | /admin/animal-types/:id | 管理后台-删除动物类型 |
+| GET | /admin/system-sounds | 管理后台-获取系统声音 |
+| POST | /admin/system-sounds | 管理后台-添加系统声音 |
+| PUT | /admin/system-sounds/:id | 管理后台-更新系统声音 |
+| DELETE | /admin/system-sounds/:id | 管理后台-删除系统声音 |
+| GET | /admin/user-sounds | 管理后台-获取用户声音 |
+| PUT | /admin/user-sounds/:id/review | 管理后台-审核用户声音 |
+| DELETE | /admin/user-sounds/:id | 管理后台-删除用户声音 |
 
 ### 帖子模块 (/api/post)
 
@@ -191,7 +204,7 @@ shengyu-backend/
 |------|------|------|
 | POST | /create | 发布帖子 |
 | GET | /list | 帖子列表 |
-| GET | /popular | 热门帖子（按点赞+评论排序，前10条） |
+| GET | /popular | 热门帖子 |
 | POST | /like/:post_id | 点赞/取消点赞 |
 | POST | /comment/:post_id | 发表评论 |
 | GET | /comments/:post_id | 获取评论 |
@@ -227,6 +240,35 @@ shengyu-backend/
 | POST | /unbind | 解绑微信（需登录） |
 | GET | /status | 获取微信绑定状态（需登录） |
 | GET | /config | 获取微信配置（前端用） |
+
+### 轮播图模块 (/api/banner)
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /list | 获取轮播图列表 |
+| GET | /admin/list | 管理后台-获取轮播图列表 |
+| POST | /admin/create | 管理后台-创建轮播图 |
+| PUT | /admin/update/:id | 管理后台-更新轮播图 |
+| PUT | /admin/toggle/:id | 管理后台-切换轮播图状态 |
+| DELETE | /admin/delete/:id | 管理后台-删除轮播图 |
+
+### 管理后台模块 (/api/admin)
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /users | 获取用户列表 |
+| POST | /users | 添加用户 |
+| PUT | /users/:id/status | 启用/禁用用户 |
+| PUT | /users/:id/admin | 设置/取消管理员 |
+| DELETE | /users/:id | 删除用户 |
+| GET | /users/:id/posts | 获取用户帖子 |
+| GET | /users/:id/sounds | 获取用户声音 |
+| GET | /users/:id/comments | 获取用户评论 |
+| GET | /posts | 获取帖子列表 |
+| DELETE | /posts/:id | 删除帖子 |
+| POST | /notification | 发送通知 |
+| GET | /notification | 获取通知列表 |
+| DELETE | /notification/:id | 删除通知 |
 
 **微信登录流程**：
 1. 前端调用 `plus.oauth.getServices` 获取微信服务
@@ -265,56 +307,75 @@ ws://106.14.248.12:3001?token={JWT_TOKEN}&userId={USER_ID}
 | unread_count | 服务端→客户端 | 未读消息数更新 |
 | user_online/offline | 服务端→客户端 | 用户上下线通知 |
 
-## 缓存策略
+## 配置说明
 
-### Redis缓存配置
+### 后端配置 (config/index.js)
 
-| 缓存键 | 过期时间 | 说明 |
-|--------|----------|------|
-| posts:list:* | 5分钟 | 帖子列表 |
-| post:detail:* | 5分钟 | 帖子详情 |
-| popular:posts | 10分钟 | 热门帖子（每5分钟自动更新） |
-| popular:sounds | 10分钟 | 热门声音 |
-| sounds:animal:* | 5分钟 | 分类声音 |
-| follow:stats:* | 10分钟 | 关注统计 |
-
-### 缓存清除时机
-
-- 发布/删除帖子 → 清除帖子列表缓存
-- 点赞/评论 → 清除相关帖子缓存
-- 关注/取消关注 → 清除用户相关缓存
-
-### 缓存问题防护
-
-#### 1. 缓存雪崩 (Cache Avalanche)
-**问题**：大量缓存同时过期，请求直接打到数据库
-**解决方案**：
-- 使用随机过期时间（5-10分钟随机）
-- 定时任务提前更新缓存
-- 代码示例：
 ```javascript
-const baseTTL = 300; // 基础5分钟
-const randomTTL = Math.floor(Math.random() * 300); // 随机0-5分钟
-const cacheTTL = baseTTL + randomTTL; // 5-10分钟随机
+const config = {
+  // 服务器配置
+  server: {
+    port: 3000,
+    wsPort: 3001,
+    host: '0.0.0.0',
+  },
+
+  // 数据库配置
+  database: {
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: '@Syh20050608',
+    name: 'animal_sound_app',
+    connectionLimit: 10,
+    charset: 'utf8mb4',
+  },
+
+  // Redis配置
+  redis: {
+    host: 'localhost',
+    port: 6379,
+    password: '@Syh20050608',
+    db: 0,
+  },
+
+  // JWT配置
+  jwt: {
+    secret: 'secret_key',
+    expiresIn: '1d',
+    refreshExpiresIn: '7d',
+  },
+
+  // 微信配置
+  wechat: {
+    appId: 'wx4e46471a06b5124c',
+    appSecret: 'a4d717bdb57054454be38bcef2756318',
+  },
+  
+  // 其他配置...
+};
 ```
 
-#### 2. 缓存击穿 (Cache Breakdown)
-**问题**：热点数据过期瞬间，大量请求同时查询数据库
-**解决方案**：
-- 热点数据永不过期（定时更新）
-- 互斥锁防止并发重建缓存
-- 热门帖子使用定时任务每5分钟更新，避免过期
+### 前端配置 (manifest.json)
 
-#### 3. 缓存穿透 (Cache Penetration)
-**问题**：查询不存在的数据，每次都要访问数据库
-**解决方案**：
-- 空值缓存（缓存空数组）
-- 布隆过滤器（可选）
-- 代码示例：
-```javascript
-// 即使结果为空，也缓存空数组
-const cacheTTL = results.length > 0 ? 300 : 60; // 空数据缓存60秒
-await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
+```json
+{
+  "mp-weixin": {
+    "appid": "wx4e46471a06b5124c"
+  },
+  "app-plus": {
+    "distribute": {
+      "sdkConfigs": {
+        "oauth": {
+          "weixin": {
+            "appid": "wx4e46471a06b5124c",
+            "appsecret": "a4d717bdb57054454be38bcef2756318"
+          }
+        }
+      }
+    }
+  }
+}
 ```
 
 ## 安全设计
@@ -324,7 +385,8 @@ await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
 3. **验证码** - 管理员登录需要验证码，SVG格式，5分钟过期
 4. **文件上传限制** - 限制文件类型和大小
 5. **SQL注入防护** - 使用参数化查询
-6. **CORS配置** - 允许跨域访问
+6. **XSS防护** - 清理用户输入
+7. **CORS配置** - 允许跨域访问
 
 ## 部署架构
 
@@ -332,7 +394,7 @@ await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
 - **Web服务器**：Nginx反向代理
 - **进程管理**：PM2
 - **数据库**：MySQL + Redis
-- **安全**：HTTPS、防火墙配置、Fail2Ban
+- **安全**：HTTPS、防火墙配置
 - **监控**：PM2监控、日志轮转
 - **备份**：数据库备份脚本、定时任务
 
@@ -365,107 +427,13 @@ await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
 - 提交信息：清晰描述变更内容
 - 定期备份数据库
 
-## 待优化项
-
-1. 图片CDN加速
-2. 音频文件压缩转码
-3. 消息队列处理通知
-4. 数据库读写分离
-5. API限流防刷
-6. 单元测试覆盖
-7. 热门帖子算法优化（考虑时间衰减因子）
-8. 移动端图标显示优化（已完成：使用SVG图标组件，统一1.8px线条风格）
-9. 扫码功能安卓兼容性优化（已完成：添加权限检查、生命周期管理）
-10. 轮播图UI优化（已完成：圆角24rpx，中心放大1.08倍，阴影效果）
-11. 热门推荐UI优化（已完成：隐藏帖子图片，突出文字内容）
-12. 微信登录功能（已完成：支持OAuth登录和账号绑定/解绑，自动使用微信昵称和头像初始化账号）
-13. 密码设置功能（已完成：微信登录用户可在个人中心设置密码，支持用户名+密码登录）
-
-## 系统运行流程
-
-### 应用启动流程
-
-```
-用户打开App → 检查本地Token → 验证Token有效性 → 进入首页
-                                    │
-                                    ▼ 无效
-                              跳转登录页 → 登录成功
-```
-
-### 核心业务流程
-
-| 流程 | 步骤 |
-|------|------|
-| **声音浏览** | 首页 → 获取分类 → 选择类型 → 加载列表 → 播放声音 |
-| **录音发布** | 录音页 → 请求权限 → 开始录音 → 停止录音 → 上传服务器 |
-| **社区互动** | 社区页 → 浏览帖子 → 点赞/评论 → 发布帖子 → 关注用户 |
-| **实时通信** | 建立WS连接 → 发送消息 → 服务器转发 → 接收方收到通知 |
-
-### 数据流向
-
-```
-前端App ←──HTTP──→ Express API ←──SQL──→ MySQL
-   │                     │
-   └──WebSocket──┘      └──Cache──→ Redis
-```
-
-### 热门推荐数据流
-
-```
-定时任务(每5分钟) → 查询v_popular_posts视图 → 计算热度 → 写入Redis → 用户读取
-```
-
-详细流程图请参考项目根目录下的 **声愈项目App运行流程图.md**
-
----
-
-## 文档资源
-
-- **开发文档**：声愈项目开发文档.md
-- **数据库设计**：声愈项目数据库与Redis设计详解.md
-- **部署文档**：声愈项目部署文档.md
-- **面试问题**：声愈项目面试核心问题.md
-- **运行流程图**：声愈项目App运行流程图.md
-
-## 使用指南
-
-1. **启动开发环境**：
-   - 前端：`npm run dev:h5`
-   - 后端：`node index.js` 或 `pm2 start index.js`
-
-2. **构建生产版本**：
-   - 前端：`npm run build:h5`
-   - 后端：直接部署
-
-3. **数据库初始化**：
-   - 导入 `database/backup_*.sql` 文件
-   - 运行 `seed.js` 填充初始数据
-
-4. **部署流程**：
-   - 参考 `声愈项目部署文档.md`
-
-## 注意事项
-
-1. **环境变量**：生产环境需要配置正确的数据库和Redis连接信息
-2. **文件权限**：上传目录需要设置正确的权限
-3. **安全配置**：生产环境需要配置HTTPS和防火墙
-4. **性能监控**：定期检查服务器负载和数据库性能
-
-## 技术亮点
-
-1. **原生WebSocket实现** - 不依赖Socket.io，手动处理帧解析和握手，深入理解协议原理
-2. **数据库规范化设计** - 遵循第三范式，使用视图和索引优化查询性能
-3. **Redis缓存策略** - 缓存热点数据，解决缓存穿透、击穿、雪崩问题
-4. **uni-app跨平台** - 一套代码适配多端，开发效率高
-5. **软删除设计** - 私信功能采用软删除，保证双方数据完整性
-6. **安全措施** - JWT认证、密码加密、验证码、SQL注入防护
-
 ## 常见问题
 
 1. **WebSocket连接失败**：检查token是否有效，网络是否正常
 2. **文件上传失败**：检查文件大小限制和目录权限
 3. **数据库连接问题**：检查数据库配置和连接池设置
-4. **性能问题**：检查Redis缓存是否正常，数据库索引是否优化
+4. **微信登录失败**：检查AppID、AppSecret、包名、签名配置
+5. **管理后台数据为空**：检查API返回格式是否为{data: ...}
 
 ## 维护建议
 
@@ -476,6 +444,4 @@ await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
 
 ## 总结
 
-声愈项目是一个功能完整、技术栈合理、架构清晰的动物声音社交应用。项目采用了现代前端和后端技术，实现了核心的社交功能，并在性能、安全和用户体验方面做了充分的考虑。通过反规范化设计、Redis缓存、原生WebSocket等技术手段，保证了系统的性能和可靠性。
-
-项目文档非常详细，涵盖了开发、部署、数据库设计等各个方面，为后续的维护和扩展提供了良好的基础。
+声愈项目是一个功能完整、技术栈合理、架构清晰的动物声音社交应用。项目采用了现代前端和后端技术，实现了核心的社交功能，并在性能、安全和用户体验方面做了充分的考虑。
