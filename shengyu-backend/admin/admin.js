@@ -1586,8 +1586,9 @@ async function saveNotification() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/notification`, { method: 'POST', headers: getAuthHeaders(),
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch(`${API_BASE_URL}/admin/notification`, {
+      method: 'POST',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, content, type })
     });
 
