@@ -298,7 +298,7 @@ export default {
   width: 100%;
   max-width: 560rpx;
   gap: 24rpx; /* 使用gap控制间距 */
-  margin-top: 100rpx; /* 顶部留白增大，主体下移 */
+  margin-top: 160rpx; /* 顶部留白增大，主体下移更多 */
 }
 
 /* 头部区域 */
@@ -310,20 +310,20 @@ export default {
 }
 
 .app-icon {
-  width: 120rpx;
-  height: 120rpx;
+  width: 160rpx;
+  height: 160rpx;
   background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 50%, #FFD1DC 100%);
-  border-radius: 28rpx;
+  border-radius: 36rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6rpx 24rpx rgba(255, 182, 193, 0.4);
+  box-shadow: 0 8rpx 32rpx rgba(255, 182, 193, 0.4);
   overflow: hidden;
 }
 
 .app-logo {
-  width: 80rpx;
-  height: 80rpx;
+  width: 110rpx;
+  height: 110rpx;
 }
 
 .app-title {
@@ -510,7 +510,7 @@ export default {
 /* 第三方登录 */
 .third-party-login {
   width: 100%;
-  margin-top: 80rpx; /* 增加与其他登录方式的距离 */
+  margin-top: 120rpx; /* 增加与游客模式的距离 */
 }
 
 .divider {
@@ -544,14 +544,14 @@ export default {
   padding: 12rpx 32rpx;
   border-radius: 14rpx;
   background: rgba(129, 199, 132, 0.08);
-  border: 1rpx solid rgba(129, 199, 132, 0.2);
+  border: 1rpx solid rgba(129, 199, 132, 0.15);
   transition: all 0.3s ease;
 }
 
 .third-party-btn:active {
   transform: scale(0.98);
   background: rgba(129, 199, 132, 0.12);
-  border-color: rgba(129, 199, 132, 0.3);
+  border-color: rgba(129, 199, 132, 0.25);
 }
 
 .wechat-icon {
@@ -562,7 +562,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2rpx 6rpx rgba(129, 199, 132, 0.15);
+  box-shadow: 0 2rpx 6rpx rgba(129, 199, 132, 0.08);
 }
 
 .third-party-text {
@@ -575,17 +575,18 @@ export default {
 @media screen and (max-height: 700px) {
   .login-container {
     gap: 16rpx;
+    margin-top: 120rpx;
   }
   
   .app-icon {
-    width: 100rpx;
-    height: 100rpx;
-    border-radius: 24rpx;
+    width: 130rpx;
+    height: 130rpx;
+    border-radius: 28rpx;
   }
   
   .app-logo {
-    width: 68rpx;
-    height: 68rpx;
+    width: 90rpx;
+    height: 90rpx;
   }
   
   .app-title {

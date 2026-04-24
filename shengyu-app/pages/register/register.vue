@@ -179,7 +179,7 @@ export default {
   width: 100%;
   max-width: 560rpx;
   gap: 24rpx; /* 使用gap控制间距 */
-  margin-top: 120rpx; /* 顶部留白增大，主体下移 */
+  margin-top: 160rpx; /* 顶部留白增大，主体下移更多 */
 }
 
 /* 头部区域 */
@@ -191,20 +191,20 @@ export default {
 }
 
 .app-icon {
-  width: 120rpx;
-  height: 120rpx;
+  width: 160rpx;
+  height: 160rpx;
   background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 50%, #FFD1DC 100%);
-  border-radius: 28rpx;
+  border-radius: 36rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6rpx 24rpx rgba(255, 182, 193, 0.4);
+  box-shadow: 0 8rpx 32rpx rgba(255, 182, 193, 0.4);
   overflow: hidden;
 }
 
 .app-logo {
-  width: 80rpx;
-  height: 80rpx;
+  width: 110rpx;
+  height: 110rpx;
 }
 
 .app-title {
