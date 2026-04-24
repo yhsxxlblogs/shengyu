@@ -49,7 +49,7 @@ router.get('/users', (req, res) => {
   db.query('SELECT id, username, email, avatar, is_active, is_admin, created_at FROM users ORDER BY created_at DESC', (err, results) => {
     if (err) {
       console.error('获取用户数据失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
     
     // 为每个用户获取统计数据
@@ -57,7 +57,7 @@ router.get('/users', (req, res) => {
     const userIds = users.map(u => u.id);
     
     if (userIds.length === 0) {
-      return res.status(200).json({ data: [] });
+      return res.status(200).json({ code: 200, data: [] });
     }
     
     // 获取帖子数统计
@@ -67,7 +67,7 @@ router.get('/users', (req, res) => {
       (err, postsResults) => {
         if (err) {
           console.error('获取帖子统计失败:', err);
-          return res.status(200).json({ users: results });
+          return res.status(200).json({ code: 200, data: results });
         }
         
         const postsCount = {};
@@ -82,7 +82,7 @@ router.get('/users', (req, res) => {
           (err, soundsResults) => {
             if (err) {
               console.error('获取声音统计失败:', err);
-              return res.status(200).json({ data: results });
+              return res.status(200).json({ code: 200, data: results });
             }
 
             const soundsCount = {};
@@ -97,7 +97,7 @@ router.get('/users', (req, res) => {
               (err, commentsResults) => {
                 if (err) {
                   console.error('获取评论统计失败:', err);
-                  return res.status(200).json({ data: results });
+                  return res.status(200).json({ code: 200, data: results });
                 }
 
                 const commentsCount = {};
@@ -113,7 +113,7 @@ router.get('/users', (req, res) => {
                   comments_count: commentsCount[user.id] || 0
                 }));
 
-                res.status(200).json({ data: usersWithStats });
+                res.status(200).json({ code: 200, data: usersWithStats });
               }
             );
           }
@@ -128,7 +128,7 @@ router.post('/users', (req, res) => {
   const { username, email, password, is_admin } = req.body;
 
   if (!username || !email || !password) {
-    return res.status(400).json({ error: '缺少必要参数' });
+    return res.status(400).json({ code: 400, error: '缺少必要参数' });
   }
 
   const bcrypt = require('bcrypt');
@@ -140,9 +140,9 @@ router.post('/users', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('添加用户失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ message: '用户添加成功' });
+      res.status(200).json({ code: 200, message: '用户添加成功' });
     }
   );
 });
@@ -154,18 +154,18 @@ router.put('/users/:id/status', (req, res) => {
   
   // 不能禁用自己
   if (parseInt(id) === req.user.id) {
-    return res.status(400).json({ error: '不能禁用当前登录账号' });
+    return res.status(400).json({ code: 400, error: '不能禁用当前登录账号' });
   }
 
   db.query('UPDATE users SET is_active = ? WHERE id = ?', [is_active ? 1 : 0, id], (err, results) => {
     if (err) {
       console.error('更新用户状态失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
     if (results.affectedRows === 0) {
-      return res.status(404).json({ error: '用户不存在' });
+      return res.status(404).json({ code: 404, error: '用户不存在' });
     }
-    res.status(200).json({ message: is_active ? '用户已启用' : '用户已禁用' });
+    res.status(200).json({ code: 200, message: is_active ? '用户已启用' : '用户已禁用' });
   });
 });
 
@@ -176,18 +176,18 @@ router.put('/users/:id/admin', (req, res) => {
   
   // 不能取消自己的管理员权限
   if (parseInt(id) === req.user.id && !is_admin) {
-    return res.status(400).json({ error: '不能取消自己的管理员权限' });
+    return res.status(400).json({ code: 400, error: '不能取消自己的管理员权限' });
   }
 
   db.query('UPDATE users SET is_admin = ? WHERE id = ?', [is_admin ? 1 : 0, id], (err, results) => {
     if (err) {
       console.error('更新管理员状态失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
     if (results.affectedRows === 0) {
-      return res.status(404).json({ error: '用户不存在' });
+      return res.status(404).json({ code: 404, error: '用户不存在' });
     }
-    res.status(200).json({ message: is_admin ? '已设为管理员' : '已取消管理员权限' });
+    res.status(200).json({ code: 200, message: is_admin ? '已设为管理员' : '已取消管理员权限' });
   });
 });
 
@@ -197,18 +197,18 @@ router.delete('/users/:id', (req, res) => {
   
   // 不能删除自己
   if (parseInt(id) === req.user.id) {
-    return res.status(400).json({ error: '不能删除当前登录账号' });
+    return res.status(400).json({ code: 400, error: '不能删除当前登录账号' });
   }
 
   db.query('DELETE FROM users WHERE id = ?', [id], (err, results) => {
     if (err) {
       console.error('删除用户失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
     if (results.affectedRows === 0) {
-      return res.status(404).json({ error: '用户不存在' });
+      return res.status(404).json({ code: 404, error: '用户不存在' });
     }
-    res.status(200).json({ message: '删除成功' });
+    res.status(200).json({ code: 200, message: '删除成功' });
   });
 });
 
@@ -227,9 +227,9 @@ router.get('/users/:id/posts', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取用户帖子失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ posts: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -244,9 +244,9 @@ router.get('/users/:id/sounds', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取用户声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ sounds: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -265,9 +265,9 @@ router.get('/users/:id/comments', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取用户评论失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ comments: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -285,9 +285,9 @@ router.get('/sounds/pending', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取待审核音频失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ sounds: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -310,9 +310,9 @@ router.get('/sounds/all', (req, res) => {
   db.query(query, params, (err, results) => {
     if (err) {
       console.error('获取音频列表失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ sounds: results });
+    res.status(200).json({ code: 200, data: results });
   });
 });
 
@@ -326,12 +326,12 @@ router.put('/sounds/:id/approve', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('审核音频失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
       if (results.affectedRows === 0) {
-        return res.status(404).json({ error: '音频不存在' });
+        return res.status(404).json({ code: 404, error: '音频不存在' });
       }
-      res.status(200).json({ message: '音频审核通过' });
+      res.status(200).json({ code: 200, message: '音频审核通过' });
     }
   );
 });
@@ -347,12 +347,12 @@ router.put('/sounds/:id/reject', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('拒绝音频失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
       if (results.affectedRows === 0) {
-        return res.status(404).json({ error: '音频不存在' });
+        return res.status(404).json({ code: 404, error: '音频不存在' });
       }
-      res.status(200).json({ message: '音频已拒绝', reason });
+      res.status(200).json({ code: 200, message: '音频已拒绝', data: { reason } });
     }
   );
 });
@@ -368,12 +368,12 @@ router.put('/sounds/:id/official', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('设置官方音频失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
       if (results.affectedRows === 0) {
-        return res.status(404).json({ error: '音频不存在' });
+        return res.status(404).json({ code: 404, error: '音频不存在' });
       }
-      res.status(200).json({ message: is_official ? '已设为官方音频' : '已取消官方音频' });
+      res.status(200).json({ code: 200, message: is_official ? '已设为官方音频' : '已取消官方音频' });
     }
   );
 });
@@ -387,9 +387,9 @@ router.get('/sounds', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取声音数据失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ sounds: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -400,7 +400,7 @@ router.post('/sounds', upload.single('sound'), (req, res) => {
   const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : null;
 
   if (!animal_type || !emotion || !duration || !soundUrl) {
-    return res.status(400).json({ error: '缺少必要参数' });
+    return res.status(400).json({ code: 400, error: '缺少必要参数' });
   }
 
   db.query(
@@ -409,9 +409,9 @@ router.post('/sounds', upload.single('sound'), (req, res) => {
     (err, results) => {
       if (err) {
         console.error('添加声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ message: '声音添加成功' });
+      res.status(200).json({ code: 200, message: '声音添加成功' });
     }
   );
 });
@@ -424,7 +424,7 @@ router.delete('/sounds/:id', (req, res) => {
   db.query('SELECT sound_url FROM sounds WHERE id = ?', [id], (err, results) => {
     if (err) {
       console.error('获取声音失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
     
     if (results.length > 0 && results[0].sound_url) {
@@ -441,9 +441,9 @@ router.delete('/sounds/:id', (req, res) => {
     db.query('DELETE FROM sounds WHERE id = ?', [id], (err, results) => {
       if (err) {
         console.error('删除声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ message: '删除成功' });
+      res.status(200).json({ code: 200, message: '删除成功' });
     });
   });
 });
@@ -460,9 +460,9 @@ router.get('/posts', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取帖子数据失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ data: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -475,7 +475,7 @@ router.delete('/posts/:id', (req, res) => {
   db.query('SELECT image_url FROM posts WHERE id = ?', [id], (err, results) => {
     if (err) {
       console.error('获取帖子失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
     
     // 删除图片文件
@@ -505,12 +505,12 @@ router.delete('/posts/:id', (req, res) => {
         db.query('DELETE FROM posts WHERE id = ?', [id], (err, results) => {
           if (err) {
             console.error('删除帖子失败:', err);
-            return res.status(500).json({ error: '服务器错误' });
+            return res.status(500).json({ code: 500, error: '服务器错误' });
           }
           if (results.affectedRows === 0) {
-            return res.status(404).json({ error: '帖子不存在' });
+            return res.status(404).json({ code: 404, error: '帖子不存在' });
           }
-          res.status(200).json({ message: '删除成功' });
+          res.status(200).json({ code: 200, message: '删除成功' });
         });
       });
     });
@@ -522,7 +522,7 @@ router.post('/notification', (req, res) => {
   const { title, content, type, publishAt, expireAt } = req.body;
 
   if (!title || !content) {
-    return res.status(400).json({ error: '缺少必要参数' });
+    return res.status(400).json({ code: 400, error: '缺少必要参数' });
   }
 
   // 确定状态：如果有定时发布时间且在未来，则为pending
@@ -559,12 +559,13 @@ router.post('/notification', (req, res) => {
       (err, results) => {
         if (err) {
           console.error('发送通知失败:', err);
-          return res.status(500).json({ error: '服务器错误' });
+          return res.status(500).json({ code: 500, error: '服务器错误' });
         }
         // 返回成功响应和通知ID
         res.status(200).json({
+          code: 200,
           message: status === 'pending' ? '定时通知设置成功' : '通知发送成功',
-          notification: {
+          data: {
             id: results.insertId,
             title,
             content,
@@ -577,7 +578,7 @@ router.post('/notification', (req, res) => {
       }
     );
   }).catch(err => {
-    res.status(500).json({ error: '服务器错误' });
+    res.status(500).json({ code: 500, error: '服务器错误' });
   });
 });
 
@@ -588,9 +589,9 @@ router.get('/notification', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取通知列表失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ notifications: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -602,12 +603,12 @@ router.delete('/notification/:id', (req, res) => {
   db.query('DELETE FROM notifications WHERE id = ?', [id], (err, results) => {
     if (err) {
       console.error('删除通知失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
     if (results.affectedRows === 0) {
-      return res.status(404).json({ error: '通知不存在' });
+      return res.status(404).json({ code: 404, error: '通知不存在' });
     }
-    res.status(200).json({ message: '通知删除成功' });
+    res.status(200).json({ code: 200, message: '通知删除成功' });
   });
 });
 
@@ -627,16 +628,18 @@ router.get('/notifications/current', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取通知失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
       
       if (results.length > 0) {
         res.status(200).json({ 
+          code: 200,
           hasNotification: true,
           notification: results[0]
         });
       } else {
         res.status(200).json({ 
+          code: 200,
           hasNotification: false,
           notification: null
         });
@@ -651,9 +654,9 @@ router.delete('/notifications/clear', (req, res) => {
   db.query('DELETE FROM notifications', (err, results) => {
     if (err) {
       console.error('清空通知失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ message: '所有通知已清除' });
+    res.status(200).json({ code: 200, message: '所有通知已清除' });
   });
 });
 
@@ -665,21 +668,27 @@ router.get('/frontend-version', (req, res) => {
     if (fs.existsSync(versionFile)) {
       const versionInfo = JSON.parse(fs.readFileSync(versionFile, 'utf8'));
       res.status(200).json({
-        version: versionInfo.version,
-        description: versionInfo.description,
-        build: versionInfo.build,
-        updatedAt: versionInfo.updatedAt
+        code: 200,
+        data: {
+          version: versionInfo.version,
+          description: versionInfo.description,
+          build: versionInfo.build,
+          updatedAt: versionInfo.updatedAt
+        }
       });
     } else {
       res.status(200).json({
-        version: '1.0.0',
-        description: '初始版本',
-        build: 1
+        code: 200,
+        data: {
+          version: '1.0.0',
+          description: '初始版本',
+          build: 1
+        }
       });
     }
   } catch (error) {
     console.error('获取版本信息失败:', error);
-    res.status(500).json({ error: '服务器错误' });
+    res.status(500).json({ code: 500, error: '服务器错误' });
   }
 });
 
@@ -690,9 +699,9 @@ router.get('/animal-types', (req, res) => {
   db.query('SELECT * FROM animal_types ORDER BY id', (err, results) => {
     if (err) {
       console.error('获取动物类型失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ animalTypes: results });
+    res.status(200).json({ code: 200, data: results });
   });
 });
 
@@ -701,7 +710,7 @@ router.post('/animal-types', (req, res) => {
   const { type, name, icon, description } = req.body;
 
   if (!type || !name) {
-    return res.status(400).json({ error: '类型和名称不能为空' });
+    return res.status(400).json({ code: 400, error: '类型和名称不能为空' });
   }
 
   db.query(
@@ -710,11 +719,12 @@ router.post('/animal-types', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('添加动物类型失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
       res.status(200).json({ 
+        code: 200,
         message: '动物类型添加成功',
-        id: results.insertId 
+        data: { id: results.insertId }
       });
     }
   );
@@ -726,7 +736,7 @@ router.put('/animal-types/:id', (req, res) => {
   const { type, name, icon, description } = req.body;
 
   if (!type || !name) {
-    return res.status(400).json({ error: '类型和名称不能为空' });
+    return res.status(400).json({ code: 400, error: '类型和名称不能为空' });
   }
 
   db.query(
@@ -735,12 +745,12 @@ router.put('/animal-types/:id', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('更新动物类型失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
       if (results.affectedRows === 0) {
-        return res.status(404).json({ error: '动物类型不存在' });
+        return res.status(404).json({ code: 404, error: '动物类型不存在' });
       }
-      res.status(200).json({ message: '动物类型更新成功' });
+      res.status(200).json({ code: 200, message: '动物类型更新成功' });
     }
   );
 });
@@ -752,12 +762,12 @@ router.delete('/animal-types/:id', (req, res) => {
   db.query('DELETE FROM animal_types WHERE id = ?', [id], (err, results) => {
     if (err) {
       console.error('删除动物类型失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
     if (results.affectedRows === 0) {
-      return res.status(404).json({ error: '动物类型不存在' });
+      return res.status(404).json({ code: 404, error: '动物类型不存在' });
     }
-    res.status(200).json({ message: '动物类型删除成功' });
+    res.status(200).json({ code: 200, message: '动物类型删除成功' });
   });
 });
 
@@ -774,9 +784,9 @@ router.get('/system-sounds', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取系统声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ sounds: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -787,7 +797,7 @@ router.post('/system-sounds', upload.single('sound'), (req, res) => {
   const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body.sound_url;
 
   if (!animal_type || !emotion || !soundUrl) {
-    return res.status(400).json({ error: '缺少必要参数' });
+    return res.status(400).json({ code: 400, error: '缺少必要参数' });
   }
 
   db.query(
@@ -796,11 +806,12 @@ router.post('/system-sounds', upload.single('sound'), (req, res) => {
     (err, results) => {
       if (err) {
         console.error('添加系统声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
       res.status(200).json({ 
+        code: 200,
         message: '系统声音添加成功',
-        id: results.insertId 
+        data: { id: results.insertId }
       });
     }
   );
@@ -812,7 +823,7 @@ router.put('/system-sounds/:id', (req, res) => {
   const { animal_type, emotion, sound_url, duration } = req.body;
 
   if (!animal_type || !emotion) {
-    return res.status(400).json({ error: '动物类型和情绪不能为空' });
+    return res.status(400).json({ code: 400, error: '动物类型和情绪不能为空' });
   }
 
   db.query(
@@ -821,12 +832,12 @@ router.put('/system-sounds/:id', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('更新系统声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
       if (results.affectedRows === 0) {
-        return res.status(404).json({ error: '系统声音不存在或无权限修改' });
+        return res.status(404).json({ code: 404, error: '系统声音不存在或无权限修改' });
       }
-      res.status(200).json({ message: '系统声音更新成功' });
+      res.status(200).json({ code: 200, message: '系统声音更新成功' });
     }
   );
 });
@@ -839,7 +850,7 @@ router.delete('/system-sounds/:id', (req, res) => {
   db.query('SELECT sound_url FROM sounds WHERE id = ? AND user_id IS NULL', [id], (err, results) => {
     if (err) {
       console.error('获取系统声音失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
     
     if (results.length > 0 && results[0].sound_url) {
@@ -859,12 +870,12 @@ router.delete('/system-sounds/:id', (req, res) => {
       (err, results) => {
         if (err) {
           console.error('删除系统声音失败:', err);
-          return res.status(500).json({ error: '服务器错误' });
+          return res.status(500).json({ code: 500, error: '服务器错误' });
         }
         if (results.affectedRows === 0) {
-          return res.status(404).json({ error: '系统声音不存在或无权限删除' });
+          return res.status(404).json({ code: 404, error: '系统声音不存在或无权限删除' });
         }
-        res.status(200).json({ message: '系统声音删除成功' });
+        res.status(200).json({ code: 200, message: '系统声音删除成功' });
       }
     );
   });

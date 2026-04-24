@@ -11,12 +11,12 @@ router.post('/create', authenticateToken, (req, res) => {
   const { content, image_url, sound_id } = req.body;
 
   if (!content) {
-    return res.status(400).json({ error: '内容不能为空' });
+    return res.status(400).json({ code: 400, error: '内容不能为空' });
   }
 
   // 验证内容长度
   if (content.length > 2000) {
-    return res.status(400).json({ error: '内容过长，最多2000字符' });
+    return res.status(400).json({ code: 400, error: '内容过长，最多2000字符' });
   }
 
   // XSS防护 - 清理内容
@@ -28,7 +28,7 @@ router.post('/create', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('发布帖子失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
       // 获取新发布的帖子
@@ -43,12 +43,13 @@ router.post('/create', authenticateToken, (req, res) => {
         (err, results) => {
           if (err) {
             console.error('获取帖子失败:', err);
-            return res.status(500).json({ error: '服务器错误' });
+            return res.status(500).json({ code: 500, error: '服务器错误' });
           }
 
           res.status(201).json({
+            code: 201,
             message: '发布成功',
-            post: results[0]
+            data: results[0]
           });
         }
       );
@@ -67,7 +68,7 @@ router.get('/list', optionalAuth, (req, res) => {
   const offset = (pageNum - 1) * limitNum;
 
   if (isNaN(pageNum) || pageNum < 1) {
-    return res.status(400).json({ error: '无效的分页参数' });
+    return res.status(400).json({ code: 400, error: '无效的分页参数' });
   }
 
   db.query(
@@ -83,10 +84,10 @@ router.get('/list', optionalAuth, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取帖子列表失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ posts: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -97,7 +98,7 @@ router.get('/popular', (req, res) => {
   const limitNum = Math.min(parseInt(limit), 20);
 
   if (isNaN(limitNum) || limitNum < 1) {
-    return res.status(400).json({ error: '无效的参数' });
+    return res.status(400).json({ code: 400, error: '无效的参数' });
   }
 
   db.query(
@@ -112,10 +113,10 @@ router.get('/popular', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取热门帖子失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ posts: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -129,11 +130,11 @@ router.post('/like/:post_id', authenticateToken, (req, res) => {
   db.query('SELECT id FROM posts WHERE id = ?', [postId], (err, results) => {
     if (err) {
       console.error('检查帖子失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
 
     if (results.length === 0) {
-      return res.status(404).json({ error: '帖子不存在' });
+      return res.status(404).json({ code: 404, error: '帖子不存在' });
     }
 
     // 检查是否已点赞
@@ -143,7 +144,7 @@ router.post('/like/:post_id', authenticateToken, (req, res) => {
       (err, results) => {
         if (err) {
           console.error('检查点赞状态失败:', err);
-          return res.status(500).json({ error: '服务器错误' });
+          return res.status(500).json({ code: 500, error: '服务器错误' });
         }
 
         if (results.length > 0) {
@@ -154,9 +155,9 @@ router.post('/like/:post_id', authenticateToken, (req, res) => {
             (err) => {
               if (err) {
                 console.error('取消点赞失败:', err);
-                return res.status(500).json({ error: '服务器错误' });
+                return res.status(500).json({ code: 500, error: '服务器错误' });
               }
-              res.status(200).json({ message: '取消点赞成功', isLiked: false });
+              res.status(200).json({ code: 200, message: '取消点赞成功', data: { isLiked: false } });
             }
           );
         } else {
@@ -167,9 +168,9 @@ router.post('/like/:post_id', authenticateToken, (req, res) => {
             (err) => {
               if (err) {
                 console.error('点赞失败:', err);
-                return res.status(500).json({ error: '服务器错误' });
+                return res.status(500).json({ code: 500, error: '服务器错误' });
               }
-              res.status(200).json({ message: '点赞成功', isLiked: true });
+              res.status(200).json({ code: 200, message: '点赞成功', data: { isLiked: true } });
             }
           );
         }
@@ -185,22 +186,22 @@ router.post('/comment/:post_id', authenticateToken, (req, res) => {
   const { content } = req.body;
 
   if (!content || content.trim().length === 0) {
-    return res.status(400).json({ error: '评论内容不能为空' });
+    return res.status(400).json({ code: 400, error: '评论内容不能为空' });
   }
 
   if (content.length > 500) {
-    return res.status(400).json({ error: '评论内容过长，最多500字符' });
+    return res.status(400).json({ code: 400, error: '评论内容过长，最多500字符' });
   }
 
   // 检查帖子是否存在
   db.query('SELECT id, user_id FROM posts WHERE id = ?', [postId], (err, results) => {
     if (err) {
       console.error('检查帖子失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
 
     if (results.length === 0) {
-      return res.status(404).json({ error: '帖子不存在' });
+      return res.status(404).json({ code: 404, error: '帖子不存在' });
     }
 
     const post = results[0];
@@ -214,7 +215,7 @@ router.post('/comment/:post_id', authenticateToken, (req, res) => {
       (err, results) => {
         if (err) {
           console.error('发表评论失败:', err);
-          return res.status(500).json({ error: '服务器错误' });
+          return res.status(500).json({ code: 500, error: '服务器错误' });
         }
 
         // 获取新评论
@@ -227,7 +228,7 @@ router.post('/comment/:post_id', authenticateToken, (req, res) => {
           (err, results) => {
             if (err) {
               console.error('获取评论失败:', err);
-              return res.status(500).json({ error: '服务器错误' });
+              return res.status(500).json({ code: 500, error: '服务器错误' });
             }
 
             // 发送通知给帖子作者
@@ -242,8 +243,9 @@ router.post('/comment/:post_id', authenticateToken, (req, res) => {
             }
 
             res.status(201).json({
+              code: 201,
               message: '评论成功',
-              comment: results[0]
+              data: results[0]
             });
           }
         );
@@ -263,7 +265,7 @@ router.get('/comments/:post_id', (req, res) => {
   const offset = (pageNum - 1) * limitNum;
 
   if (isNaN(pageNum) || pageNum < 1) {
-    return res.status(400).json({ error: '无效的分页参数' });
+    return res.status(400).json({ code: 400, error: '无效的分页参数' });
   }
 
   db.query(
@@ -277,10 +279,10 @@ router.get('/comments/:post_id', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取评论失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ comments: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -295,7 +297,7 @@ router.get('/my', authenticateToken, (req, res) => {
   const offset = (pageNum - 1) * limitNum;
 
   if (isNaN(pageNum) || pageNum < 1) {
-    return res.status(400).json({ error: '无效的分页参数' });
+    return res.status(400).json({ code: 400, error: '无效的分页参数' });
   }
 
   db.query(
@@ -311,10 +313,10 @@ router.get('/my', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取我的帖子失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ posts: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -329,7 +331,7 @@ router.get('/likes', authenticateToken, (req, res) => {
   const offset = (pageNum - 1) * limitNum;
 
   if (isNaN(pageNum) || pageNum < 1) {
-    return res.status(400).json({ error: '无效的分页参数' });
+    return res.status(400).json({ code: 400, error: '无效的分页参数' });
   }
 
   db.query(
@@ -347,10 +349,10 @@ router.get('/likes', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取点赞帖子失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ posts: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -365,11 +367,11 @@ router.get('/liked-ids', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取点赞ID失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
       const likedIds = results.map(row => row.post_id);
-      res.status(200).json({ likedIds });
+      res.status(200).json({ code: 200, data: likedIds });
     }
   );
 });
@@ -386,18 +388,18 @@ router.delete('/delete/:post_id', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('检查帖子失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
       if (results.length === 0) {
-        return res.status(404).json({ error: '帖子不存在' });
+        return res.status(404).json({ code: 404, error: '帖子不存在' });
       }
 
       const post = results[0];
 
       // 检查是否是帖子作者或管理员
       if (post.user_id !== userId && !req.user.is_admin) {
-        return res.status(403).json({ error: '无权删除此帖子' });
+        return res.status(403).json({ code: 403, error: '无权删除此帖子' });
       }
 
       // 删除相关的点赞和评论
@@ -415,10 +417,10 @@ router.delete('/delete/:post_id', authenticateToken, (req, res) => {
           db.query('DELETE FROM posts WHERE id = ?', [postId], (err) => {
             if (err) {
               console.error('删除帖子失败:', err);
-              return res.status(500).json({ error: '服务器错误' });
+              return res.status(500).json({ code: 500, error: '服务器错误' });
             }
 
-            res.status(200).json({ message: '删除成功' });
+            res.status(200).json({ code: 200, message: '删除成功' });
           });
         });
       });
@@ -443,14 +445,14 @@ router.get('/detail/:post_id', optionalAuth, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取帖子详情失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
       if (results.length === 0) {
-        return res.status(404).json({ error: '帖子不存在' });
+        return res.status(404).json({ code: 404, error: '帖子不存在' });
       }
 
-      res.status(200).json({ post: results[0] });
+      res.status(200).json({ code: 200, data: results[0] });
     }
   );
 });

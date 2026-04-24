@@ -90,7 +90,7 @@ router.get('/popular', (req, res) => {
   const limitNum = Math.min(parseInt(limit), 20);
 
   if (isNaN(limitNum) || limitNum < 1) {
-    return res.status(400).json({ error: '无效的参数' });
+    return res.status(400).json({ code: 400, error: '无效的参数' });
   }
 
   db.query(
@@ -104,10 +104,10 @@ router.get('/popular', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取热门声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ sounds: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -119,10 +119,10 @@ router.get('/animal-types', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取动物类型失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ animalTypes: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -156,10 +156,10 @@ router.get('/animal-types-grouped', (req, res) => {
           category: row.category,
           types: typeof row.types === 'string' ? JSON.parse(row.types) : row.types
         }));
-        res.status(200).json({ groupedTypes: grouped });
+        res.status(200).json({ code: 200, data: grouped });
       } catch (parseErr) {
         console.error('解析JSON失败:', parseErr);
-        res.status(200).json({ groupedTypes: [] });
+        res.status(200).json({ code: 200, data: [] });
       }
     }
   );
@@ -175,7 +175,7 @@ router.get('/by-animal/:type', (req, res) => {
   const offset = (pageNum - 1) * limitNum;
 
   if (isNaN(pageNum) || pageNum < 1) {
-    return res.status(400).json({ error: '无效的分页参数' });
+    return res.status(400).json({ code: 400, error: '无效的分页参数' });
   }
 
   db.query(
@@ -189,10 +189,10 @@ router.get('/by-animal/:type', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ sounds: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -202,12 +202,12 @@ router.get('/search', (req, res) => {
   const { q } = req.query;
 
   if (!q) {
-    return res.status(400).json({ error: '请输入搜索关键词' });
+    return res.status(400).json({ code: 400, error: '请输入搜索关键词' });
   }
 
   // 限制搜索关键词长度
   if (q.length > 50) {
-    return res.status(400).json({ error: '搜索关键词过长' });
+    return res.status(400).json({ code: 400, error: '搜索关键词过长' });
   }
 
   const searchPattern = `%${q}%`;
@@ -224,10 +224,10 @@ router.get('/search', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('搜索声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ sounds: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -245,21 +245,21 @@ router.get('/detail/:id', optionalAuth, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取声音详情失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
       if (results.length === 0) {
-        return res.status(404).json({ error: '声音不存在' });
+        return res.status(404).json({ code: 404, error: '声音不存在' });
       }
 
       const sound = results[0];
 
       // 检查权限
       if (!sound.visible && sound.user_id !== req.user?.id && !req.user?.is_admin) {
-        return res.status(403).json({ error: '无权访问此声音' });
+        return res.status(403).json({ code: 403, error: '无权访问此声音' });
       }
 
-      res.status(200).json({ sound });
+      res.status(200).json({ code: 200, data: sound });
     }
   );
 });
@@ -274,7 +274,7 @@ router.get('/my', authenticateToken, (req, res) => {
   const offset = (pageNum - 1) * limitNum;
 
   if (isNaN(pageNum) || pageNum < 1) {
-    return res.status(400).json({ error: '无效的分页参数' });
+    return res.status(400).json({ code: 400, error: '无效的分页参数' });
   }
 
   db.query(
@@ -288,10 +288,10 @@ router.get('/my', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取我的声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ sounds: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -397,9 +397,9 @@ router.get('/admin/categories', authenticateToken, (req, res) => {
   db.query('SELECT * FROM categories ORDER BY sort_order', (err, results) => {
     if (err) {
       console.error('获取分类失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ data: results });
+    res.status(200).json({ code: 200, data: results });
   });
 });
 
@@ -412,9 +412,9 @@ router.post('/admin/categories', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('添加分类失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ message: '添加成功', id: results.insertId });
+      res.status(200).json({ code: 200, message: '添加成功', data: { id: results.insertId } });
     }
   );
 });
@@ -429,9 +429,9 @@ router.put('/admin/categories/:id', authenticateToken, (req, res) => {
     (err) => {
       if (err) {
         console.error('更新分类失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ message: '更新成功' });
+      res.status(200).json({ code: 200, message: '更新成功' });
     }
   );
 });
@@ -442,9 +442,9 @@ router.delete('/admin/categories/:id', authenticateToken, (req, res) => {
   db.query('DELETE FROM categories WHERE id = ?', [id], (err) => {
     if (err) {
       console.error('删除分类失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ message: '删除成功' });
+    res.status(200).json({ code: 200, message: '删除成功' });
   });
 });
 
@@ -453,9 +453,9 @@ router.get('/admin/animal-types', authenticateToken, (req, res) => {
   db.query('SELECT * FROM animal_types ORDER BY sort_order', (err, results) => {
     if (err) {
       console.error('获取动物类型失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ data: results });
+    res.status(200).json({ code: 200, data: results });
   });
 });
 
@@ -468,9 +468,9 @@ router.post('/admin/animal-types', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('添加动物类型失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ message: '添加成功', id: results.insertId });
+      res.status(200).json({ code: 200, message: '添加成功', data: { id: results.insertId } });
     }
   );
 });
@@ -485,9 +485,9 @@ router.put('/admin/animal-types/:id', authenticateToken, (req, res) => {
     (err) => {
       if (err) {
         console.error('更新动物类型失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ message: '更新成功' });
+      res.status(200).json({ code: 200, message: '更新成功' });
     }
   );
 });
@@ -498,9 +498,9 @@ router.delete('/admin/animal-types/:id', authenticateToken, (req, res) => {
   db.query('DELETE FROM animal_types WHERE id = ?', [id], (err) => {
     if (err) {
       console.error('删除动物类型失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ message: '删除成功' });
+    res.status(200).json({ code: 200, message: '删除成功' });
   });
 });
 
@@ -511,9 +511,9 @@ router.get('/admin/system-sounds', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取系统声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ data: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -524,7 +524,7 @@ router.post('/admin/system-sounds', authenticateToken, upload.single('sound'), (
   const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body.sound_url;
 
   if (!animal_type || !emotion || !soundUrl) {
-    return res.status(400).json({ error: '缺少必要参数' });
+    return res.status(400).json({ code: 400, error: '缺少必要参数' });
   }
 
   db.query(
@@ -533,9 +533,9 @@ router.post('/admin/system-sounds', authenticateToken, upload.single('sound'), (
     (err, results) => {
       if (err) {
         console.error('添加系统声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ message: '添加成功', id: results.insertId });
+      res.status(200).json({ code: 200, message: '添加成功', data: { id: results.insertId } });
     }
   );
 });
@@ -551,9 +551,9 @@ router.put('/admin/system-sounds/:id', authenticateToken, (req, res) => {
     (err) => {
       if (err) {
         console.error('更新系统声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ message: '更新成功' });
+      res.status(200).json({ code: 200, message: '更新成功' });
     }
   );
 });
@@ -564,9 +564,9 @@ router.delete('/admin/system-sounds/:id', authenticateToken, (req, res) => {
   db.query('DELETE FROM sounds WHERE id = ? AND user_id IS NULL', [id], (err) => {
     if (err) {
       console.error('删除系统声音失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ message: '删除成功' });
+    res.status(200).json({ code: 200, message: '删除成功' });
   });
 });
 
@@ -582,9 +582,9 @@ router.get('/admin/user-sounds', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取用户声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ data: results });
+      res.status(200).json({ code: 200, data: results });
     }
   );
 });
@@ -600,9 +600,9 @@ router.put('/admin/user-sounds/:id/review', authenticateToken, (req, res) => {
     (err) => {
       if (err) {
         console.error('审核声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ message: '审核完成' });
+      res.status(200).json({ code: 200, message: '审核完成' });
     }
   );
 });
@@ -613,9 +613,9 @@ router.delete('/admin/user-sounds/:id', authenticateToken, (req, res) => {
   db.query('DELETE FROM sounds WHERE id = ?', [id], (err) => {
     if (err) {
       console.error('删除用户声音失败:', err);
-      return res.status(500).json({ error: '服务器错误' });
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ message: '删除成功' });
+    res.status(200).json({ code: 200, message: '删除成功' });
   });
 });
 
