@@ -193,7 +193,7 @@ router.post('/admin/login', (req, res) => {
 router.get('/validate', (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: '未授权', valid: false });
-  
+
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
     // 检查用户是否存在且未被禁用
@@ -208,11 +208,113 @@ router.get('/validate', (req, res) => {
   }
 });
 
-// 获取用户信息
+// 获取用户公开信息（不需要token）- 放在 /user 之前，避免被拦截
+router.get('/user/:id', (req, res) => {
+  const { id } = req.params;
+
+  // 验证ID是否为数字
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).json({ code: 400, error: '无效的用户ID' });
+  }
+
+  // 获取用户基本信息
+  db.query('SELECT id, username, email, avatar FROM users WHERE id = ? AND is_active = 1', [id], (err, userResults) => {
+    if (err) return res.status(500).json({ code: 500, error: '服务器错误' });
+    if (userResults.length === 0) return res.status(404).json({ code: 404, error: '用户不存在' });
+
+    const user = userResults[0];
+
+    // 使用子查询获取用户统计数据（规范化设计）
+    const getUserStats = new Promise((resolve, reject) => {
+      db.query(
+        `SELECT
+          (SELECT COUNT(*) FROM posts WHERE user_id = ?) as posts_count,
+          (SELECT COUNT(*) FROM sounds WHERE user_id = ?) as sounds_count,
+          (SELECT COUNT(*) FROM follows WHERE following_id = ?) as followers_count,
+          (SELECT COUNT(*) FROM follows WHERE follower_id = ?) as following_count,
+          (SELECT COUNT(*) FROM likes l JOIN posts p ON l.post_id = p.id WHERE p.user_id = ?) as likes_received_count,
+          (SELECT COUNT(*) FROM comments c JOIN posts p ON c.post_id = p.id WHERE p.user_id = ?) as comments_received_count`,
+        [id, id, id, id, id, id],
+        (err, results) => {
+          if (err) reject(err);
+          else resolve(results[0] || { posts_count: 0, sounds_count: 0, likes_received_count: 0, comments_received_count: 0, followers_count: 0, following_count: 0 });
+        }
+      );
+    });
+
+    // 获取用户的公开音频
+    const getUserAudios = new Promise((resolve, reject) => {
+      db.query(
+        'SELECT id, animal_type, emotion, sound_url, duration, created_at FROM sounds WHERE user_id = ? AND visible = 1 ORDER BY created_at DESC LIMIT 50',
+        [id],
+        (err, results) => {
+          if (err) reject(err);
+          else resolve(results);
+        }
+      );
+    });
+
+    // 获取用户的帖子（使用子查询获取统计数据）
+    const getUserPosts = new Promise((resolve, reject) => {
+      db.query(
+        `SELECT p.id, p.content, p.image_url, p.created_at,
+                (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+                (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
+         FROM posts p WHERE p.user_id = ? ORDER BY p.created_at DESC LIMIT 20`,
+        [id],
+        (err, results) => {
+          if (err) reject(err);
+          else resolve(results);
+        }
+      );
+    });
+
+    // 获取用户的评论
+    const getUserComments = new Promise((resolve, reject) => {
+      db.query(
+        `SELECT c.id, c.content, c.created_at, p.id as post_id, p.content as post_content
+         FROM comments c
+         LEFT JOIN posts p ON c.post_id = p.id
+         WHERE c.user_id = ? ORDER BY c.created_at DESC LIMIT 20`,
+        [id],
+        (err, results) => {
+          if (err) reject(err);
+          else resolve(results);
+        }
+      );
+    });
+
+    // 并行获取所有数据
+    Promise.all([getUserStats, getUserAudios, getUserPosts, getUserComments])
+      .then(([stats, audios, userPosts, userComments]) => {
+        res.status(200).json({
+          code: 200,
+          user: {
+            ...user,
+            posts: stats.posts_count,
+            sounds: stats.sounds_count,
+            likes: stats.likes_received_count,
+            comments: stats.comments_received_count,
+            follower_count: stats.followers_count,
+            following_count: stats.following_count
+          },
+          audios,
+          userPosts,
+          userComments
+        });
+      })
+      .catch(err => {
+        console.error('获取用户公开信息失败:', err);
+        res.status(500).json({ code: 500, error: '服务器错误' });
+      });
+  });
+});
+
+// 获取用户信息（当前登录用户）
 router.get('/user', (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ code: 401, error: '未授权' });
-  
+
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
     db.query('SELECT id, username, email, avatar, nickname, password, wechat_nickname, wechat_avatar, wechat_openid, login_type, is_admin FROM users WHERE id = ?', [decoded.id], (err, results) => {
@@ -345,14 +447,14 @@ router.post('/avatar', upload.single('avatar'), (req, res) => {
 router.get('/search', (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: '请输入搜索关键词' });
-  
+
   // 限制搜索关键词长度
   if (q.length > 50) {
     return res.status(400).json({ error: '搜索关键词过长' });
   }
-  
+
   const searchPattern = `%${q}%`;
-  
+
   db.query(
     'SELECT id, username, email, avatar FROM users WHERE username LIKE ? OR email LIKE ? ORDER BY created_at DESC LIMIT 20',
     [searchPattern, searchPattern],
@@ -361,108 +463,6 @@ router.get('/search', (req, res) => {
       res.status(200).json({ users: results });
     }
   );
-});
-
-// 获取用户公开信息（不需要token）
-router.get('/user/:id', (req, res) => {
-  const { id } = req.params;
-  
-  // 验证ID是否为数字
-  if (!id || isNaN(parseInt(id))) {
-    return res.status(400).json({ error: '无效的用户ID' });
-  }
-  
-  // 获取用户基本信息
-  db.query('SELECT id, username, email, avatar FROM users WHERE id = ? AND is_active = 1', [id], (err, userResults) => {
-    if (err) return res.status(500).json({ error: '服务器错误' });
-    if (userResults.length === 0) return res.status(404).json({ error: '用户不存在' });
-    
-    const user = userResults[0];
-    
-    // 使用子查询获取用户统计数据（规范化设计）
-    const getUserStats = new Promise((resolve, reject) => {
-      db.query(
-        `SELECT
-          (SELECT COUNT(*) FROM posts WHERE user_id = ?) as posts_count,
-          (SELECT COUNT(*) FROM sounds WHERE user_id = ?) as sounds_count,
-          (SELECT COUNT(*) FROM follows WHERE following_id = ?) as followers_count,
-          (SELECT COUNT(*) FROM follows WHERE follower_id = ?) as following_count,
-          (SELECT COUNT(*) FROM likes l JOIN posts p ON l.post_id = p.id WHERE p.user_id = ?) as likes_received_count,
-          (SELECT COUNT(*) FROM comments c JOIN posts p ON c.post_id = p.id WHERE p.user_id = ?) as comments_received_count`,
-        [id, id, id, id, id, id],
-        (err, results) => {
-          if (err) reject(err);
-          else resolve(results[0] || { posts_count: 0, sounds_count: 0, likes_received_count: 0, comments_received_count: 0, followers_count: 0, following_count: 0 });
-        }
-      );
-    });
-    
-    // 获取用户的公开音频
-    const getUserAudios = new Promise((resolve, reject) => {
-      db.query(
-        'SELECT id, animal_type, emotion, sound_url, duration, created_at FROM sounds WHERE user_id = ? AND visible = 1 ORDER BY created_at DESC LIMIT 50',
-        [id],
-        (err, results) => {
-          if (err) reject(err);
-          else resolve(results);
-        }
-      );
-    });
-    
-    // 获取用户的帖子（使用子查询获取统计数据）
-    const getUserPosts = new Promise((resolve, reject) => {
-      db.query(
-        `SELECT p.id, p.content, p.image_url, p.created_at,
-                (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
-                (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
-         FROM posts p WHERE p.user_id = ? ORDER BY p.created_at DESC LIMIT 20`,
-        [id],
-        (err, results) => {
-          if (err) reject(err);
-          else resolve(results);
-        }
-      );
-    });
-    
-    // 获取用户的评论
-    const getUserComments = new Promise((resolve, reject) => {
-      db.query(
-        `SELECT c.id, c.content, c.created_at, p.id as post_id, p.content as post_content
-         FROM comments c 
-         LEFT JOIN posts p ON c.post_id = p.id 
-         WHERE c.user_id = ? ORDER BY c.created_at DESC LIMIT 20`,
-        [id],
-        (err, results) => {
-          if (err) reject(err);
-          else resolve(results);
-        }
-      );
-    });
-    
-    // 并行获取所有数据
-    Promise.all([getUserStats, getUserAudios, getUserPosts, getUserComments])
-      .then(([stats, audios, userPosts, userComments]) => {
-        res.status(200).json({
-          code: 200,
-          user: {
-            ...user,
-            posts: stats.posts_count,
-            sounds: stats.sounds_count,
-            likes: stats.likes_received_count,
-            comments: stats.comments_received_count,
-            follower_count: stats.followers_count,
-            following_count: stats.following_count
-          },
-          audios,
-          userPosts,
-          userComments
-        });
-      })
-      .catch(err => {
-        console.error('获取用户公开信息失败:', err);
-        res.status(500).json({ code: 500, error: '服务器错误' });
-      });
-  });
 });
 
 // 设置密码（首次设置）
