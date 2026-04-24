@@ -435,12 +435,21 @@ export default {
 
 .guest-section {
   text-align: center;
-  margin-bottom: 40rpx;
+  margin-bottom: 30rpx;
 }
 
 .guest-link {
   font-size: 26rpx;
-  color: #AAA;
+  color: #FF9A9E;
+  font-weight: 500;
+  padding: 12rpx 32rpx;
+  border-radius: 30rpx;
+  background: rgba(255, 154, 158, 0.1);
+  transition: all 0.3s ease;
+}
+
+.guest-link:active {
+  background: rgba(255, 154, 158, 0.2);
 }
 
 /* 第三方登录 */
@@ -469,6 +478,7 @@ export default {
 .third-party-buttons {
   display: flex;
   justify-content: center;
+  margin-top: 10rpx;
 }
 
 .third-party-btn {
@@ -476,20 +486,28 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 8rpx;
-  padding: 16rpx 40rpx;
-  border-radius: 16rpx;
-  background: #FAFAFA;
+  padding: 24rpx 80rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, rgba(7, 193, 96, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+  border: 2rpx solid rgba(7, 193, 96, 0.2);
   transition: all 0.3s ease;
 }
 
 .third-party-btn:active {
-  background: #F0F0F0;
+  transform: scale(0.98);
+  background: linear-gradient(135deg, rgba(7, 193, 96, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
+  border-color: rgba(7, 193, 96, 0.3);
 }
 
 .wechat-icon {
+  width: 72rpx;
+  height: 72rpx;
+  background: linear-gradient(135deg, #07C160 0%, #10B981 100%);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.3);
 }
 
 .wechat-img {
@@ -498,7 +516,8 @@ export default {
 }
 
 .third-party-text {
-  font-size: 22rpx;
-  color: #666;
+  font-size: 26rpx;
+  color: #07C160;
+  font-weight: 600;
 }
 </style>

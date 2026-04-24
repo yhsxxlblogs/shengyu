@@ -280,7 +280,9 @@
                   </view>
                   <!-- 没有更多数据 -->
                   <view v-else-if="!hasMore && posts.length > 0" class="no-more">
-                    <text class="no-more-text">—— 已经到底了 ——</text>
+                    <view class="no-more-line"></view>
+                    <text class="no-more-text">没有更多内容了</text>
+                    <view class="no-more-line"></view>
                   </view>
                   <!-- 底部安全区域，防止被导航栏遮盖 -->
                   <view class="safe-area-bottom"></view>
@@ -2844,41 +2846,52 @@ export default {
 }
 
 .follow-btn-small {
-  padding: 8rpx 20rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+  padding: 10rpx 24rpx;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);
   border-radius: 24rpx;
   margin-left: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 157, 0.3);
+  transition: all 0.3s ease;
+}
+
+.follow-btn-small:active {
+  transform: scale(0.95);
 }
 
 .follow-btn-small.following {
-  background: #F0F0F0;
+  background: #F5F5F5;
+  box-shadow: none;
+  border: 2rpx solid #E0E0E0;
 }
 
 .follow-btn-text {
   font-size: 24rpx;
   color: #FFFFFF;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .follow-btn-small.following .follow-btn-text {
-  color: #999999;
+  color: #888888;
+  font-weight: 500;
 }
 
 .post-content {
-  margin-bottom: 16rpx;
+  margin-bottom: 20rpx;
 }
 
 .content {
   font-size: 28rpx;
-  color: #555555;
-  line-height: 1.6;
+  color: #333333;
+  line-height: 1.7;
+  word-break: break-all;
 }
 
 .post-image {
   width: 100%;
   max-height: 400rpx;
-  border-radius: 12rpx;
-  margin-top: 16rpx;
+  border-radius: 16rpx;
+  margin-top: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .audio-container {
@@ -2952,13 +2965,24 @@ export default {
 }
 
 .no-more {
-  text-align: center;
-  padding: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20rpx;
+  padding: 50rpx 40rpx;
+}
+
+.no-more-line {
+  flex: 1;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, #E0E0E0, transparent);
+  max-width: 100rpx;
 }
 
 .no-more-text {
   font-size: 24rpx;
-  color: #999999;
+  color: #BBBBBB;
+  font-weight: 400;
 }
 
 
