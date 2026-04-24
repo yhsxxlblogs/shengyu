@@ -2,7 +2,31 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const jwt = require('jsonwebtoken');
-const axios = require('axios');
+const https = require('https');
+
+/**
+ * 使用原生 https 模块发送 GET 请求
+ * @param {string} url - 请求URL
+ * @returns {Promise<Object>} - 返回JSON数据
+ */
+function httpsGet(url) {
+    return new Promise((resolve, reject) => {
+        https.get(url, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    const jsonData = JSON.parse(data);
+                    resolve(jsonData);
+                } catch (e) {
+                    reject(new Error('解析响应数据失败'));
+                }
+            });
+        }).on('error', (err) => {
+            reject(err);
+        });
+    });
+}
 
 /**
  * 微信登录功能
@@ -53,27 +77,27 @@ router.post('/login', async (req, res) => {
         // 1. 使用 code 换取 access_token 和 openid
         const tokenUrl = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${WECHAT_CONFIG.appId}&secret=${WECHAT_CONFIG.appSecret}&code=${code}&grant_type=authorization_code`;
         
-        const tokenRes = await axios.get(tokenUrl);
-        console.log('微信 token 响应:', tokenRes.data);
+        const tokenRes = await httpsGet(tokenUrl);
+        console.log('微信 token 响应:', tokenRes);
 
-        if (tokenRes.data.errcode) {
+        if (tokenRes.errcode) {
             return res.status(400).json({ 
                 error: '微信授权失败', 
-                message: tokenRes.data.errmsg 
+                message: tokenRes.errmsg 
             });
         }
 
-        const { access_token, openid, unionid } = tokenRes.data;
+        const { access_token, openid, unionid } = tokenRes;
 
         // 2. 使用 access_token 获取用户信息
         let wechatUserInfo = null;
         try {
             const userInfoUrl = `https://api.weixin.qq.com/sns/userinfo?access_token=${access_token}&openid=${openid}`;
-            const userRes = await axios.get(userInfoUrl);
-            console.log('微信用户信息:', userRes.data);
+            const userRes = await httpsGet(userInfoUrl);
+            console.log('微信用户信息:', userRes);
             
-            if (!userRes.data.errcode) {
-                wechatUserInfo = userRes.data;
+            if (!userRes.errcode) {
+                wechatUserInfo = userRes;
             }
         } catch (e) {
             console.log('获取微信用户信息失败，使用前端传入的信息:', e.message);
@@ -214,17 +238,17 @@ router.post('/bind', authenticateToken, async (req, res) => {
         // 1. 使用 code 换取 access_token 和 openid
         const tokenUrl = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${WECHAT_CONFIG.appId}&secret=${WECHAT_CONFIG.appSecret}&code=${code}&grant_type=authorization_code`;
         
-        const tokenRes = await axios.get(tokenUrl);
-        console.log('微信 token 响应:', tokenRes.data);
+        const tokenRes = await httpsGet(tokenUrl);
+        console.log('微信 token 响应:', tokenRes);
 
-        if (tokenRes.data.errcode) {
+        if (tokenRes.errcode) {
             return res.status(400).json({ 
                 error: '微信授权失败', 
-                message: tokenRes.data.errmsg 
+                message: tokenRes.errmsg 
             });
         }
 
-        const { openid, unionid } = tokenRes.data;
+        const { access_token, openid, unionid } = tokenRes;
 
         // 2. 检查该微信是否已被其他用户绑定
         const [existingWechatUsers] = await db.query(
@@ -242,10 +266,10 @@ router.post('/bind', authenticateToken, async (req, res) => {
         // 3. 获取微信用户信息
         let wechatUserInfo = null;
         try {
-            const userInfoUrl = `https://api.weixin.qq.com/sns/userinfo?access_token=${tokenRes.data.access_token}&openid=${openid}`;
-            const userRes = await axios.get(userInfoUrl);
-            if (!userRes.data.errcode) {
-                wechatUserInfo = userRes.data;
+            const userInfoUrl = `https://api.weixin.qq.com/sns/userinfo?access_token=${access_token}&openid=${openid}`;
+            const userRes = await httpsGet(userInfoUrl);
+            if (!userRes.errcode) {
+                wechatUserInfo = userRes;
             }
         } catch (e) {
             console.log('获取微信用户信息失败:', e.message);
