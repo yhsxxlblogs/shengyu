@@ -6,10 +6,11 @@ export default defineConfig({
     uni()
   ],
   build: {
-    // 禁用代码分割，使用单文件输出
+    // 禁用代码分割
     rollupOptions: {
       output: {
-        manualChunks: undefined
+        manualChunks: undefined,
+        inlineDynamicImports: true
       }
     }
   }
