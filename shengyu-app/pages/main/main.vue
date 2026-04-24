@@ -2359,17 +2359,22 @@ export default {
   padding: 20rpx;
   padding-top: 60rpx;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* 二级滑动栏 */
+/* 二级滑动栏 - 固定顶部 */
 .sub-tabs {
   display: flex;
   justify-content: center;
   margin-bottom: 20rpx;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 40rpx;
   padding: 8rpx;
   box-shadow: 0 2rpx 10rpx rgba(255, 154, 158, 0.15);
+  flex-shrink: 0;
 }
 
 .sub-tab {
@@ -2416,11 +2421,23 @@ export default {
 /* 私信面板 */
 .messages-panel {
   padding: 20rpx 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .messages-header {
   text-align: center;
   margin-bottom: 20rpx;
+  flex-shrink: 0;
+}
+
+/* 私信列表 - 可滚动区域 */
+.messages-list {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .messages-header .header-title {
@@ -2556,7 +2573,8 @@ export default {
 }
 
 .community-header {
-  margin-bottom: 30rpx;
+  margin-bottom: 20rpx;
+  flex-shrink: 0;
 }
 
 .header-title {
@@ -2761,10 +2779,11 @@ export default {
   color: #999999;
 }
 
-/* 帖子列表滚动区域 */
+/* 帖子列表滚动区域 - 唯一可滚动区域 */
 .post-list-scroll {
   flex: 1;
-  height: calc(100vh - 200rpx);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* 底部安全区域 - 防止被导航栏遮盖 */
