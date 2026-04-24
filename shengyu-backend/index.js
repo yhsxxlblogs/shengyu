@@ -6,11 +6,21 @@ const http = require('http');
 const net = require('net');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+
+// 加载配置
+const config = require('./config');
 const db = require('./config/db');
 const captcha = require('./utils/captcha');
+const { 
+  securityHeaders, 
+  requestLogger, 
+  sqlInjectionProtection,
+  sanitizeInput 
+} = require('./middleware/security');
 
 const app = express();
-const port = 3000;
+const port = config.server.port;
+const wsPort = config.server.wsPort;
 
 const server = http.createServer(app);
 
@@ -154,6 +164,18 @@ function handleChatMessage(ws, payload) {
     return;
   }
 
+  // 验证content长度
+  if (content.length > 1000) {
+    sendWebSocketMessage(ws, {
+      type: 'error',
+      payload: { message: '消息内容过长，最多1000字符' }
+    });
+    return;
+  }
+
+  // XSS防护 - 清理消息内容
+  const sanitizedContent = sanitizeInput(content);
+
   if (String(senderId) === String(receiverId)) {
     sendWebSocketMessage(ws, {
       type: 'error',
@@ -164,7 +186,7 @@ function handleChatMessage(ws, payload) {
 
   db.query(
     'INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)',
-    [senderId, receiverId, content],
+    [senderId, receiverId, sanitizedContent],
     (err, result) => {
       if (err) {
         console.error('保存消息失败:', err);
@@ -350,7 +372,7 @@ const wsServer = net.createServer((socket) => {
           return;
         }
 
-        jwt.verify(token, 'secret_key', (err, decoded) => {
+        jwt.verify(token, config.jwt.secret, (err, decoded) => {
           if (err) {
             console.log('Token 验证失败:', err.message);
             socket.end();
@@ -448,8 +470,8 @@ const wsServer = net.createServer((socket) => {
   });
 });
 
-wsServer.listen(3001, '0.0.0.0', () => {
-  console.log('WebSocket 服务已启动在端口 3001');
+wsServer.listen(wsPort, config.server.host, () => {
+  console.log(`WebSocket 服务已启动在端口 ${wsPort}`);
 });
 
 global.sendNotificationToUser = (userId, notification) => {
@@ -463,9 +485,36 @@ global.sendNotificationToUser = (userId, notification) => {
 };
 global.connectedUsers = connectedUsers;
 
-app.use(cors());
+// 配置CORS
+const corsOptions = {
+  origin: function (origin, callback) {
+    // 允许没有origin的请求（如移动应用）
+    if (!origin) return callback(null, true);
+    
+    if (config.security.allowedOrigins.indexOf(origin) !== -1 || config.isDevelopment) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS拒绝: ${origin}`);
+      callback(new Error('不允许的域名'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 安全响应头
+app.use(securityHeaders);
+
+// 请求日志
+app.use(requestLogger);
+
+// SQL注入防护
+app.use(sqlInjectionProtection);
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
@@ -576,6 +625,18 @@ processScheduledNotifications();
 setInterval(updatePopularPostsCache, 5 * 60 * 1000);
 updatePopularPostsCache();
 
+// 全局错误处理
+app.use((err, req, res, next) => {
+  console.error('全局错误:', err);
+  res.status(500).json({ error: '服务器内部错误' });
+});
+
+// 404处理
+app.use((req, res) => {
+  res.status(404).json({ error: '接口不存在' });
+});
+
 server.listen(port, () => {
   console.log(`HTTP 服务已启动在端口 ${port}`);
+  console.log(`环境: ${config.env}`);
 });

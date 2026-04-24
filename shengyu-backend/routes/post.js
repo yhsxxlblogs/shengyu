@@ -1,499 +1,424 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const jwt = require('jsonwebtoken');
-const db = require('../config/db');
-const fs = require('fs');
-const { cacheMiddleware, clearCache, CACHE_KEYS, CACHE_TTL } = require('../middleware/cache');
-
 const router = express.Router();
-
-// 确保上传目录存在
-const imagesDir = path.join(__dirname, '../uploads/images');
-if (!fs.existsSync(imagesDir)) {
-  fs.mkdirSync(imagesDir, { recursive: true });
-}
-
-// 配置multer存储
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, imagesDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB限制
-  },
-  fileFilter: function (req, file, cb) {
-    // 只允许上传图片
-    const filetypes = /jpeg|jpg|png|gif/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-    if (extname && mimetype) {
-      return cb(null, true);
-    } else {
-      cb(new Error('只允许上传图片文件'));
-    }
-  }
-});
+const db = require('../config/db');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
+const { authenticateToken, optionalAuth, sanitizeInput } = require('../middleware/security');
 
 // 发布帖子
-router.post('/create', upload.single('image'), (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: '未授权' });
+router.post('/create', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const { content, image_url, sound_id } = req.body;
 
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-    const { content, sound_url } = req.body;
-
-    let imageUrl = null;
-    if (req.file) {
-      imageUrl = `/uploads/images/${req.file.filename}`;
-    }
-
-    db.query(
-      'INSERT INTO posts (user_id, sound_id, content, image_url) VALUES (?, ?, ?, ?)',
-      [decoded.id, null, content, imageUrl],
-      (err, results) => {
-        if (err) return res.status(500).json({ error: '服务器错误' });
-        // 清除帖子列表缓存
-        clearCache('posts:list:*');
-        res.status(201).json({ message: '发布成功', post_id: results.insertId });
-      }
-    );
-  } catch (error) {
-    res.status(401).json({ error: '无效的token' });
+  if (!content) {
+    return res.status(400).json({ error: '内容不能为空' });
   }
+
+  // 验证内容长度
+  if (content.length > 2000) {
+    return res.status(400).json({ error: '内容过长，最多2000字符' });
+  }
+
+  // XSS防护 - 清理内容
+  const sanitizedContent = sanitizeInput(content);
+
+  db.query(
+    'INSERT INTO posts (user_id, content, image_url, sound_id) VALUES (?, ?, ?, ?)',
+    [userId, sanitizedContent, image_url || null, sound_id || null],
+    (err, results) => {
+      if (err) {
+        console.error('发布帖子失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+
+      // 获取新发布的帖子
+      db.query(
+        `SELECT p.*, u.username, u.avatar,
+                0 as like_count,
+                0 as comment_count
+         FROM posts p
+         LEFT JOIN users u ON p.user_id = u.id
+         WHERE p.id = ?`,
+        [results.insertId],
+        (err, results) => {
+          if (err) {
+            console.error('获取帖子失败:', err);
+            return res.status(500).json({ error: '服务器错误' });
+          }
+
+          res.status(201).json({
+            message: '发布成功',
+            post: results[0]
+          });
+        }
+      );
+    }
+  );
 });
 
-// 获取帖子列表（支持搜索，添加缓存）
-router.get('/list',
-  cacheMiddleware(CACHE_KEYS.POSTS_LIST, CACHE_TTL.POSTS_LIST, (req) => {
-    const { q } = req.query;
-    const token = req.headers.authorization?.split(' ')[1];
-    let userId = 'anonymous';
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, 'secret_key');
-        userId = decoded.id;
-      } catch (e) {}
-    }
-    return `${userId}:${q || 'all'}`;
-  }),
-  (req, res) => {
-    const { q } = req.query;
-    const token = req.headers.authorization?.split(' ')[1];
-    let currentUserId = null;
+// 获取帖子列表
+router.get('/list', optionalAuth, (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const userId = req.user?.id;
 
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, 'secret_key');
-        currentUserId = decoded.id;
-      } catch (error) {
-        // token无效，继续作为未登录用户处理
-      }
-    }
+  // 验证分页参数
+  const pageNum = parseInt(page);
+  const limitNum = Math.min(parseInt(limit), 50);
+  const offset = (pageNum - 1) * limitNum;
 
-    // 使用子查询获取点赞数和评论数（规范化设计）
-    let query = `
-      SELECT p.*, u.username, u.avatar,
-             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
-             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
-             ${currentUserId ? `, EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = p.user_id) as is_following` : ''}
-             ${currentUserId ? `, EXISTS(SELECT 1 FROM likes WHERE user_id = ? AND post_id = p.id) as liked` : ''}
-      FROM posts p
-      LEFT JOIN users u ON p.user_id = u.id
-    `;
+  if (isNaN(pageNum) || pageNum < 1) {
+    return res.status(400).json({ error: '无效的分页参数' });
+  }
 
-    // 如果有搜索关键词，添加WHERE条件
-    if (q) {
-      query += ` WHERE p.content LIKE ? OR u.username LIKE ?`;
-    }
-
-    query += ` ORDER BY p.created_at DESC`;
-
-    let params = [];
-    if (currentUserId) {
-      params.push(currentUserId);
-      params.push(currentUserId);
-    }
-    if (q) {
-      params.push(`%${q}%`, `%${q}%`);
-    }
-
-    db.query(query, params, (err, results) => {
+  db.query(
+    `SELECT p.*, u.username, u.avatar,
+            (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count,
+            ${userId ? `(SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id AND l.user_id = ${userId}) as is_liked` : '0 as is_liked'}
+     FROM posts p
+     LEFT JOIN users u ON p.user_id = u.id
+     ORDER BY p.created_at DESC
+     LIMIT ? OFFSET ?`,
+    [limitNum, offset],
+    (err, results) => {
       if (err) {
         console.error('获取帖子列表失败:', err);
         return res.status(500).json({ error: '服务器错误' });
       }
-      res.status(200).json({ posts: results });
-    });
-  }
-);
 
-// 点赞/取消点赞
-router.post('/like/:post_id', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: '未授权' });
-
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-    const { post_id } = req.params;
-
-    // 检查是否已点赞
-    db.query(
-      'SELECT * FROM likes WHERE post_id = ? AND user_id = ?',
-      [post_id, decoded.id],
-      (err, results) => {
-        if (err) return res.status(500).json({ error: '服务器错误' });
-
-        if (results.length > 0) {
-          // 取消点赞
-          db.query(
-            'DELETE FROM likes WHERE post_id = ? AND user_id = ?',
-            [post_id, decoded.id],
-            (err) => {
-              if (err) return res.status(500).json({ error: '服务器错误' });
-              // 清除帖子相关缓存
-              clearCache(`*post*${post_id}*`);
-              clearCache('posts:list:*');
-              res.status(200).json({ message: '取消点赞成功' });
-            }
-          );
-        } else {
-          // 点赞
-          db.query(
-            'INSERT INTO likes (post_id, user_id) VALUES (?, ?)',
-            [post_id, decoded.id],
-            (err) => {
-              if (err) return res.status(500).json({ error: '服务器错误' });
-              // 清除帖子相关缓存
-              clearCache(`*post*${post_id}*`);
-              clearCache('posts:list:*');
-              res.status(200).json({ message: '点赞成功' });
-            }
-          );
-        }
-      }
-    );
-  } catch (error) {
-    res.status(401).json({ error: '无效的token' });
-  }
-});
-
-// 发表评论
-router.post('/comment/:post_id', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: '未授权' });
-
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-    const { post_id } = req.params;
-    const { content } = req.body;
-
-    db.query(
-      'INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)',
-      [post_id, decoded.id, content],
-      (err, results) => {
-        if (err) return res.status(500).json({ error: '服务器错误' });
-        // 清除帖子相关缓存
-        clearCache(`*post*${post_id}*`);
-        clearCache('posts:list:*');
-        res.status(201).json({ message: '评论成功' });
-      }
-    );
-  } catch (error) {
-    res.status(401).json({ error: '无效的token' });
-  }
-});
-
-// 获取帖子评论（添加缓存）
-router.get('/comments/:post_id',
-  cacheMiddleware('post:comments:', 60), // 缓存1分钟
-  (req, res) => {
-    const { post_id } = req.params;
-    
-    db.query(
-      `
-        SELECT c.*, u.username, u.avatar
-        FROM comments c
-        LEFT JOIN users u ON c.user_id = u.id
-        WHERE c.post_id = ?
-        ORDER BY c.created_at DESC
-      `,
-      [post_id],
-      (err, results) => {
-        if (err) return res.status(500).json({ error: '服务器错误' });
-        res.status(200).json({ comments: results });
-      }
-    );
-  }
-);
-
-// 获取用户的帖子
-router.get('/my', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: '未授权' });
-  
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-    
-    // 使用子查询获取点赞数和评论数（规范化设计）
-    db.query(
-      `
-        SELECT p.*, u.username, u.avatar,
-               (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
-               (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
-        FROM posts p
-        LEFT JOIN users u ON p.user_id = u.id
-        WHERE p.user_id = ?
-        ORDER BY p.created_at DESC
-      `,
-      [decoded.id],
-      (err, results) => {
-        if (err) return res.status(500).json({ error: '服务器错误' });
-        res.status(200).json({ posts: results });
-      }
-    );
-  } catch (error) {
-    res.status(401).json({ error: '无效的token' });
-  }
-});
-
-// 获取用户点赞的帖子
-router.get('/likes', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: '未授权' });
-
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-
-    // 使用子查询获取点赞数和评论数（规范化设计）
-    db.query(
-      `
-        SELECT p.*, u.username, u.avatar,
-               (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
-               (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count,
-               (SELECT JSON_ARRAYAGG(JSON_OBJECT('id', l.id, 'username', lu.username, 'avatar', lu.avatar))
-                FROM likes l
-                LEFT JOIN users lu ON l.user_id = lu.id
-                WHERE l.post_id = p.id) as likes
-        FROM posts p
-        LEFT JOIN users u ON p.user_id = u.id
-        INNER JOIN likes l ON p.id = l.post_id
-        WHERE l.user_id = ?
-        ORDER BY p.created_at DESC
-      `,
-      [decoded.id],
-      (err, results) => {
-        if (err) return res.status(500).json({ error: '服务器错误' });
-        res.status(200).json({ posts: results });
-      }
-    );
-  } catch (error) {
-    res.status(401).json({ error: '无效的token' });
-  }
-});
-
-// 获取用户点赞的帖子ID列表（用于前端快速判断点赞状态）
-router.get('/liked-ids', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: '未授权' });
-
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-
-    db.query(
-      'SELECT post_id FROM likes WHERE user_id = ?',
-      [decoded.id],
-      (err, results) => {
-        if (err) return res.status(500).json({ error: '服务器错误' });
-        const likedIds = results.map(r => r.post_id);
-        res.status(200).json({ likedIds });
-      }
-    );
-  } catch (error) {
-    res.status(401).json({ error: '无效的token' });
-  }
-});
-
-// 删除帖子
-router.delete('/delete/:post_id', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: '未授权' });
-  
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-    const { post_id } = req.params;
-    
-    // 检查帖子是否属于该用户
-    db.query(
-      'SELECT * FROM posts WHERE id = ? AND user_id = ?',
-      [post_id, decoded.id],
-      (err, results) => {
-        if (err) return res.status(500).json({ error: '服务器错误' });
-        if (results.length === 0) return res.status(403).json({ error: '无权删除此帖子' });
-        
-        const post = results[0];
-        
-        // 删除相关的点赞和评论
-        db.query('DELETE FROM likes WHERE post_id = ?', [post_id], (err) => {
-          if (err) return res.status(500).json({ error: '服务器错误' });
-          
-          db.query('DELETE FROM comments WHERE post_id = ?', [post_id], (err) => {
-            if (err) return res.status(500).json({ error: '服务器错误' });
-            
-            // 删除帖子
-            db.query('DELETE FROM posts WHERE id = ?', [post_id], (err) => {
-              if (err) return res.status(500).json({ error: '服务器错误' });
-              
-              // 删除帖子图片文件
-              if (post.image_url) {
-                const imagePath = path.join(__dirname, '..', post.image_url);
-                fs.unlink(imagePath, (err) => {
-                  if (err) console.error('删除图片文件失败:', err);
-                });
-              }
-              
-              res.status(200).json({ message: '删除成功' });
-            });
-          });
-        });
-      }
-    );
-  } catch (error) {
-    res.status(401).json({ error: '无效的token' });
-  }
-});
-
-// 获取帖子详情
-router.get('/detail/:post_id',
-  cacheMiddleware(CACHE_KEYS.POST_DETAIL, CACHE_TTL.POST_DETAIL, (req) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    let userId = 'anonymous';
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, 'secret_key');
-        userId = decoded.id;
-      } catch (e) {}
-    }
-    return `${req.params.post_id}:${userId}`;
-  }),
-  (req, res) => {
-    const { post_id } = req.params;
-    const token = req.headers.authorization?.split(' ')[1];
-    let currentUserId = null;
-
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, 'secret_key');
-        currentUserId = decoded.id;
-      } catch (error) {
-        // token无效，继续作为未登录用户处理
-      }
-    }
-
-    // 使用子查询获取点赞数和评论数（规范化设计）
-    let query = `
-      SELECT p.*, u.username, u.avatar,
-             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
-             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
-             ${currentUserId ? `, EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = p.user_id) as is_following` : ''}
-             ${currentUserId ? `, EXISTS(SELECT 1 FROM likes WHERE user_id = ? AND post_id = p.id) as liked` : ''}
-      FROM posts p
-      LEFT JOIN users u ON p.user_id = u.id
-      WHERE p.id = ?
-    `;
-
-    let params = [];
-    if (currentUserId) {
-      params.push(currentUserId);
-      params.push(currentUserId);
-    }
-    params.push(post_id);
-
-    db.query(query, params, (err, results) => {
-      if (err) {
-        console.error('获取帖子详情失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
-      }
-      if (results.length === 0) return res.status(404).json({ error: '帖子不存在' });
-      res.status(200).json({ post: results[0] });
-    });
-  }
-);
-
-// 搜索帖子
-router.get('/search', (req, res) => {
-  const { q } = req.query;
-  if (!q) return res.status(400).json({ error: '请输入搜索关键词' });
-
-  // 使用子查询获取点赞数和评论数（规范化设计）
-  db.query(
-    `
-      SELECT p.*, u.username, u.avatar,
-             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
-             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
-      FROM posts p
-      LEFT JOIN users u ON p.user_id = u.id
-      WHERE p.content LIKE ? OR u.username LIKE ?
-      ORDER BY p.created_at DESC
-    `,
-    [`%${q}%`, `%${q}%`],
-    (err, results) => {
-      if (err) return res.status(500).json({ error: '服务器错误' });
       res.status(200).json({ posts: results });
     }
   );
 });
 
-// 管理用：删除帖子（无需token验证）
-router.delete('/admin/delete/:post_id', (req, res) => {
-  const { post_id } = req.params;
+// 获取热门帖子
+router.get('/popular', (req, res) => {
+  const { limit = 10 } = req.query;
+  const limitNum = Math.min(parseInt(limit), 20);
 
-  // 先获取帖子信息
+  if (isNaN(limitNum) || limitNum < 1) {
+    return res.status(400).json({ error: '无效的参数' });
+  }
+
   db.query(
-    'SELECT * FROM posts WHERE id = ?',
-    [post_id],
+    `SELECT p.*, u.username, u.avatar,
+            (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
+     FROM posts p
+     LEFT JOIN users u ON p.user_id = u.id
+     ORDER BY (like_count + comment_count) DESC, p.created_at DESC
+     LIMIT ?`,
+    [limitNum],
     (err, results) => {
       if (err) {
-        console.error('获取帖子失败:', err);
+        console.error('获取热门帖子失败:', err);
         return res.status(500).json({ error: '服务器错误' });
       }
+
+      res.status(200).json({ posts: results });
+    }
+  );
+});
+
+// 点赞/取消点赞
+router.post('/like/:post_id', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const postId = req.params.post_id;
+
+  // 检查帖子是否存在
+  db.query('SELECT id FROM posts WHERE id = ?', [postId], (err, results) => {
+    if (err) {
+      console.error('检查帖子失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: '帖子不存在' });
+    }
+
+    // 检查是否已点赞
+    db.query(
+      'SELECT * FROM likes WHERE post_id = ? AND user_id = ?',
+      [postId, userId],
+      (err, results) => {
+        if (err) {
+          console.error('检查点赞状态失败:', err);
+          return res.status(500).json({ error: '服务器错误' });
+        }
+
+        if (results.length > 0) {
+          // 已点赞，取消点赞
+          db.query(
+            'DELETE FROM likes WHERE post_id = ? AND user_id = ?',
+            [postId, userId],
+            (err) => {
+              if (err) {
+                console.error('取消点赞失败:', err);
+                return res.status(500).json({ error: '服务器错误' });
+              }
+              res.status(200).json({ message: '取消点赞成功', isLiked: false });
+            }
+          );
+        } else {
+          // 未点赞，添加点赞
+          db.query(
+            'INSERT INTO likes (post_id, user_id) VALUES (?, ?)',
+            [postId, userId],
+            (err) => {
+              if (err) {
+                console.error('点赞失败:', err);
+                return res.status(500).json({ error: '服务器错误' });
+              }
+              res.status(200).json({ message: '点赞成功', isLiked: true });
+            }
+          );
+        }
+      }
+    );
+  });
+});
+
+// 发表评论
+router.post('/comment/:post_id', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const postId = req.params.post_id;
+  const { content } = req.body;
+
+  if (!content || content.trim().length === 0) {
+    return res.status(400).json({ error: '评论内容不能为空' });
+  }
+
+  if (content.length > 500) {
+    return res.status(400).json({ error: '评论内容过长，最多500字符' });
+  }
+
+  // 检查帖子是否存在
+  db.query('SELECT id, user_id FROM posts WHERE id = ?', [postId], (err, results) => {
+    if (err) {
+      console.error('检查帖子失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: '帖子不存在' });
+    }
+
+    const post = results[0];
+
+    // XSS防护 - 清理评论内容
+    const sanitizedContent = sanitizeInput(content.trim());
+
+    db.query(
+      'INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)',
+      [postId, userId, sanitizedContent],
+      (err, results) => {
+        if (err) {
+          console.error('发表评论失败:', err);
+          return res.status(500).json({ error: '服务器错误' });
+        }
+
+        // 获取新评论
+        db.query(
+          `SELECT c.*, u.username, u.avatar
+           FROM comments c
+           LEFT JOIN users u ON c.user_id = u.id
+           WHERE c.id = ?`,
+          [results.insertId],
+          (err, results) => {
+            if (err) {
+              console.error('获取评论失败:', err);
+              return res.status(500).json({ error: '服务器错误' });
+            }
+
+            // 发送通知给帖子作者
+            if (post.user_id !== userId && global.sendNotificationToUser) {
+              global.sendNotificationToUser(post.user_id, {
+                type: 'new_comment',
+                data: {
+                  post_id: postId,
+                  comment: results[0]
+                }
+              });
+            }
+
+            res.status(201).json({
+              message: '评论成功',
+              comment: results[0]
+            });
+          }
+        );
+      }
+    );
+  });
+});
+
+// 获取评论
+router.get('/comments/:post_id', (req, res) => {
+  const postId = req.params.post_id;
+  const { page = 1, limit = 20 } = req.query;
+
+  // 验证分页参数
+  const pageNum = parseInt(page);
+  const limitNum = Math.min(parseInt(limit), 50);
+  const offset = (pageNum - 1) * limitNum;
+
+  if (isNaN(pageNum) || pageNum < 1) {
+    return res.status(400).json({ error: '无效的分页参数' });
+  }
+
+  db.query(
+    `SELECT c.*, u.username, u.avatar
+     FROM comments c
+     LEFT JOIN users u ON c.user_id = u.id
+     WHERE c.post_id = ?
+     ORDER BY c.created_at DESC
+     LIMIT ? OFFSET ?`,
+    [postId, limitNum, offset],
+    (err, results) => {
+      if (err) {
+        console.error('获取评论失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+
+      res.status(200).json({ comments: results });
+    }
+  );
+});
+
+// 获取我的帖子
+router.get('/my', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const { page = 1, limit = 10 } = req.query;
+
+  const pageNum = parseInt(page);
+  const limitNum = Math.min(parseInt(limit), 50);
+  const offset = (pageNum - 1) * limitNum;
+
+  if (isNaN(pageNum) || pageNum < 1) {
+    return res.status(400).json({ error: '无效的分页参数' });
+  }
+
+  db.query(
+    `SELECT p.*, u.username, u.avatar,
+            (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
+     FROM posts p
+     LEFT JOIN users u ON p.user_id = u.id
+     WHERE p.user_id = ?
+     ORDER BY p.created_at DESC
+     LIMIT ? OFFSET ?`,
+    [userId, limitNum, offset],
+    (err, results) => {
+      if (err) {
+        console.error('获取我的帖子失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+
+      res.status(200).json({ posts: results });
+    }
+  );
+});
+
+// 获取我点赞的帖子
+router.get('/likes', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const { page = 1, limit = 10 } = req.query;
+
+  const pageNum = parseInt(page);
+  const limitNum = Math.min(parseInt(limit), 50);
+  const offset = (pageNum - 1) * limitNum;
+
+  if (isNaN(pageNum) || pageNum < 1) {
+    return res.status(400).json({ error: '无效的分页参数' });
+  }
+
+  db.query(
+    `SELECT p.*, u.username, u.avatar,
+            (SELECT COUNT(*) FROM likes l2 WHERE l2.post_id = p.id) as like_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count,
+            1 as is_liked
+     FROM likes l
+     JOIN posts p ON l.post_id = p.id
+     LEFT JOIN users u ON p.user_id = u.id
+     WHERE l.user_id = ?
+     ORDER BY l.created_at DESC
+     LIMIT ? OFFSET ?`,
+    [userId, limitNum, offset],
+    (err, results) => {
+      if (err) {
+        console.error('获取点赞帖子失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+
+      res.status(200).json({ posts: results });
+    }
+  );
+});
+
+// 获取点赞的帖子ID列表
+router.get('/liked-ids', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+
+  db.query(
+    'SELECT post_id FROM likes WHERE user_id = ?',
+    [userId],
+    (err, results) => {
+      if (err) {
+        console.error('获取点赞ID失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+
+      const likedIds = results.map(row => row.post_id);
+      res.status(200).json({ likedIds });
+    }
+  );
+});
+
+// 删除帖子
+router.delete('/delete/:post_id', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const postId = req.params.post_id;
+
+  // 检查帖子是否存在且属于当前用户
+  db.query(
+    'SELECT id, user_id FROM posts WHERE id = ?',
+    [postId],
+    (err, results) => {
+      if (err) {
+        console.error('检查帖子失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+
       if (results.length === 0) {
         return res.status(404).json({ error: '帖子不存在' });
       }
 
       const post = results[0];
 
-      // 删除相关的点赞和评论
-      db.query('DELETE FROM likes WHERE post_id = ?', [post_id], (err) => {
-        if (err) console.error('删除点赞失败:', err);
+      // 检查是否是帖子作者或管理员
+      if (post.user_id !== userId && !req.user.is_admin) {
+        return res.status(403).json({ error: '无权删除此帖子' });
+      }
 
-        db.query('DELETE FROM comments WHERE post_id = ?', [post_id], (err) => {
-          if (err) console.error('删除评论失败:', err);
+      // 删除相关的点赞和评论
+      db.query('DELETE FROM likes WHERE post_id = ?', [postId], (err) => {
+        if (err) {
+          console.error('删除点赞失败:', err);
+        }
+
+        db.query('DELETE FROM comments WHERE post_id = ?', [postId], (err) => {
+          if (err) {
+            console.error('删除评论失败:', err);
+          }
 
           // 删除帖子
-          db.query('DELETE FROM posts WHERE id = ?', [post_id], (err) => {
+          db.query('DELETE FROM posts WHERE id = ?', [postId], (err) => {
             if (err) {
               console.error('删除帖子失败:', err);
               return res.status(500).json({ error: '服务器错误' });
             }
 
-            // 删除帖子图片文件
-            if (post.image_url) {
-              const imagePath = path.join(__dirname, '..', post.image_url);
-              fs.unlink(imagePath, (err) => {
-                if (err) console.error('删除图片文件失败:', err);
-              });
-            }
-
-            res.status(200).json({ message: '帖子删除成功' });
+            res.status(200).json({ message: '删除成功' });
           });
         });
       });
@@ -501,105 +426,33 @@ router.delete('/admin/delete/:post_id', (req, res) => {
   );
 });
 
-// 获取热门帖子（按点赞数和评论数排序）
-router.get('/popular', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    let currentUserId = null;
+// 获取帖子详情
+router.get('/detail/:post_id', optionalAuth, (req, res) => {
+  const postId = req.params.post_id;
+  const userId = req.user?.id;
 
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, 'secret_key');
-        currentUserId = decoded.id;
-      } catch (error) {
-        // token无效，继续作为未登录用户处理
-      }
-    }
-
-    // 优先从Redis缓存获取
-    const redis = require('../config/redis');
-    const cachedPosts = await redis.getAsync('popular:posts');
-    
-    if (cachedPosts) {
-      let posts = JSON.parse(cachedPosts);
-      
-      // 如果缓存为空数组，也直接返回，防止缓存穿透
-      if (posts.length === 0) {
-        return res.status(200).json({ posts: [] });
-      }
-      
-      // 如果用户已登录，查询该用户的点赞状态
-      if (currentUserId) {
-        const postIds = posts.map(p => p.id);
-        if (postIds.length > 0) {
-          const likedQuery = `SELECT post_id FROM likes WHERE user_id = ? AND post_id IN (?)`;
-          db.query(likedQuery, [currentUserId, postIds], (err, likedResults) => {
-            if (err) {
-              console.error('查询点赞状态失败:', err);
-            } else {
-              const likedSet = new Set(likedResults.map(r => r.post_id));
-              posts = posts.map(p => ({
-                ...p,
-                liked: likedSet.has(p.id)
-              }));
-            }
-            return res.status(200).json({ posts });
-          });
-        } else {
-          return res.status(200).json({ posts });
-        }
-      } else {
-        return res.status(200).json({ posts });
-      }
-      return;
-    }
-
-    // 缓存未命中，从数据库查询
-    // 使用子查询计算热度分数（规范化设计）
-    let query = `
-      SELECT p.*, u.username, u.avatar,
-             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
-             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count,
-             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) * 2 +
-             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) * 3 as heat_score
-             ${currentUserId ? `, EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = p.user_id) as is_following` : ''}
-             ${currentUserId ? `, EXISTS(SELECT 1 FROM likes WHERE user_id = ? AND post_id = p.id) as liked` : ''}
-      FROM posts p
-      LEFT JOIN users u ON p.user_id = u.id
-      HAVING heat_score > 0
-      ORDER BY heat_score DESC, p.created_at DESC
-      LIMIT 10
-    `;
-
-    let params = [];
-    if (currentUserId) {
-      params.push(currentUserId);
-      params.push(currentUserId);
-    }
-
-    db.query(query, params, async (err, results) => {
+  db.query(
+    `SELECT p.*, u.username, u.avatar,
+            (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count,
+            ${userId ? `(SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id AND l.user_id = ${userId}) as is_liked` : '0 as is_liked'}
+     FROM posts p
+     LEFT JOIN users u ON p.user_id = u.id
+     WHERE p.id = ?`,
+    [postId],
+    (err, results) => {
       if (err) {
-        console.error('获取热门帖子失败:', err);
+        console.error('获取帖子详情失败:', err);
         return res.status(500).json({ error: '服务器错误' });
       }
-      
-      // 即使结果为空，也缓存空数组，防止缓存穿透
-      // 空数组缓存时间较短（60秒），有数据时缓存300秒
-      const cacheTTL = results.length > 0 ? 300 : 60;
-      
-      try {
-        await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
-        console.log(`[Cache] 热门帖子已缓存，数量: ${results.length}，TTL: ${cacheTTL}s`);
-      } catch (cacheErr) {
-        console.error('缓存热门帖子失败:', cacheErr);
+
+      if (results.length === 0) {
+        return res.status(404).json({ error: '帖子不存在' });
       }
-      
-      res.status(200).json({ posts: results });
-    });
-  } catch (error) {
-    console.error('获取热门帖子出错:', error);
-    res.status(500).json({ error: '服务器错误' });
-  }
+
+      res.status(200).json({ post: results[0] });
+    }
+  );
 });
 
 module.exports = router;

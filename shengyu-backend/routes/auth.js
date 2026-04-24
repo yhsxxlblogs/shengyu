@@ -2,10 +2,12 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
+const config = require('../config');
 const captcha = require('../utils/captcha');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { sanitizeFilename } = require('../middleware/security');
 
 // 确保上传目录存在
 const avatarsDir = path.join(__dirname, '../uploads/avatars');
@@ -20,18 +22,19 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
+    const safeExt = path.extname(file.originalname).toLowerCase();
+    cb(null, 'avatar-' + uniqueSuffix + safeExt);
   }
 });
 
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB限制
+    fileSize: config.upload.maxImageSize // 使用配置的最大图片大小
   },
   fileFilter: function (req, file, cb) {
     // 只允许上传图片
-    const filetypes = /jpeg|jpg|png|gif/;
+    const filetypes = config.upload.allowedImageTypes;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = filetypes.test(file.mimetype);
     if (extname && mimetype) {
@@ -48,6 +51,25 @@ const router = express.Router();
 router.post('/register', (req, res) => {
   const { username, email, password } = req.body;
   
+  // 输入验证
+  if (!username || !email || !password) {
+    return res.status(400).json({ error: '请填写所有必填字段' });
+  }
+  
+  if (username.length < 3 || username.length > 50) {
+    return res.status(400).json({ error: '用户名长度必须在3-50个字符之间' });
+  }
+  
+  if (password.length < 6) {
+    return res.status(400).json({ error: '密码长度至少6位' });
+  }
+  
+  // 邮箱格式验证
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: '邮箱格式不正确' });
+  }
+  
   // 先检查用户名是否已存在
   db.query('SELECT * FROM users WHERE username = ?', [username], (err, usernameResults) => {
     if (err) return res.status(500).json({ error: '服务器错误' });
@@ -59,7 +81,7 @@ router.post('/register', (req, res) => {
       if (emailResults.length > 0) return res.status(400).json({ error: '邮箱已被注册' });
       
       // 密码加密
-      const hashedPassword = bcrypt.hashSync(password, 10);
+      const hashedPassword = bcrypt.hashSync(password, config.security.bcryptRounds);
       
       // 插入用户数据，设置默认头像
       const defaultAvatar = '/uploads/avatars/default-avatar.svg';
@@ -70,7 +92,7 @@ router.post('/register', (req, res) => {
           if (err) return res.status(500).json({ error: '服务器错误' });
 
           // 生成token
-          const token = jwt.sign({ id: results.insertId }, 'secret_key', { expiresIn: '1d' });
+          const token = jwt.sign({ id: results.insertId }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
 
           res.status(201).json({ message: '注册成功', token, user: { id: results.insertId, username, email, avatar: defaultAvatar } });
         }
@@ -83,20 +105,29 @@ router.post('/register', (req, res) => {
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ error: '请填写邮箱和密码' });
+  }
+
   // 查找用户（支持邮箱或用户名登录）
   db.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, email], (err, results) => {
     if (err) return res.status(500).json({ error: '服务器错误' });
     if (results.length === 0) return res.status(400).json({ error: '用户名/邮箱或密码错误' });
 
     const user = results[0];
+    
+    // 检查用户是否被禁用
+    if (user.is_active === 0) {
+      return res.status(403).json({ error: '账号已被禁用，请联系管理员' });
+    }
 
     // 验证密码
-    if (!bcrypt.compareSync(password, user.password)) {
+    if (!user.password || !bcrypt.compareSync(password, user.password)) {
       return res.status(400).json({ error: '用户名/邮箱或密码错误' });
     }
 
     // 生成token
-    const token = jwt.sign({ id: user.id, is_admin: user.is_admin }, 'secret_key', { expiresIn: '1d' });
+    const token = jwt.sign({ id: user.id, is_admin: user.is_admin }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
 
     res.status(200).json({
       message: '登录成功',
@@ -132,7 +163,7 @@ router.post('/admin/login', (req, res) => {
     const user = results[0];
 
     // 验证密码
-    if (!bcrypt.compareSync(password, user.password)) {
+    if (!user.password || !bcrypt.compareSync(password, user.password)) {
       return res.status(400).json({ error: '用户名或密码错误' });
     }
 
@@ -142,7 +173,7 @@ router.post('/admin/login', (req, res) => {
     }
 
     // 生成token
-    const token = jwt.sign({ id: user.id, is_admin: true }, 'secret_key', { expiresIn: '1d' });
+    const token = jwt.sign({ id: user.id, is_admin: true }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
 
     res.status(200).json({
       message: '登录成功',
@@ -164,11 +195,12 @@ router.get('/validate', (req, res) => {
   if (!token) return res.status(401).json({ error: '未授权', valid: false });
   
   try {
-    const decoded = jwt.verify(token, 'secret_key');
-    // 检查用户是否存在
-    db.query('SELECT id FROM users WHERE id = ?', [decoded.id], (err, results) => {
+    const decoded = jwt.verify(token, config.jwt.secret);
+    // 检查用户是否存在且未被禁用
+    db.query('SELECT id, is_active FROM users WHERE id = ?', [decoded.id], (err, results) => {
       if (err) return res.status(500).json({ error: '服务器错误', valid: false });
       if (results.length === 0) return res.status(404).json({ error: '用户不存在', valid: false });
+      if (results[0].is_active === 0) return res.status(403).json({ error: '账号已被禁用', valid: false });
       res.status(200).json({ valid: true, userId: decoded.id });
     });
   } catch (error) {
@@ -182,8 +214,8 @@ router.get('/user', (req, res) => {
   if (!token) return res.status(401).json({ error: '未授权' });
   
   try {
-    const decoded = jwt.verify(token, 'secret_key');
-    db.query('SELECT id, username, email, avatar, nickname, password, wechat_nickname, wechat_avatar, wechat_openid, login_type FROM users WHERE id = ?', [decoded.id], (err, results) => {
+    const decoded = jwt.verify(token, config.jwt.secret);
+    db.query('SELECT id, username, email, avatar, nickname, password, wechat_nickname, wechat_avatar, wechat_openid, login_type, is_admin FROM users WHERE id = ?', [decoded.id], (err, results) => {
       if (err) return res.status(500).json({ error: '服务器错误' });
       if (results.length === 0) return res.status(404).json({ error: '用户不存在' });
 
@@ -200,7 +232,8 @@ router.get('/user', (req, res) => {
         wechat_nickname: user.wechat_nickname,
         wechat_avatar: user.wechat_avatar,
         wechat_openid: user.wechat_openid,
-        hasPassword: !!user.password
+        hasPassword: !!user.password,
+        is_admin: user.is_admin
       };
 
       res.status(200).json({ user: userResponse });
@@ -216,7 +249,7 @@ router.get('/user/stats', (req, res) => {
   if (!token) return res.status(401).json({ error: '未授权' });
 
   try {
-    const decoded = jwt.verify(token, 'secret_key');
+    const decoded = jwt.verify(token, config.jwt.secret);
     const userId = decoded.id;
 
     // 使用子查询获取用户统计数据（规范化设计）
@@ -262,7 +295,7 @@ router.post('/avatar', upload.single('avatar'), (req, res) => {
   if (!token) return res.status(401).json({ error: '未授权' });
   
   try {
-    const decoded = jwt.verify(token, 'secret_key');
+    const decoded = jwt.verify(token, config.jwt.secret);
     const userId = decoded.id;
     
     if (!req.file) {
@@ -276,8 +309,8 @@ router.post('/avatar', upload.single('avatar'), (req, res) => {
         return res.status(500).json({ error: '服务器错误' });
       }
       
-      // 删除原头像文件
-      if (results[0] && results[0].avatar) {
+      // 删除原头像文件（如果不是默认头像）
+      if (results[0] && results[0].avatar && !results[0].avatar.includes('default-avatar')) {
         const oldAvatarPath = path.join(__dirname, '..', results[0].avatar);
         if (fs.existsSync(oldAvatarPath)) {
           try {
@@ -312,9 +345,16 @@ router.get('/search', (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: '请输入搜索关键词' });
   
+  // 限制搜索关键词长度
+  if (q.length > 50) {
+    return res.status(400).json({ error: '搜索关键词过长' });
+  }
+  
+  const searchPattern = `%${q}%`;
+  
   db.query(
-    'SELECT id, username, email, avatar FROM users WHERE username LIKE ? OR email LIKE ? ORDER BY created_at DESC',
-    [`%${q}%`, `%${q}%`],
+    'SELECT id, username, email, avatar FROM users WHERE username LIKE ? OR email LIKE ? ORDER BY created_at DESC LIMIT 20',
+    [searchPattern, searchPattern],
     (err, results) => {
       if (err) return res.status(500).json({ error: '服务器错误' });
       res.status(200).json({ users: results });
@@ -326,8 +366,13 @@ router.get('/search', (req, res) => {
 router.get('/user/:id', (req, res) => {
   const { id } = req.params;
   
+  // 验证ID是否为数字
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).json({ error: '无效的用户ID' });
+  }
+  
   // 获取用户基本信息
-  db.query('SELECT id, username, email, avatar FROM users WHERE id = ?', [id], (err, userResults) => {
+  db.query('SELECT id, username, email, avatar FROM users WHERE id = ? AND is_active = 1', [id], (err, userResults) => {
     if (err) return res.status(500).json({ error: '服务器错误' });
     if (userResults.length === 0) return res.status(404).json({ error: '用户不存在' });
     
@@ -354,7 +399,7 @@ router.get('/user/:id', (req, res) => {
     // 获取用户的公开音频
     const getUserAudios = new Promise((resolve, reject) => {
       db.query(
-        'SELECT id, animal_type, emotion, sound_url, duration, created_at FROM sounds WHERE user_id = ? AND visible = 1 ORDER BY created_at DESC',
+        'SELECT id, animal_type, emotion, sound_url, duration, created_at FROM sounds WHERE user_id = ? AND visible = 1 ORDER BY created_at DESC LIMIT 50',
         [id],
         (err, results) => {
           if (err) reject(err);
@@ -424,7 +469,7 @@ router.post('/set-password', (req, res) => {
   if (!token) return res.status(401).json({ error: '未授权' });
 
   try {
-    const decoded = jwt.verify(token, 'secret_key');
+    const decoded = jwt.verify(token, config.jwt.secret);
     const userId = decoded.id;
     const { password } = req.body;
 
@@ -446,7 +491,7 @@ router.post('/set-password', (req, res) => {
       }
 
       // 加密并设置密码
-      const hashedPassword = bcrypt.hashSync(password, 10);
+      const hashedPassword = bcrypt.hashSync(password, config.security.bcryptRounds);
       db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId], (err) => {
         if (err) {
           console.error('设置密码失败:', err);
@@ -467,7 +512,7 @@ router.post('/change-password', (req, res) => {
   if (!token) return res.status(401).json({ error: '未授权' });
 
   try {
-    const decoded = jwt.verify(token, 'secret_key');
+    const decoded = jwt.verify(token, config.jwt.secret);
     const userId = decoded.id;
     const { currentPassword, newPassword } = req.body;
 
@@ -499,7 +544,7 @@ router.post('/change-password', (req, res) => {
       }
 
       // 加密并更新新密码
-      const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
+      const hashedNewPassword = bcrypt.hashSync(newPassword, config.security.bcryptRounds);
       db.query('UPDATE users SET password = ? WHERE id = ?', [hashedNewPassword, userId], (err) => {
         if (err) {
           console.error('修改密码失败:', err);

@@ -1,209 +1,293 @@
 /**
- * 安全中间件集合
- * 包含XSS防护、输入验证、错误处理等
+ * 安全中间件
+ * 包含管理员认证、请求验证、XSS防护等功能
  */
 
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const Joi = require('joi');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 
-// ========== XSS防护 ==========
-const escapeHtml = (unsafe) => {
-  if (typeof unsafe !== 'string') return unsafe;
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-};
+/**
+ * JWT认证中间件
+ * 验证请求中的JWT Token
+ */
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-const xssMiddleware = (req, res, next) => {
-  if (req.body) {
-    Object.keys(req.body).forEach(key => {
-      if (typeof req.body[key] === 'string') {
-        req.body[key] = escapeHtml(req.body[key]);
+  if (!token) {
+    return res.status(401).json({ error: '未提供访问令牌' });
+  }
+
+  jwt.verify(token, config.jwt.secret, (err, user) => {
+    if (err) {
+      if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({ error: '令牌已过期', code: 'TOKEN_EXPIRED' });
       }
-    });
-  }
-  next();
-};
-
-// ========== 输入验证 ==========
-const schemas = {
-  login: Joi.object({
-    username: Joi.string().alphanum().min(3).max(30).required(),
-    password: Joi.string().min(6).max(100).required(),
-    captchaToken: Joi.string().required(),
-    captchaCode: Joi.string().length(4).required()
-  }),
-  
-  register: Joi.object({
-    username: Joi.string().alphanum().min(3).max(30).required(),
-    email: Joi.string().email().max(100).required(),
-    password: Joi.string().min(6).max(100).required()
-  }),
-  
-  post: Joi.object({
-    content: Joi.string().max(1000).allow(''),
-    sound_url: Joi.string().uri().max(500).allow(null, '')
-  }),
-  
-  comment: Joi.object({
-    content: Joi.string().min(1).max(500).required()
-  }),
-  
-  message: Joi.object({
-    receiver_id: Joi.number().integer().positive().required(),
-    content: Joi.string().min(1).max(1000).required()
-  })
-};
-
-const validate = (schema) => (req, res, next) => {
-  const { error } = schema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
-};
-
-// ========== 速率限制 ==========
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15分钟
-  max: 100, // 每个IP限制100个请求
-  message: { error: '请求过于频繁，请稍后再试' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5, // 登录尝试限制
-  skipSuccessfulRequests: true,
-  message: { error: '登录尝试次数过多，请15分钟后再试' }
-});
-
-const strictLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1分钟
-  max: 10, // 严格限制
-  message: { error: '请求过于频繁' }
-});
-
-// ========== 错误处理 ==========
-const errorHandler = (err, req, res, next) => {
-  console.error('Error:', err);
-  
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  
-  // 不暴露敏感信息
-  const statusCode = err.status || 500;
-  const message = isDevelopment ? err.message : '服务器内部错误';
-  
-  res.status(statusCode).json({
-    error: message,
-    ...(isDevelopment && { stack: err.stack })
+      return res.status(403).json({ error: '令牌无效' });
+    }
+    req.user = user;
+    next();
   });
 };
 
-// ========== 安全响应头 ==========
-const helmetConfig = helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://fonts.googleapis.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "blob:", "http:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:", "http:", "https:"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: []
-    }
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  },
-  xssFilter: true,
-  noSniff: true,
-  referrerPolicy: { policy: 'same-origin' }
-});
+/**
+ * 管理员认证中间件
+ * 验证用户是否为管理员
+ */
+const requireAdmin = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-// ========== 密码验证 ==========
-const validatePassword = (password) => {
-  const minLength = 8;
-  const hasUpperCase = /[A-Z]/.test(password);
-  const hasLowerCase = /[a-z]/.test(password);
-  const hasNumbers = /\d/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  if (!token) {
+    return res.status(401).json({ error: '未提供访问令牌' });
+  }
+
+  jwt.verify(token, config.jwt.secret, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: '令牌无效' });
+    }
+    
+    if (!user.is_admin) {
+      return res.status(403).json({ error: '需要管理员权限' });
+    }
+    
+    req.user = user;
+    next();
+  });
+};
+
+/**
+ * 可选认证中间件
+ * 验证token（如果存在），但不强制要求
+ */
+const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  jwt.verify(token, config.jwt.secret, (err, user) => {
+    if (err) {
+      req.user = null;
+    } else {
+      req.user = user;
+    }
+    next();
+  });
+};
+
+/**
+ * XSS防护 - 清理用户输入
+ * @param {string} input - 用户输入
+ * @returns {string} 清理后的字符串
+ */
+const sanitizeInput = (input) => {
+  if (typeof input !== 'string') return input;
   
-  const errors = [];
-  
-  if (password.length < minLength) {
-    errors.push('密码长度至少8位');
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+    .replace(/\\/g, '&#x5C;')
+    .replace(/`/g, '&#96;');
+};
+
+/**
+ * 请求体清理中间件
+ * 清理请求体中的潜在XSS代码
+ */
+const sanitizeRequestBody = (req, res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    const sanitizeObject = (obj) => {
+      for (const key in obj) {
+        if (typeof obj[key] === 'string') {
+          obj[key] = sanitizeInput(obj[key]);
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          sanitizeObject(obj[key]);
+        }
+      }
+    };
+    sanitizeObject(req.body);
   }
-  if (!hasUpperCase || !hasLowerCase) {
-    errors.push('密码必须包含大小写字母');
-  }
-  if (!hasNumbers) {
-    errors.push('密码必须包含数字');
-  }
-  if (!hasSpecialChar) {
-    errors.push('密码必须包含特殊字符');
-  }
-  
-  return {
-    valid: errors.length === 0,
-    errors
+  next();
+};
+
+/**
+ * 参数验证中间件
+ * 验证请求参数是否存在且有效
+ */
+const validateParams = (requiredParams) => {
+  return (req, res, next) => {
+    const missing = [];
+    const params = { ...req.body, ...req.params, ...req.query };
+    
+    for (const param of requiredParams) {
+      if (params[param] === undefined || params[param] === null || params[param] === '') {
+        missing.push(param);
+      }
+    }
+    
+    if (missing.length > 0) {
+      return res.status(400).json({ 
+        error: '缺少必要参数', 
+        missing: missing 
+      });
+    }
+    
+    next();
   };
 };
 
-// ========== 输入清理 ==========
-const sanitizeInput = (input, maxLength = 100) => {
-  if (!input || typeof input !== 'string') return '';
-  // 限制长度
-  let sanitized = input.slice(0, maxLength);
-  // 转义SQL通配符
-  sanitized = sanitized.replace(/[%_\\]/g, '\\$&');
-  return sanitized;
+/**
+ * SQL注入检测
+ * 检测字符串中是否包含SQL注入特征
+ */
+const detectSqlInjection = (input) => {
+  if (typeof input !== 'string') return false;
+  
+  const sqlPatterns = [
+    /(\%27)|(\')|(\-\-)|(\%23)|(#)/i,
+    /((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))/i,
+    /\w*((\%27)|(\'))((\%6F)|o|(\%4F))((\%72)|r|(\%52))/i,
+    /((\%27)|(\'))union/i,
+    /exec(\s|\+)+(s|x)p\w+/i,
+    /UNION\s+SELECT/i,
+    /INSERT\s+INTO/i,
+    /DELETE\s+FROM/i,
+    /DROP\s+TABLE/i,
+  ];
+  
+  return sqlPatterns.some(pattern => pattern.test(input));
 };
 
-// ========== 安全日志 ==========
-const safeLog = (obj) => {
-  const sensitiveFields = ['password', 'token', 'secret', 'credit_card', 'cvv', 'ssn'];
-  const safe = { ...obj };
-  sensitiveFields.forEach(field => {
-    if (safe[field]) safe[field] = '***';
+/**
+ * SQL注入防护中间件
+ */
+const sqlInjectionProtection = (req, res, next) => {
+  const checkObject = (obj, path = '') => {
+    for (const key in obj) {
+      const currentPath = path ? `${path}.${key}` : key;
+      
+      if (typeof obj[key] === 'string') {
+        if (detectSqlInjection(obj[key])) {
+          return { detected: true, path: currentPath, value: obj[key] };
+        }
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        const result = checkObject(obj[key], currentPath);
+        if (result.detected) return result;
+      }
+    }
+    return { detected: false };
+  };
+  
+  const bodyCheck = req.body ? checkObject(req.body) : { detected: false };
+  const queryCheck = req.query ? checkObject(req.query) : { detected: false };
+  const paramsCheck = req.params ? checkObject(req.params) : { detected: false };
+  
+  if (bodyCheck.detected || queryCheck.detected || paramsCheck.detected) {
+    const violation = bodyCheck.detected ? bodyCheck : (queryCheck.detected ? queryCheck : paramsCheck);
+    console.warn(`SQL注入检测: ${violation.path} = ${violation.value}`);
+    return res.status(403).json({ error: '请求包含非法字符' });
+  }
+  
+  next();
+};
+
+/**
+ * 文件路径安全验证
+ * 防止路径遍历攻击
+ */
+const sanitizeFilename = (filename) => {
+  if (typeof filename !== 'string') return '';
+  
+  // 移除路径分隔符和危险字符
+  return filename
+    .replace(/\\/g, '')
+    .replace(/\//g, '')
+    .replace(/\.\./g, '')
+    .replace(/[<>:"|?*]/g, '');
+};
+
+/**
+ * 请求大小限制中间件
+ */
+const requestSizeLimit = (maxSize = 10 * 1024 * 1024) => {
+  return (req, res, next) => {
+    const contentLength = parseInt(req.headers['content-length']);
+    
+    if (contentLength && contentLength > maxSize) {
+      return res.status(413).json({ error: '请求体过大' });
+    }
+    
+    next();
+  };
+};
+
+/**
+ * 安全响应头中间件
+ */
+const securityHeaders = (req, res, next) => {
+  // 防止点击劫持
+  res.setHeader('X-Frame-Options', 'DENY');
+  
+  // XSS保护
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // 禁止MIME类型嗅探
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  
+  // 引用策略
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // 内容安全策略（生产环境）
+  if (config.isProduction) {
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' ws: wss:");
+  }
+  
+  next();
+};
+
+/**
+ * 请求日志中间件
+ */
+const requestLogger = (req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const logData = {
+      method: req.method,
+      url: req.url,
+      status: res.statusCode,
+      duration: `${duration}ms`,
+      ip: req.ip || req.connection.remoteAddress,
+      userAgent: req.headers['user-agent'],
+    };
+    
+    if (config.isDevelopment) {
+      console.log(`[${new Date().toISOString()}] ${logData.method} ${logData.url} ${logData.status} ${logData.duration}`);
+    }
   });
-  return safe;
+  
+  next();
 };
 
 module.exports = {
-  // XSS防护
-  escapeHtml,
-  xssMiddleware,
-  
-  // 输入验证
-  schemas,
-  validate,
-  
-  // 速率限制
-  apiLimiter,
-  authLimiter,
-  strictLimiter,
-  
-  // 错误处理
-  errorHandler,
-  
-  // 安全响应头
-  helmetConfig,
-  
-  // 密码验证
-  validatePassword,
-  
-  // 输入清理
+  authenticateToken,
+  requireAdmin,
+  optionalAuth,
   sanitizeInput,
-  
-  // 安全日志
-  safeLog
+  sanitizeRequestBody,
+  validateParams,
+  detectSqlInjection,
+  sqlInjectionProtection,
+  sanitizeFilename,
+  requestSizeLimit,
+  securityHeaders,
+  requestLogger,
 };

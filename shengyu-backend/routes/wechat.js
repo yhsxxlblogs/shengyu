@@ -3,6 +3,8 @@ const router = express.Router();
 const db = require('../config/db');
 const jwt = require('jsonwebtoken');
 const https = require('https');
+const config = require('../config');
+const { authenticateToken } = require('../middleware/security');
 
 /**
  * 使用原生 https 模块发送 GET 请求
@@ -45,30 +47,15 @@ function httpsGet(url) {
  * 已配置微信开放平台参数
  */
 
-// 微信开放平台配置
+// 微信开放平台配置（从配置文件读取）
 const WECHAT_CONFIG = {
-    appId: 'wx4e46471a06b5124c',      // 微信开放平台 AppID
-    appSecret: '309618603345d01dbc0c356f52e1e979',  // 微信开放平台 AppSecret
+    appId: config.wechat.appId,
+    appSecret: config.wechat.appSecret,
 };
 
-/**
- * JWT认证中间件
- */
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: '未提供访问令牌' });
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET || 'secret_key', (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: '令牌无效或已过期' });
-        }
-        req.user = user;
-        next();
-    });
+// 检查微信配置是否完整
+const isWechatConfigValid = () => {
+    return WECHAT_CONFIG.appId && WECHAT_CONFIG.appSecret;
 };
 
 /**
@@ -78,6 +65,14 @@ const authenticateToken = (req, res, next) => {
  */
 router.post('/login', async (req, res) => {
     try {
+        // 检查微信配置
+        if (!isWechatConfigValid()) {
+            return res.status(503).json({ 
+                error: '微信登录未配置',
+                message: '服务器未配置微信登录功能，请联系管理员'
+            });
+        }
+
         const { code, userInfo, bindToken } = req.body;
 
         if (!code) {
@@ -128,6 +123,11 @@ router.post('/login', async (req, res) => {
         if (existingWechatUsers.length > 0) {
             // 已存在微信用户，直接登录
             user = existingWechatUsers[0];
+            
+            // 检查用户是否被禁用
+            if (user.is_active === 0) {
+                return res.status(403).json({ error: '账号已被禁用，请联系管理员' });
+            }
             
             // 更新微信信息
             if (wechatUserInfo) {
@@ -193,8 +193,8 @@ router.post('/login', async (req, res) => {
                 username: user.username,
                 openid: openid 
             },
-            process.env.JWT_SECRET || 'secret_key',
-            { expiresIn: '7d' }
+            config.jwt.secret,
+            { expiresIn: config.jwt.expiresIn }
         );
 
         // 5. 返回用户信息（排除敏感字段）
@@ -251,6 +251,14 @@ router.post('/login', async (req, res) => {
  */
 router.post('/bind', authenticateToken, async (req, res) => {
     try {
+        // 检查微信配置
+        if (!isWechatConfigValid()) {
+            return res.status(503).json({ 
+                error: '微信登录未配置',
+                message: '服务器未配置微信登录功能'
+            });
+        }
+
         const { code } = req.body;
         const userId = req.user?.id;
 
@@ -348,6 +356,14 @@ router.post('/bind', authenticateToken, async (req, res) => {
  * @access Public
  */
 router.get('/config', (req, res) => {
+    // 检查微信配置是否完整
+    if (!isWechatConfigValid()) {
+        return res.json({
+            enabled: false,
+            message: '微信登录未配置'
+        });
+    }
+    
     // 只返回 AppID，AppSecret 不暴露
     res.json({
         appId: WECHAT_CONFIG.appId,

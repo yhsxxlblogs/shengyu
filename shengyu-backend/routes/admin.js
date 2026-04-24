@@ -1,25 +1,52 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const config = require('../config');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+const jwt = require('jsonwebtoken');
+const { requireAdmin, sanitizeFilename } = require('../middleware/security');
 
 // 配置文件上传
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../uploads/sounds'));
+    const soundsDir = path.join(__dirname, '../uploads/sounds');
+    if (!fs.existsSync(soundsDir)) {
+      fs.mkdirSync(soundsDir, { recursive: true });
+    }
+    cb(null, soundsDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'sound-' + uniqueSuffix + path.extname(file.originalname));
+    const safeExt = path.extname(file.originalname).toLowerCase();
+    cb(null, 'sound-' + uniqueSuffix + safeExt);
   }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: config.upload.maxSoundSize
+  },
+  fileFilter: function (req, file, cb) {
+    const filetypes = config.upload.allowedSoundTypes;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('只允许上传音频文件'));
+    }
+  }
+});
+
+// 所有管理接口都需要管理员权限
+router.use(requireAdmin);
 
 // 获取所有用户
 router.get('/users', (req, res) => {
-  db.query('SELECT id, username, email, avatar, created_at FROM users', (err, results) => {
+  db.query('SELECT id, username, email, avatar, is_active, is_admin, created_at FROM users ORDER BY created_at DESC', (err, results) => {
     if (err) {
       console.error('获取用户数据失败:', err);
       return res.status(500).json({ error: '服务器错误' });
@@ -98,15 +125,18 @@ router.get('/users', (req, res) => {
 
 // 添加用户
 router.post('/users', (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, is_admin } = req.body;
 
   if (!username || !email || !password) {
     return res.status(400).json({ error: '缺少必要参数' });
   }
 
+  const bcrypt = require('bcrypt');
+  const hashedPassword = bcrypt.hashSync(password, config.security.bcryptRounds);
+
   db.query(
-    'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-    [username, email, password],
+    'INSERT INTO users (username, email, password, is_admin) VALUES (?, ?, ?, ?)',
+    [username, email, hashedPassword, is_admin ? 1 : 0],
     (err, results) => {
       if (err) {
         console.error('添加用户失败:', err);
@@ -117,14 +147,66 @@ router.post('/users', (req, res) => {
   );
 });
 
+// 禁用/启用用户
+router.put('/users/:id/status', (req, res) => {
+  const { id } = req.params;
+  const { is_active } = req.body;
+  
+  // 不能禁用自己
+  if (parseInt(id) === req.user.id) {
+    return res.status(400).json({ error: '不能禁用当前登录账号' });
+  }
+
+  db.query('UPDATE users SET is_active = ? WHERE id = ?', [is_active ? 1 : 0, id], (err, results) => {
+    if (err) {
+      console.error('更新用户状态失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ error: '用户不存在' });
+    }
+    res.status(200).json({ message: is_active ? '用户已启用' : '用户已禁用' });
+  });
+});
+
+// 设置/取消管理员
+router.put('/users/:id/admin', (req, res) => {
+  const { id } = req.params;
+  const { is_admin } = req.body;
+  
+  // 不能取消自己的管理员权限
+  if (parseInt(id) === req.user.id && !is_admin) {
+    return res.status(400).json({ error: '不能取消自己的管理员权限' });
+  }
+
+  db.query('UPDATE users SET is_admin = ? WHERE id = ?', [is_admin ? 1 : 0, id], (err, results) => {
+    if (err) {
+      console.error('更新管理员状态失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ error: '用户不存在' });
+    }
+    res.status(200).json({ message: is_admin ? '已设为管理员' : '已取消管理员权限' });
+  });
+});
+
 // 删除用户
 router.delete('/users/:id', (req, res) => {
   const { id } = req.params;
+  
+  // 不能删除自己
+  if (parseInt(id) === req.user.id) {
+    return res.status(400).json({ error: '不能删除当前登录账号' });
+  }
 
   db.query('DELETE FROM users WHERE id = ?', [id], (err, results) => {
     if (err) {
       console.error('删除用户失败:', err);
       return res.status(500).json({ error: '服务器错误' });
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ error: '用户不存在' });
     }
     res.status(200).json({ message: '删除成功' });
   });
@@ -338,12 +420,31 @@ router.post('/sounds', upload.single('sound'), (req, res) => {
 router.delete('/sounds/:id', (req, res) => {
   const { id } = req.params;
 
-  db.query('DELETE FROM sounds WHERE id = ?', [id], (err, results) => {
+  // 先获取声音文件路径
+  db.query('SELECT sound_url FROM sounds WHERE id = ?', [id], (err, results) => {
     if (err) {
-      console.error('删除声音失败:', err);
+      console.error('获取声音失败:', err);
       return res.status(500).json({ error: '服务器错误' });
     }
-    res.status(200).json({ message: '删除成功' });
+    
+    if (results.length > 0 && results[0].sound_url) {
+      const soundPath = path.join(__dirname, '..', results[0].sound_url);
+      if (fs.existsSync(soundPath)) {
+        try {
+          fs.unlinkSync(soundPath);
+        } catch (e) {
+          console.error('删除声音文件失败:', e);
+        }
+      }
+    }
+
+    db.query('DELETE FROM sounds WHERE id = ?', [id], (err, results) => {
+      if (err) {
+        console.error('删除声音失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      res.status(200).json({ message: '删除成功' });
+    });
   });
 });
 
@@ -370,26 +471,47 @@ router.get('/posts', (req, res) => {
 router.delete('/posts/:id', (req, res) => {
   const { id } = req.params;
 
-  // 先删除相关的点赞和评论
-  db.query('DELETE FROM likes WHERE post_id = ?', [id], (err) => {
+  // 先获取帖子信息以删除图片
+  db.query('SELECT image_url FROM posts WHERE id = ?', [id], (err, results) => {
     if (err) {
-      console.error('删除点赞失败:', err);
+      console.error('获取帖子失败:', err);
       return res.status(500).json({ error: '服务器错误' });
     }
+    
+    // 删除图片文件
+    if (results.length > 0 && results[0].image_url) {
+      const imagePath = path.join(__dirname, '..', results[0].image_url);
+      if (fs.existsSync(imagePath)) {
+        try {
+          fs.unlinkSync(imagePath);
+        } catch (e) {
+          console.error('删除图片文件失败:', e);
+        }
+      }
+    }
 
-    db.query('DELETE FROM comments WHERE post_id = ?', [id], (err) => {
+    // 先删除相关的点赞和评论
+    db.query('DELETE FROM likes WHERE post_id = ?', [id], (err) => {
       if (err) {
-        console.error('删除评论失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        console.error('删除点赞失败:', err);
       }
 
-      // 最后删除帖子
-      db.query('DELETE FROM posts WHERE id = ?', [id], (err, results) => {
+      db.query('DELETE FROM comments WHERE post_id = ?', [id], (err) => {
         if (err) {
-          console.error('删除帖子失败:', err);
-          return res.status(500).json({ error: '服务器错误' });
+          console.error('删除评论失败:', err);
         }
-        res.status(200).json({ message: '删除成功' });
+
+        // 最后删除帖子
+        db.query('DELETE FROM posts WHERE id = ?', [id], (err, results) => {
+          if (err) {
+            console.error('删除帖子失败:', err);
+            return res.status(500).json({ error: '服务器错误' });
+          }
+          if (results.affectedRows === 0) {
+            return res.status(404).json({ error: '帖子不存在' });
+          }
+          res.status(200).json({ message: '删除成功' });
+        });
       });
     });
   });
@@ -537,9 +659,6 @@ router.delete('/notifications/clear', (req, res) => {
 
 // 获取前端版本信息
 router.get('/frontend-version', (req, res) => {
-  const fs = require('fs');
-  const path = require('path');
-
   try {
     const versionFile = path.join(__dirname, '../version.json');
 
@@ -716,20 +835,39 @@ router.put('/system-sounds/:id', (req, res) => {
 router.delete('/system-sounds/:id', (req, res) => {
   const { id } = req.params;
 
-  db.query(
-    'DELETE FROM sounds WHERE id = ? AND user_id IS NULL',
-    [id],
-    (err, results) => {
-      if (err) {
-        console.error('删除系统声音失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
-      }
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ error: '系统声音不存在或无权限删除' });
-      }
-      res.status(200).json({ message: '系统声音删除成功' });
+  // 先获取声音文件路径
+  db.query('SELECT sound_url FROM sounds WHERE id = ? AND user_id IS NULL', [id], (err, results) => {
+    if (err) {
+      console.error('获取系统声音失败:', err);
+      return res.status(500).json({ error: '服务器错误' });
     }
-  );
+    
+    if (results.length > 0 && results[0].sound_url) {
+      const soundPath = path.join(__dirname, '..', results[0].sound_url);
+      if (fs.existsSync(soundPath)) {
+        try {
+          fs.unlinkSync(soundPath);
+        } catch (e) {
+          console.error('删除声音文件失败:', e);
+        }
+      }
+    }
+
+    db.query(
+      'DELETE FROM sounds WHERE id = ? AND user_id IS NULL',
+      [id],
+      (err, results) => {
+        if (err) {
+          console.error('删除系统声音失败:', err);
+          return res.status(500).json({ error: '服务器错误' });
+        }
+        if (results.affectedRows === 0) {
+          return res.status(404).json({ error: '系统声音不存在或无权限删除' });
+        }
+        res.status(200).json({ message: '系统声音删除成功' });
+      }
+    );
+  });
 });
 
 module.exports = router;

@@ -1,14 +1,15 @@
 const mysql = require('mysql2');
+const config = require('./index');
 
 // 创建数据库连接池
 const db = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '@Syh20050608',
-  database: 'animal_sound_app',
-  charset: 'utf8mb4',
+  host: config.database.host,
+  user: config.database.user,
+  password: config.database.password,
+  database: config.database.name,
+  charset: config.database.charset,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: config.database.connectionLimit,
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 10000
@@ -43,11 +44,14 @@ function createTables() {
       wechat_nickname VARCHAR(100),
       wechat_avatar VARCHAR(255),
       login_type VARCHAR(20) DEFAULT 'password',
+      is_admin TINYINT(1) DEFAULT 0,
+      is_active TINYINT(1) DEFAULT 1,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_email (email),
       INDEX idx_created_at (created_at),
-      INDEX idx_wechat_openid (wechat_openid)
+      INDEX idx_wechat_openid (wechat_openid),
+      INDEX idx_is_admin (is_admin)
     )
   `;
 
@@ -64,7 +68,7 @@ function createTables() {
       review_status VARCHAR(20) DEFAULT 'none',
       is_official TINYINT(1) DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
       INDEX idx_user_id (user_id),
       INDEX idx_animal_type (animal_type),
       INDEX idx_visible (visible),
@@ -81,8 +85,8 @@ function createTables() {
       content TEXT,
       image_url VARCHAR(255),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id),
-      FOREIGN KEY (sound_id) REFERENCES sounds(id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (sound_id) REFERENCES sounds(id) ON DELETE SET NULL,
       INDEX idx_user_id (user_id),
       INDEX idx_created_at (created_at),
       INDEX idx_user_created (user_id, created_at)
@@ -96,8 +100,8 @@ function createTables() {
       post_id INT,
       user_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (post_id) REFERENCES posts(id),
-      FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       UNIQUE KEY uk_post_user (post_id, user_id),
       INDEX idx_post_id (post_id),
       INDEX idx_user_id (user_id),
@@ -113,8 +117,8 @@ function createTables() {
       user_id INT,
       content TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (post_id) REFERENCES posts(id),
-      FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       INDEX idx_post_id (post_id),
       INDEX idx_user_id (user_id),
       INDEX idx_post_created (post_id, created_at)
@@ -128,8 +132,8 @@ function createTables() {
       follower_id INT,
       following_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (follower_id) REFERENCES users(id),
-      FOREIGN KEY (following_id) REFERENCES users(id),
+      FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE,
       UNIQUE KEY unique_follow (follower_id, following_id),
       INDEX idx_follower_id (follower_id),
       INDEX idx_following_id (following_id),
@@ -146,8 +150,8 @@ function createTables() {
       content TEXT NOT NULL,
       is_read TINYINT(1) DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (sender_id) REFERENCES users(id),
-      FOREIGN KEY (receiver_id) REFERENCES users(id),
+      FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
       INDEX idx_sender_receiver (sender_id, receiver_id),
       INDEX idx_receiver_sender (receiver_id, sender_id),
       INDEX idx_receiver_read (receiver_id, is_read),
@@ -162,8 +166,8 @@ function createTables() {
       user_id INT,
       sound_id INT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id),
-      FOREIGN KEY (sound_id) REFERENCES sounds(id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (sound_id) REFERENCES sounds(id) ON DELETE CASCADE,
       UNIQUE KEY uk_user_sound (user_id, sound_id),
       INDEX idx_sound_id (sound_id)
     )
@@ -180,7 +184,9 @@ function createTables() {
       is_active TINYINT(1) DEFAULT 1,
       publish_at TIMESTAMP NULL,
       expire_at TIMESTAMP NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_status (status),
+      INDEX idx_publish_at (publish_at)
     )
   `;
 
@@ -242,6 +248,19 @@ function createTables() {
     )
   `;
 
+  // 删除记录表（用于软删除私信）
+  const createDeletedMessagesTable = `
+    CREATE TABLE IF NOT EXISTS deleted_messages (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      message_id INT NOT NULL,
+      deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY unique_user_message (user_id, message_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
+    )
+  `;
+
   // 执行所有建表语句
   const tables = [
     createUsersTable,
@@ -256,7 +275,8 @@ function createTables() {
     createAnimalTypesTable,
     createCategoriesTable,
     createSystemSoundsTable,
-    createSoundEmotionsTable
+    createSoundEmotionsTable,
+    createDeletedMessagesTable
   ];
 
   tables.forEach((tableSql, index) => {
