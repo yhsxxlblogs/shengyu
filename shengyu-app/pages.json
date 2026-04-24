@@ -63,22 +63,19 @@
 		{
 			"path": "pages/my-posts/my-posts",
 			"style": {
-				"navigationBarTitleText": "我的帖子",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "我的帖子"
 			}
 		},
 		{
 			"path": "pages/my-sounds/my-sounds",
 			"style": {
-				"navigationBarTitleText": "我的录音",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "我的录音"
 			}
 		},
 		{
 			"path": "pages/my-likes/my-likes",
 			"style": {
-				"navigationBarTitleText": "我的点赞",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "我的点赞"
 			}
 		},
 		{
@@ -102,8 +99,7 @@
 		{
 			"path": "pages/about/about",
 			"style": {
-				"navigationBarTitleText": "关于我们",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "关于我们"
 			}
 		},
 		{
