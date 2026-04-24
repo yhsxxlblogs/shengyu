@@ -1,12 +1,5 @@
 <template>
   <view class="about-container page-enter">
-    <!-- 头部 -->
-    <view class="header">
-      <text class="back-icon" @click="goBack">‹</text>
-      <text class="header-title">关于我们</text>
-      <view class="header-right"></view>
-    </view>
-
     <!-- 内容区域 -->
     <view class="content">
       <!-- Logo区域 -->
@@ -118,38 +111,6 @@ export default {
 .about-container {
   min-height: 100vh;
   background: linear-gradient(180deg, #FFF5F7 0%, #F8F8F8 50%, #FFFFFF 100%);
-}
-
-/* 头部 */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24rpx 32rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
-  background-size: 200% 200%;
-  animation: gradient-flow 5s ease infinite;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.25);
-}
-
-.back-icon {
-  font-size: 48rpx;
-  color: #FFFFFF;
-  font-weight: bold;
-  padding: 0 20rpx;
-}
-
-.header-title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #FFFFFF;
-}
-
-.header-right {
-  width: 60rpx;
 }
 
 /* 内容区域 */

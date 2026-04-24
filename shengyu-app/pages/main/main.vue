@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -2529,7 +2529,7 @@ export default {
 .community-fixed-header {
   flex-shrink: 0;
   background: linear-gradient(180deg, #FFF5F7 0%, #F8F8F8 100%);
-  padding: 20rpx 20rpx 10rpx;
+  padding: 40rpx 20rpx 10rpx;
   z-index: 100;
   /* 确保在安卓上正确显示 */
   position: relative;

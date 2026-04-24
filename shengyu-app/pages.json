@@ -105,29 +105,25 @@
 		{
 			"path": "pages/messages/messages",
 			"style": {
-				"navigationBarTitleText": "私信",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "私信"
 			}
 		},
 		{
 			"path": "pages/chat/chat",
 			"style": {
-				"navigationBarTitleText": "聊天",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "聊天"
 			}
 		},
 		{
 			"path": "pages/follows/follows",
 			"style": {
-				"navigationBarTitleText": "关注列表",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "关注列表"
 			}
 		},
 		{
 			"path": "pages/scan/scan",
 			"style": {
-				"navigationBarTitleText": "扫描二维码",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "扫描二维码"
 			}
 		}
 	],
