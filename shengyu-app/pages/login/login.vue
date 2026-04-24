@@ -242,6 +242,8 @@ export default {
         isNewUser: result.isNewUser
       };
       uni.setStorageSync('userInfo', userInfo);
+      // 同时存储 user，确保与其他登录方式一致
+      uni.setStorageSync('user', userInfo);
       
       // 移除游客模式标记
       uni.removeStorageSync('guest');

@@ -116,13 +116,20 @@ class WechatAuth {
 
             // 获得token完成登录
             if (res.data.token) {
+                const user = res.data.user
+                // 存储所有必需的字段，确保与其他登录方式一致
                 uni.setStorageSync('token', res.data.token)
-                uni.setStorageSync('userInfo', res.data.user)
+                uni.setStorageSync('user', user)
+                uni.setStorageSync('userInfo', user)
+                uni.setStorageSync('userId', user.id)
+                uni.setStorageSync('userAvatar', user.avatar || user.wechat_avatar || '')
+                uni.setStorageSync('isLoggedIn', true)
+                uni.removeStorageSync('guest')
                 return { 
                     success: true, 
                     token: res.data.token,
-                    user: res.data.user,
-                    isNewUser: res.data.user?.isNewUser || false
+                    user: user,
+                    isNewUser: user?.isNewUser || false
                 }
             }
 

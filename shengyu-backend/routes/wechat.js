@@ -195,12 +195,13 @@ router.post('/login', async (req, res) => {
             user = newUsers[0];
         }
 
-        // 4. 生成 JWT token
+        // 4. 生成 JWT token（包含 is_admin 字段以兼容管理员验证）
         const token = jwt.sign(
             { 
                 id: user.id, 
                 username: user.username,
-                openid: openid 
+                openid: openid,
+                is_admin: user.is_admin || false
             },
             config.jwt.secret,
             { expiresIn: config.jwt.expiresIn }
@@ -215,7 +216,11 @@ router.post('/login', async (req, res) => {
             email: user.email,
             bio: user.bio,
             isNewUser: isNewUser,
-            loginType: 'wechat'
+            loginType: 'wechat',
+            login_type: 'wechat',
+            wechat_openid: user.wechat_openid,
+            wechat_nickname: user.wechat_nickname,
+            wechat_avatar: user.wechat_avatar
         };
 
         console.log('微信登录成功:', { userId: user.id, isNewUser, needBind });
