@@ -75,45 +75,61 @@ router.get('/follow/check/:userId', authenticateToken, (req, res) => {
 });
 
 // 获取关注列表
-router.get('/follows/:userId', (req, res) => {
+router.get('/follows/:userId', authenticateToken, (req, res) => {
   const userId = req.params.userId;
+  const currentUserId = req.user.id;
 
   db.query(
-    `SELECT u.id, u.username, u.avatar
+    `SELECT u.id, u.username, u.avatar,
+            EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = u.id) as is_following
      FROM follows f
      JOIN users u ON f.following_id = u.id
      WHERE f.follower_id = ?
      ORDER BY f.created_at DESC`,
-    [userId],
+    [currentUserId, userId],
     (err, results) => {
       if (err) {
         console.error('获取关注列表失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ follows: results });
+      // 将 is_following 转换为布尔值
+      const follows = results.map(user => ({
+        ...user,
+        is_following: Boolean(user.is_following)
+      }));
+
+      res.status(200).json({ code: 200, follows });
     }
   );
 });
 
 // 获取粉丝列表
-router.get('/followers/:userId', (req, res) => {
+router.get('/followers/:userId', authenticateToken, (req, res) => {
   const userId = req.params.userId;
+  const currentUserId = req.user.id;
 
   db.query(
-    `SELECT u.id, u.username, u.avatar
+    `SELECT u.id, u.username, u.avatar,
+            EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = u.id) as is_following
      FROM follows f
      JOIN users u ON f.follower_id = u.id
      WHERE f.following_id = ?
      ORDER BY f.created_at DESC`,
-    [userId],
+    [currentUserId, userId],
     (err, results) => {
       if (err) {
         console.error('获取粉丝列表失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ followers: results });
+      // 将 is_following 转换为布尔值
+      const followers = results.map(user => ({
+        ...user,
+        is_following: Boolean(user.is_following)
+      }));
+
+      res.status(200).json({ code: 200, followers });
     }
   );
 });
