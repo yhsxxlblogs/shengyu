@@ -1,5 +1,24 @@
 <template>
   <view class="chat-container page-enter">
+    <!-- 自定义导航栏 - 仿原生风格 -->
+    <view class="custom-header">
+      <view class="header-left" @click="goBack">
+        <text class="back-arrow">‹</text>
+        <text class="back-text">返回</text>
+      </view>
+      <view class="header-title-area">
+        <text class="header-title-text">{{ username }}</text>
+        <view class="connection-status">
+          <view v-if="wsConnected" class="status-dot online"></view>
+          <view v-else class="status-dot offline"></view>
+          <text class="status-text">{{ wsConnected ? '在线' : '离线' }}</text>
+        </view>
+      </view>
+      <view class="header-right">
+        <text class="clear-btn" @click="showClearDialog">清空</text>
+      </view>
+    </view>
+
     <view v-if="showClearModal" class="modal-overlay" @click="closeClearModal">
       <view class="modal-content" @click.stop>
         <view class="modal-header">
@@ -784,6 +803,107 @@ export default {
 .modal-btn.confirm {
   background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
   color: #FFFFFF;
+}
+
+/* 自定义导航栏 - 仿原生风格 */
+.custom-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 88rpx;
+  box-sizing: border-box;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  min-width: 120rpx;
+}
+
+.back-arrow {
+  font-size: 44rpx;
+  color: #FFFFFF;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.back-text {
+  font-size: 28rpx;
+  color: #FFFFFF;
+  font-weight: 400;
+}
+
+.header-title-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+}
+
+.header-title-text {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  max-width: 300rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.status-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+}
+
+.status-dot.online {
+  background: #4CAF50;
+  box-shadow: 0 0 6rpx #4CAF50;
+}
+
+.status-dot.offline {
+  background: #999999;
+}
+
+.status-text {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.header-right {
+  min-width: 120rpx;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.clear-btn {
+  font-size: 28rpx;
+  color: #FFFFFF;
+  font-weight: 500;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  transition: all 0.3s ease;
+}
+
+.clear-btn:active {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .input-area {

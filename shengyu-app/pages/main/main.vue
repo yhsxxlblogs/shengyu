@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -195,141 +195,144 @@
                 <view v-if="unreadMessageCount > 0" class="message-badge">{{ unreadMessageCount }}</view>
               </view>
             </view>
-
-            <!-- 社区标题 -->
-            <view v-if="communityTab === 'community'" class="community-header">
-              <text class="header-title">社区</text>
-            </view>
-            <view v-else-if="communityTab === 'messages'" class="community-header">
-              <text class="header-title">私信</text>
-            </view>
           </view>
 
-          <!-- 社区内容 -->
-          <view v-if="communityTab === 'community'" class="community-panel">
-            <view class="publish-btn" @click="goPublish">
-              <svg-icon name="plus" :size="40" class="publish-icon-svg" />
-            </view>
+          <!-- 左右滑动切换区域 -->
+          <swiper 
+            class="community-swiper"
+            :current="communityTabIndex"
+            @change="onCommunitySwiperChange"
+            :duration="300"
+          >
+            <!-- 社区内容 -->
+            <swiper-item class="community-swiper-item">
+              <view class="community-panel">
+                <view class="publish-btn" @click="goPublish">
+                  <svg-icon name="plus" :size="40" class="publish-icon-svg" />
+                </view>
 
-            <scroll-view
-              class="post-list-scroll"
-              scroll-y
-              :scroll-top="scrollTop"
-              @scrolltolower="loadMorePosts"
-              :lower-threshold="100"
-              refresher-enabled
-              :refresher-triggered="isRefreshing"
-              @refresherrefresh="onRefresh"
-            >
-                <view v-if="communityLoading && !isRefreshing" class="loading-container">
-                  <view class="loading-animation">
-                    <view class="loading-dot"></view>
-                    <view class="loading-dot" style="animation-delay: 0.2s"></view>
-                    <view class="loading-dot" style="animation-delay: 0.4s"></view>
-                  </view>
-                  <text class="loading-text">加载中...</text>
-                </view>
-                <view v-else-if="communityError" class="error">
-                  <text>{{ communityError }}</text>
-                  <button @click="loadCommunityData" class="retry-btn">重试</button>
-                </view>
-                <view v-else-if="posts.length === 0" class="empty-state">
-                  <text>暂无帖子</text>
-                </view>
-                <view v-else class="post-list-content">
-                  <view class="post-item" v-for="(post, index) in posts" :key="post.id" @click="goPostDetail(post.id)" :style="{ animationDelay: index * 0.05 + 's' }">
-                    <view class="post-header">
-                      <view class="avatar-wrapper" @click.stop="goToUserProfile(post.user_id)">
-                        <image :src="getAvatarUrl(post.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.username || 'User')}&background=FF69B4&color=fff&size=60`" class="avatar" mode="aspectFill"></image>
+                <scroll-view
+                  class="post-list-scroll"
+                  scroll-y
+                  :scroll-top="scrollTop"
+                  @scrolltolower="loadMorePosts"
+                  :lower-threshold="100"
+                  refresher-enabled
+                  :refresher-triggered="isRefreshing"
+                  @refresherrefresh="onRefresh"
+                >
+                    <view v-if="communityLoading && !isRefreshing" class="loading-container">
+                      <view class="loading-animation">
+                        <view class="loading-dot"></view>
+                        <view class="loading-dot" style="animation-delay: 0.2s"></view>
+                        <view class="loading-dot" style="animation-delay: 0.4s"></view>
                       </view>
-                      <view class="user-info" @click.stop="goToUserProfile(post.user_id)">
-                        <text class="username">{{ post.username }}</text>
-                        <text class="post-time">{{ formatTime(post.created_at) }}</text>
-                      </view>
-                      <view v-if="String(post.user_id) !== String(currentUserId)" class="follow-btn-small" :class="{ 'following': post.is_following }" @click.stop="toggleFollow(post)">
-                        <text class="follow-btn-text">{{ post.is_following ? '已关注' : '关注' }}</text>
-                      </view>
+                      <text class="loading-text">加载中...</text>
                     </view>
-                    <view class="post-content">
-                      <text class="content">{{ post.content }}</text>
-                      <image v-if="post.image_url" :src="getAvatarUrl(post.image_url)" class="post-image" mode="aspectFit"></image>
-                      <view v-if="post.sound_url" class="audio-container" @click.stop="playSound(post.sound_url)">
-                        <svg-icon name="play" :size="28" class="audio-icon-svg" />
-                        <text class="audio-text">点击播放声音</text>
-                      </view>
+                    <view v-else-if="communityError" class="error">
+                      <text>{{ communityError }}</text>
+                      <button @click="loadCommunityData" class="retry-btn">重试</button>
                     </view>
-                    <view class="post-footer">
-                      <view class="action-item" @click.stop="likePost(post.id)">
-                        <svg-icon :name="post.liked ? 'heart' : 'heart-o'" :size="28" class="action-icon-svg" :class="{ liked: post.liked }" />
-                        <text class="action-text">{{ post.like_count || 0 }}</text>
-                      </view>
-                      <view class="action-item" @click.stop="showComments(post.id)">
-                        <svg-icon name="message" :size="28" class="action-icon-svg" />
-                        <text class="action-text">{{ post.comment_count || 0 }}</text>
-                      </view>
+                    <view v-else-if="posts.length === 0" class="empty-state">
+                      <text>暂无帖子</text>
                     </view>
-                  </view>
-                  <!-- 加载更多状态 -->
-                  <view v-if="loadingMore" class="loading-more">
-                    <view class="loading-animation-small">
-                      <view class="loading-dot-small"></view>
-                      <view class="loading-dot-small" style="animation-delay: 0.2s"></view>
-                      <view class="loading-dot-small" style="animation-delay: 0.4s"></view>
+                    <view v-else class="post-list-content">
+                      <view class="post-item" v-for="(post, index) in posts" :key="post.id" @click="goPostDetail(post.id)" :style="{ animationDelay: index * 0.05 + 's' }">
+                        <view class="post-header">
+                          <view class="avatar-wrapper" @click.stop="goToUserProfile(post.user_id)">
+                            <image :src="getAvatarUrl(post.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.username || 'User')}&background=FF69B4&color=fff&size=60`" class="avatar" mode="aspectFill"></image>
+                          </view>
+                          <view class="user-info" @click.stop="goToUserProfile(post.user_id)">
+                            <text class="username">{{ post.username }}</text>
+                            <text class="post-time">{{ formatTime(post.created_at) }}</text>
+                          </view>
+                          <view v-if="String(post.user_id) !== String(currentUserId)" class="follow-btn-small" :class="{ 'following': post.is_following }" @click.stop="toggleFollow(post)">
+                            <text class="follow-btn-text">{{ post.is_following ? '已关注' : '关注' }}</text>
+                          </view>
+                        </view>
+                        <view class="post-content">
+                          <text class="content">{{ post.content }}</text>
+                          <image v-if="post.image_url" :src="getAvatarUrl(post.image_url)" class="post-image" mode="aspectFit"></image>
+                          <view v-if="post.sound_url" class="audio-container" @click.stop="playSound(post.sound_url)">
+                            <svg-icon name="play" :size="28" class="audio-icon-svg" />
+                            <text class="audio-text">点击播放声音</text>
+                          </view>
+                        </view>
+                        <view class="post-footer">
+                          <view class="action-item" @click.stop="likePost(post.id)">
+                            <svg-icon :name="post.liked ? 'heart' : 'heart-o'" :size="28" class="action-icon-svg" :class="{ liked: post.liked }" />
+                            <text class="action-text">{{ post.like_count || 0 }}</text>
+                          </view>
+                          <view class="action-item" @click.stop="showComments(post.id)">
+                            <svg-icon name="message" :size="28" class="action-icon-svg" />
+                            <text class="action-text">{{ post.comment_count || 0 }}</text>
+                          </view>
+                        </view>
+                      </view>
+                      <!-- 加载更多状态 -->
+                      <view v-if="loadingMore" class="loading-more">
+                        <view class="loading-animation-small">
+                          <view class="loading-dot-small"></view>
+                          <view class="loading-dot-small" style="animation-delay: 0.2s"></view>
+                          <view class="loading-dot-small" style="animation-delay: 0.4s"></view>
+                        </view>
+                        <text class="loading-more-text">加载更多...</text>
+                      </view>
+                      <!-- 没有更多数据 -->
+                      <view v-else-if="!hasMore && posts.length > 0" class="no-more">
+                        <view class="no-more-line"></view>
+                        <text class="no-more-text">没有更多内容了</text>
+                        <view class="no-more-line"></view>
+                      </view>
+                      <!-- 底部安全区域，防止被导航栏遮盖 -->
+                      <view class="safe-area-bottom"></view>
                     </view>
-                    <text class="loading-more-text">加载更多...</text>
-                  </view>
-                  <!-- 没有更多数据 -->
-                  <view v-else-if="!hasMore && posts.length > 0" class="no-more">
-                    <view class="no-more-line"></view>
-                    <text class="no-more-text">没有更多内容了</text>
-                    <view class="no-more-line"></view>
-                  </view>
-                  <!-- 底部安全区域，防止被导航栏遮盖 -->
-                  <view class="safe-area-bottom"></view>
+                  </scroll-view>
                 </view>
-              </scroll-view>
-            </view>
+            </swiper-item>
 
             <!-- 私信面板 -->
-            <view v-else-if="communityTab === 'messages'" class="messages-panel">
-              <scroll-view
-                class="messages-list-scroll"
-                scroll-y
-                :scroll-top="messageScrollTop"
-                @scrolltolower="loadMoreMessages"
-                :lower-threshold="100"
-                refresher-enabled
-                :refresher-triggered="isRefreshingMessages"
-                @refresherrefresh="onRefreshMessages"
-              >
-              <view v-if="loadingMessages" class="loading-container">
-                <text class="loading-text">加载中...</text>
-              </view>
-              <view v-else-if="messageList.length === 0" class="empty-messages">
-                <svg-icon name="message" :size="80" class="empty-icon-svg" />
-                <text class="empty-text">还没有私信</text>
-                <text class="empty-subtext">去社区关注感兴趣的人吧</text>
-              </view>
-              <view v-else class="message-list-content">
-                <view class="message-item" v-for="msg in messageList" :key="msg.user_id" @click="goToChat(msg.user_id, msg.username)">
-                  <view class="message-avatar-wrapper">
-                    <image :src="getAvatarUrl(msg.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.username || 'User')}&background=FF69B4&color=fff&size=60`" class="message-avatar" mode="aspectFill"></image>
+            <swiper-item class="community-swiper-item">
+              <view class="messages-panel">
+                <scroll-view
+                  class="messages-list-scroll"
+                  scroll-y
+                  :scroll-top="messageScrollTop"
+                  @scrolltolower="loadMoreMessages"
+                  :lower-threshold="100"
+                  refresher-enabled
+                  :refresher-triggered="isRefreshingMessages"
+                  @refresherrefresh="onRefreshMessages"
+                >
+                  <view v-if="loadingMessages" class="loading-container">
+                    <text class="loading-text">加载中...</text>
                   </view>
-                  <view class="message-info">
-                    <view class="message-header-row">
-                      <text class="message-username">{{ msg.username }}</text>
-                      <text class="message-time">{{ formatTime(msg.last_time) }}</text>
-                    </view>
-                    <view class="message-row">
-                      <text class="message-preview" :class="{ 'unread': msg.unread_count > 0 }">{{ msg.last_message }}</text>
-                      <view v-if="msg.unread_count > 0" class="unread-badge">{{ msg.unread_count }}</view>
+                  <view v-else-if="messageList.length === 0" class="empty-messages">
+                    <svg-icon name="message" :size="80" class="empty-icon-svg" />
+                    <text class="empty-text">还没有私信</text>
+                    <text class="empty-subtext">去社区关注感兴趣的人吧</text>
+                  </view>
+                  <view v-else class="message-list-content">
+                    <view class="message-item" v-for="msg in messageList" :key="msg.user_id" @click="goToChat(msg.user_id, msg.username)">
+                      <view class="message-avatar-wrapper">
+                        <image :src="getAvatarUrl(msg.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.username || 'User')}&background=FF69B4&color=fff&size=60`" class="message-avatar" mode="aspectFill"></image>
+                      </view>
+                      <view class="message-info">
+                        <view class="message-header-row">
+                          <text class="message-username">{{ msg.username }}</text>
+                          <text class="message-time">{{ formatTime(msg.last_time) }}</text>
+                        </view>
+                        <view class="message-row">
+                          <text class="message-preview" :class="{ 'unread': msg.unread_count > 0 }">{{ msg.last_message }}</text>
+                          <view v-if="msg.unread_count > 0" class="unread-badge">{{ msg.unread_count }}</view>
+                        </view>
+                      </view>
                     </view>
                   </view>
-                </view>
+                </scroll-view>
               </view>
-            </scroll-view>
-          </view>
-        </view>
+            </swiper-item>
+          </swiper>
 
         <!-- 评论弹窗 -->
         <view v-if="showCommentPopup" class="comment-popup">
@@ -583,6 +586,7 @@ export default {
       loadingComments: false,
       communityUpdateTimer: null,
       communityTab: 'community',
+      communityTabIndex: 0,
       unreadMessageCount: 0,
       messageList: [],
       loadingMessages: false,
@@ -671,7 +675,18 @@ export default {
 
     switchCommunityTab(tab) {
       this.communityTab = tab
+      this.communityTabIndex = tab === 'community' ? 0 : 1
       if (tab === 'messages') {
+        this.loadMessageList()
+        this.loadUnreadCount()
+      }
+    },
+
+    onCommunitySwiperChange(e) {
+      const index = e.detail.current
+      this.communityTabIndex = index
+      this.communityTab = index === 0 ? 'community' : 'messages'
+      if (index === 1) {
         this.loadMessageList()
         this.loadUnreadCount()
       }
@@ -2589,6 +2604,18 @@ export default {
   box-shadow: 0 2rpx 8rpx rgba(255, 71, 87, 0.4);
 }
 
+/* 社区滑动切换区域 */
+.community-swiper {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.community-swiper-item {
+  width: 100%;
+  height: 100%;
+}
+
 /* 社区面板 - 使用 flex 布局确保高度正确计算 */
 .community-panel {
   flex: 1;
@@ -2598,6 +2625,8 @@ export default {
   position: relative;
   /* 安卓适配：最小高度确保内容可见 */
   min-height: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /* 帖子列表区域 - 独立滚动，使用更可靠的高度设置 */
@@ -2654,7 +2683,7 @@ export default {
 
 .message-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 24rpx;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 20rpx;
@@ -2664,19 +2693,22 @@ export default {
 
 .message-avatar-wrapper {
   position: relative;
-  width: 100rpx;
-  height: 100rpx;
+  width: 96rpx;
+  height: 96rpx;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
   background: linear-gradient(135deg, #FFE5E8 0%, #FFF0F3 100%);
-  margin-right: 20rpx;
+  margin-right: 24rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(255, 154, 158, 0.2);
 }
 
 .message-avatar {
   width: 100%;
   height: 100%;
   border-radius: 50%;
+  display: block;
 }
 
 .unread-badge {
