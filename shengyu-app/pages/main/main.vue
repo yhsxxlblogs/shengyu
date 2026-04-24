@@ -1,4 +1,4 @@
-﻿﻿<template>
+﻿﻿﻿﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -1872,6 +1872,16 @@ export default {
   height: 340rpx;
 }
 
+.banner-item-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
 .banner-swiper swiper-item {
   width: 100%;
   height: 100%;
@@ -1880,6 +1890,8 @@ export default {
   justify-content: center;
   box-sizing: border-box;
   padding: 0 8rpx;
+  overflow: hidden;
+  border-radius: 24rpx;
 }
 
 .banner-card {
