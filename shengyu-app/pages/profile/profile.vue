@@ -217,7 +217,7 @@ export default {
           
           if (userRes.statusCode === 200 && userRes.data && userRes.data.user) {
             const statsRes = await uni.request({
-              url: 'http://106.14.248.12:3000/api/auth/user/stats',
+              url: 'http://shengyu.supersyh.xyz/api/auth/user/stats',
               method: 'GET',
               header: {
                 Authorization: `Bearer ${token}`

@@ -89,8 +89,8 @@ export default {
     return {
       version: '1.0.0',
       updateTime: '2026-04-02',
-      author: '声愈团队',
-      email: 'support@shengyu.com'
+      author: 'syh',
+      email: 'photo2carton@qq.com'
     };
   },
   methods: {

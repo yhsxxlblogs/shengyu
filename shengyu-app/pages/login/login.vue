@@ -175,8 +175,46 @@ export default {
       uni.showToast({ title: '功能开发中', icon: 'none' });
     },
     async wechatLogin() {
-      // 微信登录功能开发中
-      uni.showToast({ title: '微信登录功能开发中', icon: 'none' });
+      // 使用微信登录
+      const { wechatAuth } = await import('@/utils/wechat-auth.js');
+      
+      uni.showLoading({ title: '微信登录中...' });
+      
+      const result = await wechatAuth.login();
+      
+      uni.hideLoading();
+      
+      if (result.success) {
+        // 如果是新用户，显示提示
+        if (result.isNewUser) {
+          uni.showModal({
+            title: '欢迎新用户',
+            content: '您已成功创建账号！\n\n提示：如果您已有账号密码账号，可以在个人中心设置中绑定微信，实现两种方式登录同一账号。',
+            showCancel: false,
+            confirmText: '知道了',
+            success: () => {
+              this.afterWechatLogin(result);
+            }
+          });
+        } else {
+          uni.showToast({
+            title: '登录成功',
+            icon: 'success'
+          });
+          this.afterWechatLogin(result);
+        }
+      }
+    },
+    async afterWechatLogin(result) {
+      // 缓存关注列表
+      await this.loadFollowingList(result.token);
+      
+      // 延迟跳转
+      setTimeout(() => {
+        uni.reLaunch({
+          url: '/pages/main/main'
+        });
+      }, 500);
     },
     async loadFollowingList(token) {
       try {

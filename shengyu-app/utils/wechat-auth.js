@@ -9,27 +9,16 @@ const API_BASE = `${BASE_URL}/api`
 
 class WechatAuth {
     constructor() {
-        this.appId = ''
-        this.enabled = false
+        this.appId = 'wx4e46471a06b5124c'
+        this.enabled = true
     }
 
     /**
      * 初始化微信配置
      */
     async init() {
-        try {
-            const res = await uni.request({
-                url: `${API_BASE}/api/wechat/config`,
-                method: 'GET'
-            })
-
-            if (res.data) {
-                this.appId = res.data.appId || ''
-                this.enabled = res.data.enabled || false
-            }
-        } catch (error) {
-            console.error('获取微信配置失败:', error)
-        }
+        // 微信已配置，直接启用
+        this.enabled = true
     }
 
     /**
@@ -40,15 +29,14 @@ class WechatAuth {
     }
 
     /**
-     * 微信登录（空壳）
-     * TODO: 接入微信开放平台后完善
+     * 微信登录
      */
     async login() {
         // 检查是否已配置
         if (!this.isAvailable()) {
             uni.showModal({
                 title: '提示',
-                content: '微信登录功能即将上线，敬请期待！',
+                content: '微信登录功能暂不可用',
                 showCancel: false
             })
             return { success: false, message: '微信登录未配置' }
@@ -95,7 +83,11 @@ class WechatAuth {
             if (res.data.token) {
                 uni.setStorageSync('token', res.data.token)
                 uni.setStorageSync('userInfo', res.data.user)
-                return { success: true, user: res.data.user }
+                return { 
+                    success: true, 
+                    user: res.data.user,
+                    isNewUser: res.data.user?.isNewUser || false
+                }
             }
 
             return { success: false, message: '登录失败' }
@@ -111,8 +103,7 @@ class WechatAuth {
     }
 
     /**
-     * 绑定微信到现有账号（空壳）
-     * TODO: 接入后完善
+     * 绑定微信到现有账号
      */
     async bindWechat() {
         if (!this.isAvailable()) {
@@ -144,8 +135,8 @@ class WechatAuth {
                 throw new Error(res.data.error)
             }
 
-            uni.showToast({ title: '绑定成功' })
-            return { success: true }
+            uni.showToast({ title: '绑定成功', icon: 'success' })
+            return { success: true, wechatInfo: res.data.wechatInfo }
 
         } catch (error) {
             console.error('绑定微信失败:', error)
@@ -158,12 +149,67 @@ class WechatAuth {
     }
 
     /**
+     * 解绑微信账号
+     */
+    async unbindWechat() {
+        try {
+            const token = uni.getStorageSync('token')
+            const res = await uni.request({
+                url: `${API_BASE}/api/wechat/unbind`,
+                method: 'POST',
+                header: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            if (res.data.error) {
+                throw new Error(res.data.error)
+            }
+
+            uni.showToast({ title: '解绑成功', icon: 'success' })
+            return { success: true }
+
+        } catch (error) {
+            console.error('解绑微信失败:', error)
+            uni.showToast({
+                title: error.message || '解绑失败',
+                icon: 'none'
+            })
+            return { success: false, message: error.message }
+        }
+    }
+
+    /**
      * 检查是否已绑定微信
-     * TODO: 接入后完善
      */
     async checkBindStatus() {
-        // 空壳实现
-        return { bound: false }
+        try {
+            const token = uni.getStorageSync('token')
+            if (!token) {
+                return { bound: false }
+            }
+
+            const res = await uni.request({
+                url: `${API_BASE}/api/wechat/status`,
+                method: 'GET',
+                header: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            if (res.data.error) {
+                throw new Error(res.data.error)
+            }
+
+            return {
+                bound: res.data.bound,
+                wechatInfo: res.data.wechatInfo
+            }
+
+        } catch (error) {
+            console.error('检查绑定状态失败:', error)
+            return { bound: false }
+        }
     }
 }
 
@@ -171,31 +217,34 @@ class WechatAuth {
 export const wechatAuth = new WechatAuth()
 
 /**
- * 微信登录接入步骤（TODO）：
+ * 微信登录功能说明：
  * 
- * 1. 微信开放平台配置
- *    - 登录微信开放平台 (https://open.weixin.qq.com)
- *    - 创建移动应用，提交审核
- *    - 获取 AppID 和 AppSecret
- *    - 申请开通微信登录功能
+ * 【已实现功能】
+ * 1. 微信一键登录 - 新用户自动创建账号
+ * 2. 账号绑定 - 已有账号密码用户可在个人中心绑定微信
+ * 3. 账号解绑 - 已绑定用户可解绑微信（需先设置密码）
+ * 4. 双登录方式 - 绑定后可用微信或账号密码登录同一账号
  * 
- * 2. 后端配置
- *    - 在 routes/wechat.js 中配置 WECHAT_CONFIG
- *    - 实现 code 换取 access_token 逻辑
- *    - 实现用户信息获取和存储
+ * 【用户场景】
+ * 场景1：新用户微信登录
+ *    - 直接创建新账号，自动生成 wx_ 开头的用户名
+ *    - 提示用户可以在个人中心绑定已有账号
  * 
- * 3. manifest.json 配置
- *    - 勾选 OAuth(登录鉴权) -> 微信登录
- *    - 填写 AppID 和 UniversalLinks
+ * 场景2：已有账号密码用户绑定微信
+ *    - 登录后进入个人中心
+ *    - 点击"绑定微信"按钮
+ *    - 授权后实现微信登录同一账号
  * 
- * 4. 数据库表设计
- *    ALTER TABLE users ADD COLUMN wechat_openid VARCHAR(64);
- *    ALTER TABLE users ADD COLUMN wechat_unionid VARCHAR(64);
- *    ALTER TABLE users ADD COLUMN wechat_nickname VARCHAR(100);
- *    ALTER TABLE users ADD COLUMN wechat_avatar VARCHAR(255);
+ * 场景3：解绑微信
+ *    - 必须先设置密码才能解绑
+ *    - 解绑后只能用账号密码登录
  * 
- * 5. 用户信息字段
- *    - openid: 微信用户唯一标识
+ * 【数据库字段】
+ *    - wechat_openid: 微信用户唯一标识
+ *    - wechat_unionid: 微信开放平台唯一标识
+ *    - wechat_nickname: 微信昵称
+ *    - wechat_avatar: 微信头像
+ *    - login_type: 登录方式（password/wechat）
  *    - unionid: 微信开放平台唯一标识（多应用互通）
  *    - nickname: 微信昵称
  *    - avatar: 微信头像

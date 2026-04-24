@@ -164,7 +164,7 @@ export default {
     async loadAnimalTypes() {
       try {
         const res = await uni.request({
-          url: 'http://106.14.248.12:3000/api/sound/animal-types-grouped',
+          url: 'http://shengyu.supersyh.xyz/api/sound/animal-types-grouped',
           method: 'GET'
         });
         if (res.data && res.data.code === 200) {
