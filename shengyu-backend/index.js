@@ -591,10 +591,12 @@ async function processScheduledNotifications() {
 async function updatePopularPostsCache() {
   try {
     const query = `
-      SELECT p.*, u.username, u.avatar
+      SELECT p.*, u.username, u.avatar,
+             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
+             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
       FROM posts p
       LEFT JOIN users u ON p.user_id = u.id
-      ORDER BY (p.like_count + p.comment_count) DESC, p.created_at DESC
+      ORDER BY ((SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) + (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)) DESC, p.created_at DESC
       LIMIT 10
     `;
     

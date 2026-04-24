@@ -151,12 +151,16 @@ router.get('/animal-types-grouped', (req, res) => {
       }
 
       // 解析JSON字符串
-      const grouped = results.map(row => ({
-        category: row.category,
-        types: JSON.parse(row.types)
-      }));
-
-      res.status(200).json({ groupedTypes: grouped });
+      try {
+        const grouped = results.map(row => ({
+          category: row.category,
+          types: typeof row.types === 'string' ? JSON.parse(row.types) : row.types
+        }));
+        res.status(200).json({ groupedTypes: grouped });
+      } catch (parseErr) {
+        console.error('解析JSON失败:', parseErr);
+        res.status(200).json({ groupedTypes: [] });
+      }
     }
   );
 });
