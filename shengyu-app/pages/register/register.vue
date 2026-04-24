@@ -15,7 +15,7 @@
         <view class="form-item">
           <view class="input-wrapper">
             <view class="input-icon">
-              <svg-icon name="user" :size="40" color="#FF9A9E" />
+              <svg-icon name="user" :size="36" color="#FF9A9E" />
             </view>
             <input 
               type="text" 
@@ -30,7 +30,7 @@
         <view class="form-item">
           <view class="input-wrapper">
             <view class="input-icon">
-              <svg-icon name="email" :size="40" color="#FF9A9E" />
+              <svg-icon name="email" :size="36" color="#FF9A9E" />
             </view>
             <input 
               type="email" 
@@ -45,7 +45,7 @@
         <view class="form-item">
           <view class="input-wrapper">
             <view class="input-icon">
-              <svg-icon name="lock" :size="40" color="#FF9A9E" />
+              <svg-icon name="lock" :size="36" color="#FF9A9E" />
             </view>
             <input 
               :type="showPassword ? 'text' : 'password'" 
@@ -55,7 +55,7 @@
               placeholder-class="input-placeholder"
             />
             <view class="toggle-password" @click="showPassword = !showPassword">
-              <svg-icon :name="showPassword ? 'eye' : 'eye-off'" :size="36" color="#999" />
+              <svg-icon :name="showPassword ? 'eye' : 'eye-off'" :size="32" color="#999" />
             </view>
           </view>
         </view>
@@ -158,21 +158,28 @@ export default {
 </script>
 
 <style scoped>
+/* 页面容器 - 使用flex布局确保居中 */
 .register-page {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh; /* 动态视口高度，适配移动端浏览器 */
   background: linear-gradient(180deg, #FFF0F5 0%, #FFF8FA 50%, #FFFFFF 100%);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 40rpx;
-  padding-top: 80rpx;
+  overflow: hidden; /* 禁止滚动 */
+  padding: 0 40rpx;
+  box-sizing: border-box;
 }
 
+/* 注册容器 - 垂直居中 */
 .register-container {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  max-width: 600rpx;
+  max-width: 560rpx;
+  gap: 24rpx; /* 使用gap控制间距 */
 }
 
 /* 头部区域 */
@@ -180,115 +187,120 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 50rpx;
+  gap: 12rpx;
 }
 
 .app-icon {
-  width: 140rpx;
-  height: 140rpx;
+  width: 120rpx;
+  height: 120rpx;
   background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 50%, #FFD1DC 100%);
-  border-radius: 32rpx;
+  border-radius: 28rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 32rpx rgba(255, 182, 193, 0.4);
-  margin-bottom: 24rpx;
+  box-shadow: 0 6rpx 24rpx rgba(255, 182, 193, 0.4);
   overflow: hidden;
 }
 
 .app-logo {
-  width: 100rpx;
-  height: 100rpx;
+  width: 80rpx;
+  height: 80rpx;
 }
 
 .app-title {
-  font-size: 44rpx;
+  font-size: 40rpx;
   font-weight: 700;
   background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 8rpx;
   letter-spacing: 2rpx;
 }
 
 .app-subtitle {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #AAA;
 }
 
 /* 表单区域 */
 .form-section {
-  margin-bottom: 30rpx;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
 }
 
 .form-item {
-  margin-bottom: 20rpx;
+  width: 100%;
 }
 
 .input-wrapper {
   display: flex;
   align-items: center;
   background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 0 24rpx;
-  height: 90rpx;
+  border-radius: 14rpx;
+  padding: 0 20rpx;
+  height: 80rpx;
   border: 2rpx solid #F5F5F5;
   transition: all 0.3s ease;
 }
 
 .input-wrapper:focus-within {
   border-color: #FFB6C1;
-  box-shadow: 0 4rpx 20rpx rgba(255, 182, 193, 0.2);
+  box-shadow: 0 4rpx 16rpx rgba(255, 182, 193, 0.2);
 }
 
 .input-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16rpx;
+  margin-right: 12rpx;
+  flex-shrink: 0;
 }
 
 .input {
   flex: 1;
   height: 100%;
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #333;
+  min-width: 0; /* 防止flex item溢出 */
 }
 
 .input-placeholder {
   color: #CCC;
+  font-size: 26rpx;
 }
 
 .toggle-password {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20rpx;
-  margin-right: -20rpx;
+  padding: 16rpx;
+  margin-right: -16rpx;
+  flex-shrink: 0;
 }
 
 /* 注册按钮 */
 .register-btn {
   width: 100%;
-  height: 90rpx;
+  height: 76rpx;
   background: linear-gradient(135deg, #FF9A9E 0%, #FF6B9D 100%);
   color: #fff;
-  border-radius: 45rpx;
-  font-size: 32rpx;
+  border-radius: 38rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.35);
+  box-shadow: 0 6rpx 20rpx rgba(255, 107, 157, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   transition: all 0.3s ease;
-  margin-top: 10rpx;
+  margin-top: 8rpx;
 }
 
 .register-btn:active {
   transform: scale(0.98);
-  box-shadow: 0 4rpx 16rpx rgba(255, 107, 157, 0.25);
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 157, 0.25);
 }
 
 .btn-disabled {
@@ -303,12 +315,12 @@ export default {
 .loading-spinner {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 10rpx;
 }
 
 .spinner {
-  width: 32rpx;
-  height: 32rpx;
+  width: 28rpx;
+  height: 28rpx;
   border: 3rpx solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
@@ -325,16 +337,69 @@ export default {
   justify-content: center;
   align-items: center;
   gap: 8rpx;
+  margin-top: 8rpx;
 }
 
 .footer-text {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #888;
 }
 
 .login-link {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #FF6B9D;
   font-weight: 600;
+}
+
+/* 适配小屏幕 */
+@media screen and (max-height: 700px) {
+  .register-container {
+    gap: 16rpx;
+  }
+  
+  .app-icon {
+    width: 100rpx;
+    height: 100rpx;
+    border-radius: 24rpx;
+  }
+  
+  .app-logo {
+    width: 68rpx;
+    height: 68rpx;
+  }
+  
+  .app-title {
+    font-size: 36rpx;
+  }
+  
+  .app-subtitle {
+    font-size: 22rpx;
+  }
+  
+  .input-wrapper {
+    height: 72rpx;
+  }
+  
+  .register-btn {
+    height: 70rpx;
+    font-size: 28rpx;
+  }
+}
+
+/* 适配大屏幕 */
+@media screen and (min-height: 900px) {
+  .register-container {
+    gap: 32rpx;
+  }
+  
+  .app-icon {
+    width: 140rpx;
+    height: 140rpx;
+  }
+  
+  .app-logo {
+    width: 100rpx;
+    height: 100rpx;
+  }
 }
 </style>
