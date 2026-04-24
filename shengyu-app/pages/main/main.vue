@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
+﻿﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -333,6 +333,7 @@
               </view>
             </swiper-item>
           </swiper>
+        </view>
 
         <!-- 评论弹窗 -->
         <view v-if="showCommentPopup" class="comment-popup">
