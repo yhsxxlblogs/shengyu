@@ -92,8 +92,9 @@ export default {
   justify-content: center;
   flex: 1;
   height: 100%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  will-change: transform;
 }
 
 .tab-icon-wrapper {
@@ -108,7 +109,8 @@ export default {
 
 .tab-icon {
   font-size: 40rpx;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
 .tab-item.active .tab-icon {

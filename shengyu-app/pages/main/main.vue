@@ -1,10 +1,14 @@
-﻿﻿<template>
+﻿﻿﻿﻿﻿﻿﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
       :current="currentIndex"
       @change="onSwiperChange"
-      :duration="300"
+      :duration="250"
+      :circular="false"
+      :acceleration="true"
+      :disable-programmatic-animation="false"
+      cache-extent="1"
     >
       <!-- 首页 -->
       <swiper-item class="swiper-item">
@@ -202,7 +206,10 @@
             class="community-swiper"
             :current="communityTabIndex"
             @change="onCommunitySwiperChange"
-            :duration="300"
+            :duration="200"
+            :circular="false"
+            :acceleration="true"
+            cache-extent="1"
           >
             <!-- 社区内容 -->
             <swiper-item class="community-swiper-item">
@@ -1977,13 +1984,20 @@ export default {
 
 .main-swiper {
   flex: 1;
-  height: calc(100vh - 120rpx);
+  height: calc(100% - 100rpx);
+  /* 强制硬件加速 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
 }
 
 .swiper-item {
   height: 100%;
   position: relative;
   overflow: hidden;
+  /* 强制硬件加速 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .page-container {
@@ -2559,7 +2573,7 @@ export default {
 .community-fixed-header {
   flex-shrink: 0;
   background: linear-gradient(180deg, #FFF5F7 0%, #F8F8F8 100%);
-  padding: 40rpx 20rpx 10rpx;
+  padding: 60rpx 20rpx 10rpx;
   z-index: 100;
   /* 确保在安卓上正确显示 */
   position: relative;
@@ -2584,17 +2598,24 @@ export default {
   padding: 16rpx 40rpx;
   border-radius: 32rpx;
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, background-color;
+}
+
+.sub-tab:active {
+  transform: scale(0.95);
 }
 
 .sub-tab.active {
   background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+  box-shadow: 0 4rpx 12rpx rgba(255, 154, 158, 0.3);
 }
 
 .sub-tab-text {
   font-size: 30rpx;
   color: #666666;
   font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .sub-tab.active .sub-tab-text {
