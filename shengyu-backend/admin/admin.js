@@ -7,6 +7,15 @@ let typesData = [];
 let systemSoundsData = [];
 let userSoundsData = [];
 
+// 获取认证头
+function getAuthHeaders() {
+  const token = localStorage.getItem('adminToken');
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+}
+
 // 检查登录状态
 function checkAuth() {
   const token = localStorage.getItem('adminToken');
@@ -152,12 +161,12 @@ async function loadDashboard() {
   try {
     // 获取统计数据 - 使用正确的API路径
     const [catRes, typeRes, sysSoundRes, userSoundRes, userRes, postRes] = await Promise.all([
-      fetch(`${API_BASE_URL}/sound/admin/categories`),
-      fetch(`${API_BASE_URL}/sound/admin/animal-types`),
-      fetch(`${API_BASE_URL}/sound/admin/system-sounds`),
-      fetch(`${API_BASE_URL}/sound/admin/user-sounds`),
-      fetch(`${API_BASE_URL}/admin/users`),
-      fetch(`${API_BASE_URL}/admin/posts`)
+      fetch(`${API_BASE_URL}/sound/admin/categories`, { headers: getAuthHeaders() }),
+      fetch(`${API_BASE_URL}/sound/admin/animal-types`, { headers: getAuthHeaders() }),
+      fetch(`${API_BASE_URL}/sound/admin/system-sounds`, { headers: getAuthHeaders() }),
+      fetch(`${API_BASE_URL}/sound/admin/user-sounds`, { headers: getAuthHeaders() }),
+      fetch(`${API_BASE_URL}/admin/users`, { headers: getAuthHeaders() }),
+      fetch(`${API_BASE_URL}/admin/posts`, { headers: getAuthHeaders() })
     ]);
 
     const [catData, typeData, sysSoundData, userSoundData, userData, postData] = await Promise.all([
@@ -257,7 +266,7 @@ async function loadCategories() {
   tbody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/categories`);
+    const response = await fetch(`${API_BASE_URL}/sound/admin/categories`, { headers: getAuthHeaders() });
     const data = await response.json();
     console.log('分类数据:', data);
     categoriesData = data.data || [];
@@ -351,8 +360,7 @@ async function deleteCategory(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/categories/${id}`, {
-      method: 'DELETE'
+    const response = await fetch(`${API_BASE_URL}/sound/admin/categories/${id}`, { method: 'DELETE', headers: getAuthHeaders()
     });
 
     if (response.ok) {
@@ -382,8 +390,8 @@ async function loadAnimalTypes() {
 
   try {
     const [typeRes, catRes] = await Promise.all([
-      fetch(`${API_BASE_URL}/sound/admin/animal-types`),
-      fetch(`${API_BASE_URL}/sound/admin/categories`)
+      fetch(`${API_BASE_URL}/sound/admin/animal-types`, { headers: getAuthHeaders() }),
+      fetch(`${API_BASE_URL}/sound/admin/categories`, { headers: getAuthHeaders() })
     ]);
 
     const typeData = await typeRes.json();
@@ -522,8 +530,7 @@ async function deleteAnimalType(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types/${id}`, {
-      method: 'DELETE'
+    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types/${id}`, { method: 'DELETE', headers: getAuthHeaders()
     });
 
     if (response.ok) {
@@ -553,7 +560,7 @@ async function loadSystemSounds() {
   const typeFilter = document.getElementById('filter-sound-type')?.value || '';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds`);
+    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds`, { headers: getAuthHeaders() });
     const data = await response.json();
     console.log('系统声音数据:', data);
     systemSoundsData = data.data || [];
@@ -692,8 +699,7 @@ async function deleteSystemSound(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds/${id}`, {
-      method: 'DELETE'
+    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds/${id}`, { method: 'DELETE', headers: getAuthHeaders()
     });
 
     if (response.ok) {
@@ -719,7 +725,7 @@ async function loadUserSounds() {
   const statusFilter = document.getElementById('filter-user-sound-status')?.value || '';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/user-sounds`);
+    const response = await fetch(`${API_BASE_URL}/sound/admin/user-sounds`, { headers: getAuthHeaders() });
     const data = await response.json();
     console.log('用户声音数据:', data);
     userSoundsData = data.data || [];
@@ -773,8 +779,7 @@ function refreshUserSounds() {
 
 async function reviewSound(id, status) {
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/user-sounds/${id}/review`, {
-      method: 'PUT',
+    const response = await fetch(`${API_BASE_URL}/sound/admin/user-sounds/${id}/review`, { method: 'PUT', headers: getAuthHeaders(),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     });
@@ -798,8 +803,7 @@ async function deleteUserSound(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/user-sounds/${id}`, {
-      method: 'DELETE'
+    const response = await fetch(`${API_BASE_URL}/sound/admin/user-sounds/${id}`, { method: 'DELETE', headers: getAuthHeaders()
     });
 
     if (response.ok) {
@@ -823,7 +827,7 @@ async function loadUsers() {
   tbody.innerHTML = '<tr><td colspan="9" class="loading">加载中...</td></tr>';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/users`);
+    const response = await fetch(`${API_BASE_URL}/admin/users`, { headers: getAuthHeaders() });
     const data = await response.json();
     console.log('用户数据:', data);
     const users = data.users || [];
@@ -879,8 +883,7 @@ async function deleteUser(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
-      method: 'DELETE'
+    const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, { method: 'DELETE', headers: getAuthHeaders()
     });
 
     if (response.ok) {
@@ -904,7 +907,7 @@ async function loadPosts() {
   tbody.innerHTML = '<tr><td colspan="8" class="loading">加载中...</td></tr>';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/posts`);
+    const response = await fetch(`${API_BASE_URL}/admin/posts`, { headers: getAuthHeaders() });
     const data = await response.json();
     console.log('帖子数据:', data);
     const posts = data.posts || [];
@@ -958,8 +961,7 @@ async function deletePost(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/posts/${id}`, {
-      method: 'DELETE'
+    const response = await fetch(`${API_BASE_URL}/admin/posts/${id}`, { method: 'DELETE', headers: getAuthHeaders()
     });
 
     if (response.ok) {
@@ -983,7 +985,7 @@ async function loadBanners() {
   tbody.innerHTML = '<tr><td colspan="7" class="loading">加载中...</td></tr>';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/banner/admin/list`);
+    const response = await fetch(`${API_BASE_URL}/banner/admin/list`, { headers: getAuthHeaders() });
     const data = await response.json();
     console.log('轮播图数据:', data);
     const banners = data.banners || [];
@@ -1046,7 +1048,7 @@ function showAddBannerModal() {
 async function editBanner(id) {
   try {
     // 获取轮播图详情
-    const response = await fetch(`${API_BASE_URL}/banner/admin/${id}`);
+    const response = await fetch(`${API_BASE_URL}/banner/admin/${id}`, { headers: getAuthHeaders() });
     if (!response.ok) {
       showToast('获取轮播图信息失败', 'error');
       return;
@@ -1126,8 +1128,7 @@ async function updateBanner() {
   formData.append('is_active', is_active);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/banner/admin/update/${id}`, {
-      method: 'PUT',
+    const response = await fetch(`${API_BASE_URL}/banner/admin/update/${id}`, { method: 'PUT', headers: getAuthHeaders(),
       body: formData
     });
 
@@ -1154,8 +1155,7 @@ async function toggleBannerStatus(id, currentStatus) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/banner/admin/toggle/${id}`, {
-      method: 'PUT',
+    const response = await fetch(`${API_BASE_URL}/banner/admin/toggle/${id}`, { method: 'PUT', headers: getAuthHeaders(),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_active: newStatus })
     });
@@ -1179,8 +1179,7 @@ async function deleteBanner(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/banner/admin/delete/${id}`, {
-      method: 'DELETE'
+    const response = await fetch(`${API_BASE_URL}/banner/admin/delete/${id}`, { method: 'DELETE', headers: getAuthHeaders()
     });
 
     if (response.ok) {
@@ -1204,7 +1203,7 @@ async function loadNotifications() {
   tbody.innerHTML = '<tr><td colspan="8" class="loading">加载中...</td></tr>';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/notification`);
+    const response = await fetch(`${API_BASE_URL}/admin/notification`, { headers: getAuthHeaders() });
     const data = await response.json();
     console.log('通知数据:', data);
     const notifications = data.notifications || [];
@@ -1267,8 +1266,7 @@ async function deleteNotification(id) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/notification/${id}`, {
-      method: 'DELETE'
+    const response = await fetch(`${API_BASE_URL}/admin/notification/${id}`, { method: 'DELETE', headers: getAuthHeaders()
     });
 
     if (response.ok) {
@@ -1357,8 +1355,7 @@ async function saveCategory() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/categories`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE_URL}/sound/admin/categories`, { method: 'POST', headers: getAuthHeaders(),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, display_name, sort_order })
     });
@@ -1389,8 +1386,7 @@ async function updateCategory() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/categories/${id}`, {
-      method: 'PUT',
+    const response = await fetch(`${API_BASE_URL}/sound/admin/categories/${id}`, { method: 'PUT', headers: getAuthHeaders(),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ display_name, sort_order, is_active })
     });
@@ -1422,8 +1418,7 @@ async function saveAnimalType() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types`, { method: 'POST', headers: getAuthHeaders(),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type, name, icon, category, sort_order })
     });
@@ -1456,8 +1451,7 @@ async function updateAnimalType() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types/${id}`, {
-      method: 'PUT',
+    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types/${id}`, { method: 'PUT', headers: getAuthHeaders(),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, icon, category, sort_order, is_active })
     });
@@ -1496,8 +1490,7 @@ async function saveSystemSound() {
   formData.append('description', description);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds`, { method: 'POST', headers: getAuthHeaders(),
       body: formData
     });
 
@@ -1527,8 +1520,7 @@ async function updateSystemSound() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds/${id}`, {
-      method: 'PUT',
+    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds/${id}`, { method: 'PUT', headers: getAuthHeaders(),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ emotion, description, is_active })
     });
@@ -1565,8 +1557,7 @@ async function saveBanner() {
   formData.append('sort_order', sort_order);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/banner/admin/create`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE_URL}/banner/admin/create`, { method: 'POST', headers: getAuthHeaders(),
       body: formData
     });
 
@@ -1595,8 +1586,7 @@ async function saveNotification() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/notification`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE_URL}/admin/notification`, { method: 'POST', headers: getAuthHeaders(),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, content, type })
     });
@@ -1618,7 +1608,7 @@ async function saveNotification() {
 // ========== 辅助函数 ==========
 async function fetchCategories() {
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/categories`);
+    const response = await fetch(`${API_BASE_URL}/sound/admin/categories`, { headers: getAuthHeaders() });
     const data = await response.json();
     categoriesData = data.data || [];
     return categoriesData;
@@ -1630,7 +1620,7 @@ async function fetchCategories() {
 
 async function fetchTypesByCategory(categoryName) {
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types`);
+    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types`, { headers: getAuthHeaders() });
     const data = await response.json();
     const types = data.data || [];
     return types.filter(t => t.category === categoryName);
