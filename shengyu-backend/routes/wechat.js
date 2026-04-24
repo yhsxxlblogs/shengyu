@@ -36,7 +36,7 @@ function httpsGet(url) {
 // 微信开放平台配置
 const WECHAT_CONFIG = {
     appId: 'wx4e46471a06b5124c',      // 微信开放平台 AppID
-    appSecret: 'e4185ae13bea33463b576c69ef94e9a7',  // 微信开放平台 AppSecret
+    appSecret: '309618603345d01dbc0c356f52e1e979',  // 微信开放平台 AppSecret
 };
 
 /**
