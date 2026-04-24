@@ -51,7 +51,12 @@
                         "__platform__" : [ "android" ]
                     }
                 },
-                "oauth" : {}
+                "oauth" : {
+                    "weixin" : {
+                        "appid" : "wx4e46471a06b5124c",
+                        "UniversalLinks" : ""
+                    }
+                }
             },
             "splashscreen" : {
                 "androidStyle" : "default"

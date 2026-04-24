@@ -1,6 +1,6 @@
 /**
  * 微信登录工具类
- * 基于 uni-app 的微信登录功能（空壳，待接入微信开放平台）
+ * 基于 uni-app 的微信登录功能
  * 文档参考：https://uniapp.dcloud.net.cn/tutorial/app-oauth-weixin.html
  */
 
@@ -17,7 +17,6 @@ class WechatAuth {
      * 初始化微信配置
      */
     async init() {
-        // 微信已配置，直接启用
         this.enabled = true
     }
 
@@ -29,7 +28,31 @@ class WechatAuth {
     }
 
     /**
-     * 微信登录
+     * 检查微信是否已安装（仅APP端）
+     */
+    async isWechatInstalled() {
+        // #ifdef APP-PLUS
+        return new Promise((resolve) => {
+            uni.getProvider({
+                service: 'oauth',
+                success: (res) => {
+                    const hasWechat = res.provider.includes('weixin')
+                    resolve(hasWechat)
+                },
+                fail: () => {
+                    resolve(false)
+                }
+            })
+        })
+        // #endif
+        
+        // #ifndef APP-PLUS
+        return false
+        // #endif
+    }
+
+    /**
+     * 微信登录 - APP端使用 plus.oauth API
      */
     async login() {
         // 检查是否已配置
@@ -52,7 +75,7 @@ class WechatAuth {
         return { success: false, message: 'H5端不支持微信登录' }
         // #endif
 
-        // #ifndef APP-PLUS || MP-WEIXIN
+        // #ifndef APP-PLUS
         uni.showModal({
             title: '提示',
             content: '当前平台暂不支持微信登录，请使用账号密码登录',
@@ -61,35 +84,61 @@ class WechatAuth {
         return { success: false, message: '当前平台不支持微信登录' }
         // #endif
 
+        // #ifdef APP-PLUS
         try {
-            // 1. 获取微信登录授权码（code）
-            const loginRes = await uni.login({
-                provider: 'weixin'
+            // 1. 获取 OAuth 服务列表
+            const oauthRes = await new Promise((resolve, reject) => {
+                plus.oauth.getServices((services) => {
+                    resolve(services)
+                }, (error) => {
+                    reject(error)
+                })
             })
 
-            console.log('微信登录响应:', loginRes)
+            // 2. 查找微信登录服务
+            const wechatService = oauthRes.find(service => service.id === 'weixin')
+            
+            if (!wechatService) {
+                throw new Error('未找到微信登录服务，请确保已安装微信客户端')
+            }
 
-            if (!loginRes.code) {
+            // 3. 调用微信登录
+            const authResult = await new Promise((resolve, reject) => {
+                wechatService.login((result) => {
+                    resolve(result)
+                }, (error) => {
+                    reject(error)
+                })
+            })
+
+            console.log('微信登录结果:', authResult)
+
+            if (!authResult.code) {
                 throw new Error('获取微信授权码失败')
             }
 
-            // 2. 获取用户信息（可选，需要用户授权）
+            // 4. 获取用户信息（可选）
             let userInfo = null
             try {
-                const userRes = await uni.getUserInfo({
-                    provider: 'weixin'
+                const userRes = await new Promise((resolve, reject) => {
+                    wechatService.getUserInfo((result) => {
+                        resolve(result)
+                    }, (error) => {
+                        reject(error)
+                    })
                 })
-                userInfo = userRes.userInfo
+                userInfo = userRes
+                console.log('微信用户信息:', userInfo)
             } catch (e) {
-                console.log('用户拒绝授权获取信息')
+                console.log('获取微信用户信息失败:', e.message)
             }
 
-            // 3. 发送 code 到后端换取 token
+            // 5. 发送 code 到后端换取 token
             const res = await uni.request({
                 url: `${API_BASE}/api/wechat/login`,
                 method: 'POST',
                 data: {
-                    code: loginRes.code,
+                    code: authResult.code,
                     userInfo: userInfo
                 }
             })
@@ -98,7 +147,7 @@ class WechatAuth {
                 throw new Error(res.data.error)
             }
 
-            // 4. 保存 token
+            // 6. 保存 token
             if (res.data.token) {
                 uni.setStorageSync('token', res.data.token)
                 uni.setStorageSync('userInfo', res.data.user)
@@ -119,6 +168,7 @@ class WechatAuth {
             })
             return { success: false, message: error.message }
         }
+        // #endif
     }
 
     /**
@@ -133,9 +183,30 @@ class WechatAuth {
             return { success: false }
         }
 
+        // #ifdef APP-PLUS
         try {
-            const loginRes = await uni.login({
-                provider: 'weixin'
+            // 1. 获取 OAuth 服务
+            const oauthRes = await new Promise((resolve, reject) => {
+                plus.oauth.getServices((services) => {
+                    resolve(services)
+                }, (error) => {
+                    reject(error)
+                })
+            })
+
+            const wechatService = oauthRes.find(service => service.id === 'weixin')
+            
+            if (!wechatService) {
+                throw new Error('未找到微信登录服务')
+            }
+
+            // 2. 调用微信登录获取 code
+            const authResult = await new Promise((resolve, reject) => {
+                wechatService.login((result) => {
+                    resolve(result)
+                }, (error) => {
+                    reject(error)
+                })
             })
 
             const token = uni.getStorageSync('token')
@@ -146,7 +217,7 @@ class WechatAuth {
                     'Authorization': `Bearer ${token}`
                 },
                 data: {
-                    code: loginRes.code
+                    code: authResult.code
                 }
             })
 
@@ -165,6 +236,15 @@ class WechatAuth {
             })
             return { success: false, message: error.message }
         }
+        // #endif
+
+        // #ifndef APP-PLUS
+        uni.showToast({
+            title: '当前平台不支持',
+            icon: 'none'
+        })
+        return { success: false }
+        // #endif
     }
 
     /**
@@ -234,39 +314,3 @@ class WechatAuth {
 
 // 导出单例
 export const wechatAuth = new WechatAuth()
-
-/**
- * 微信登录功能说明：
- * 
- * 【已实现功能】
- * 1. 微信一键登录 - 新用户自动创建账号
- * 2. 账号绑定 - 已有账号密码用户可在个人中心绑定微信
- * 3. 账号解绑 - 已绑定用户可解绑微信（需先设置密码）
- * 4. 双登录方式 - 绑定后可用微信或账号密码登录同一账号
- * 
- * 【用户场景】
- * 场景1：新用户微信登录
- *    - 直接创建新账号，自动生成 wx_ 开头的用户名
- *    - 提示用户可以在个人中心绑定已有账号
- * 
- * 场景2：已有账号密码用户绑定微信
- *    - 登录后进入个人中心
- *    - 点击"绑定微信"按钮
- *    - 授权后实现微信登录同一账号
- * 
- * 场景3：解绑微信
- *    - 必须先设置密码才能解绑
- *    - 解绑后只能用账号密码登录
- * 
- * 【数据库字段】
- *    - wechat_openid: 微信用户唯一标识
- *    - wechat_unionid: 微信开放平台唯一标识
- *    - wechat_nickname: 微信昵称
- *    - wechat_avatar: 微信头像
- *    - login_type: 登录方式（password/wechat）
- *    - unionid: 微信开放平台唯一标识（多应用互通）
- *    - nickname: 微信昵称
- *    - avatar: 微信头像
- *    - gender: 性别
- *    - city/province/country: 地区信息
- */
