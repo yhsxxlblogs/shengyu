@@ -121,8 +121,19 @@
         </view>
         
         <view class="menu-section">
-          <text class="menu-title">账号绑定</text>
-          
+          <text class="menu-title">账号安全</text>
+
+          <view class="menu-item" @click="goToSetPassword">
+            <view class="menu-icon-wrapper password-bg">
+              <svg-icon name="lock" :size="28" color="#FFFFFF" />
+            </view>
+            <text class="menu-text">设置密码</text>
+            <view class="bind-status">
+              <text class="bind-status-text" :class="{ 'bound': hasPassword }">{{ hasPassword ? '已设置' : '未设置' }}</text>
+              <svg-icon name="arrow-right" :size="20" color="#CCCCCC" />
+            </view>
+          </view>
+
           <view class="menu-item" @click="handleWechatBind">
             <view class="menu-icon-wrapper wechat-bg">
               <svg-icon name="message" :size="28" color="#FFFFFF" />
@@ -184,7 +195,8 @@ export default {
       error: '',
       isLoggedIn: false,
       wechatBound: false,
-      wechatInfo: null
+      wechatInfo: null,
+      hasPassword: false
     };
   },
   onLoad() {
@@ -253,7 +265,10 @@ export default {
               following_count: statsRes.data?.stats?.following_count || 0,
               follower_count: statsRes.data?.stats?.follower_count || 0
             };
-            
+
+            // 检查是否已设置密码
+            this.hasPassword = !!userRes.data.user.hasPassword || false;
+
             uni.setStorageSync('user', this.user);
           }
         } catch (error) {
@@ -343,6 +358,14 @@ export default {
     },
     settings() {
       uni.showToast({ title: '设置', icon: 'none' });
+    },
+    goToSetPassword() {
+      const token = uni.getStorageSync('token');
+      if (!token) {
+        uni.showToast({ title: '请先登录', icon: 'none' });
+        return;
+      }
+      uni.navigateTo({ url: '/pages/set-password/set-password' });
     },
     about() {
       uni.navigateTo({ url: '/pages/about/about' });
@@ -891,6 +914,7 @@ export default {
 .settings-bg { background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); }
 .about-bg { background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); }
 .wechat-bg { background: linear-gradient(135deg, #07C160 0%, #10B981 100%); }
+.password-bg { background: linear-gradient(135deg, #FF9A9E 0%, #FF6B9D 100%); }
 
 /* 绑定状态 */
 .bind-status {

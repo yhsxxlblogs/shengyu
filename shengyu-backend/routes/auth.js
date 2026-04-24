@@ -183,10 +183,10 @@ router.get('/user', (req, res) => {
   
   try {
     const decoded = jwt.verify(token, 'secret_key');
-    db.query('SELECT id, username, email, avatar, nickname, wechat_nickname, wechat_avatar, wechat_openid FROM users WHERE id = ?', [decoded.id], (err, results) => {
+    db.query('SELECT id, username, email, avatar, nickname, password, wechat_nickname, wechat_avatar, wechat_openid, login_type FROM users WHERE id = ?', [decoded.id], (err, results) => {
       if (err) return res.status(500).json({ error: '服务器错误' });
       if (results.length === 0) return res.status(404).json({ error: '用户不存在' });
-      
+
       const user = results[0];
       // 合并微信信息
       const userResponse = {
@@ -195,9 +195,14 @@ router.get('/user', (req, res) => {
         email: user.email,
         avatar: user.avatar || user.wechat_avatar,
         nickname: user.nickname || user.wechat_nickname,
-        isWechatBound: !!user.wechat_openid
+        isWechatBound: !!user.wechat_openid,
+        login_type: user.login_type,
+        wechat_nickname: user.wechat_nickname,
+        wechat_avatar: user.wechat_avatar,
+        wechat_openid: user.wechat_openid,
+        hasPassword: !!user.password
       };
-      
+
       res.status(200).json({ user: userResponse });
     });
   } catch (error) {
@@ -411,6 +416,102 @@ router.get('/user/:id', (req, res) => {
         res.status(500).json({ error: '服务器错误' });
       });
   });
+});
+
+// 设置密码（首次设置）
+router.post('/set-password', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: '未授权' });
+
+  try {
+    const decoded = jwt.verify(token, 'secret_key');
+    const userId = decoded.id;
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: '密码长度至少6位' });
+    }
+
+    // 检查用户是否已有密码
+    db.query('SELECT password FROM users WHERE id = ?', [userId], (err, results) => {
+      if (err) {
+        console.error('查询用户失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      if (results.length === 0) {
+        return res.status(404).json({ error: '用户不存在' });
+      }
+      if (results[0].password) {
+        return res.status(400).json({ error: '您已设置过密码，请使用修改密码功能' });
+      }
+
+      // 加密并设置密码
+      const hashedPassword = bcrypt.hashSync(password, 10);
+      db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId], (err) => {
+        if (err) {
+          console.error('设置密码失败:', err);
+          return res.status(500).json({ error: '服务器错误' });
+        }
+        res.status(200).json({ message: '密码设置成功' });
+      });
+    });
+  } catch (error) {
+    console.error('设置密码错误:', error);
+    res.status(401).json({ error: '无效的token' });
+  }
+});
+
+// 修改密码
+router.post('/change-password', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: '未授权' });
+
+  try {
+    const decoded = jwt.verify(token, 'secret_key');
+    const userId = decoded.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: '请填写完整信息' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: '新密码长度至少6位' });
+    }
+
+    // 验证当前密码
+    db.query('SELECT password FROM users WHERE id = ?', [userId], (err, results) => {
+      if (err) {
+        console.error('查询用户失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      if (results.length === 0) {
+        return res.status(404).json({ error: '用户不存在' });
+      }
+
+      const user = results[0];
+      if (!user.password) {
+        return res.status(400).json({ error: '您尚未设置密码，请使用设置密码功能' });
+      }
+
+      // 验证当前密码
+      if (!bcrypt.compareSync(currentPassword, user.password)) {
+        return res.status(400).json({ error: '当前密码错误' });
+      }
+
+      // 加密并更新新密码
+      const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
+      db.query('UPDATE users SET password = ? WHERE id = ?', [hashedNewPassword, userId], (err) => {
+        if (err) {
+          console.error('修改密码失败:', err);
+          return res.status(500).json({ error: '服务器错误' });
+        }
+        res.status(200).json({ message: '密码修改成功' });
+      });
+    });
+  } catch (error) {
+    console.error('修改密码错误:', error);
+    res.status(401).json({ error: '无效的token' });
+  }
 });
 
 module.exports = router;

@@ -167,7 +167,7 @@ export default {
   flex-direction: column;
   align-items: center;
   overflow: hidden; /* 禁止滚动 */
-  padding: 60rpx 40rpx 40rpx;
+  padding: 40rpx 40rpx 40rpx;
   box-sizing: border-box;
 }
 
@@ -178,8 +178,8 @@ export default {
   align-items: center;
   width: 100%;
   max-width: 560rpx;
-  gap: 32rpx; /* 使用gap控制间距 */
-  margin-top: 40rpx; /* 顶部留白 */
+  gap: 24rpx; /* 使用gap控制间距 */
+  margin-top: 120rpx; /* 顶部留白增大，主体下移 */
 }
 
 /* 头部区域 */

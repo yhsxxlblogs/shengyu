@@ -1572,11 +1572,11 @@ export default {
     async loadProfileData() {
       this.profileLoading = true
       const token = uni.getStorageSync('token')
-      const user = uni.getStorageSync('user')
+      const userInfo = uni.getStorageSync('userInfo') || uni.getStorageSync('user')
       this.isLoggedIn = !!token
 
-      if (token && user) {
-        this.userInfo = user
+      if (token && userInfo) {
+        this.userInfo = userInfo
         try {
           const userRes = await uni.request({
             url: 'http://shengyu.supersyh.xyz/api/auth/user',
@@ -1589,12 +1589,22 @@ export default {
               method: 'GET',
               header: { 'Authorization': `Bearer ${token}` }
             })
+            const userData = userRes.data.user
+            // 优先使用微信昵称和头像（如果是微信登录用户）
             this.userInfo = {
-              ...userRes.data.user,
+              ...userData,
+              username: userData.username,
+              nickname: userData.nickname || userData.wechat_nickname || userData.username,
+              avatar: userData.avatar || userData.wechat_avatar,
               posts: statsRes.data?.stats?.posts || 0,
               likes: statsRes.data?.stats?.likes || 0,
-              comments: statsRes.data?.stats?.comments || 0
+              comments: statsRes.data?.stats?.comments || 0,
+              login_type: userData.login_type,
+              wechat_openid: userData.wechat_openid,
+              wechat_nickname: userData.wechat_nickname,
+              wechat_avatar: userData.wechat_avatar
             }
+            uni.setStorageSync('userInfo', this.userInfo)
             uni.setStorageSync('user', this.userInfo)
             this.userStats = {
               posts: this.userInfo.posts,

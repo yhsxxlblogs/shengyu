@@ -224,8 +224,24 @@ export default {
     async afterWechatLogin(result) {
       // 保存登录状态
       uni.setStorageSync('isLoggedIn', true);
+      uni.setStorageSync('token', result.token);
       uni.setStorageSync('userId', result.user.id);
-      uni.setStorageSync('userAvatar', result.user.avatar || '');
+      uni.setStorageSync('userAvatar', result.user.avatar || result.user.wechat_avatar || '');
+      
+      // 保存完整用户信息（包括微信信息）
+      const userInfo = {
+        id: result.user.id,
+        username: result.user.username,
+        nickname: result.user.nickname || result.user.wechat_nickname,
+        avatar: result.user.avatar || result.user.wechat_avatar,
+        email: result.user.email,
+        wechat_openid: result.user.wechat_openid,
+        wechat_nickname: result.user.wechat_nickname,
+        wechat_avatar: result.user.wechat_avatar,
+        login_type: result.user.login_type || 'wechat',
+        isNewUser: result.isNewUser
+      };
+      uni.setStorageSync('userInfo', userInfo);
       
       // 移除游客模式标记
       uni.removeStorageSync('guest');
@@ -268,7 +284,7 @@ export default {
   flex-direction: column;
   align-items: center;
   overflow: hidden; /* 禁止滚动 */
-  padding: 60rpx 40rpx 40rpx;
+  padding: 40rpx 40rpx 40rpx;
   box-sizing: border-box;
 }
 
@@ -279,8 +295,8 @@ export default {
   align-items: center;
   width: 100%;
   max-width: 560rpx;
-  gap: 32rpx; /* 使用gap控制间距 */
-  margin-top: 40rpx; /* 顶部留白 */
+  gap: 24rpx; /* 使用gap控制间距 */
+  margin-top: 100rpx; /* 顶部留白增大，主体下移 */
 }
 
 /* 头部区域 */
@@ -448,9 +464,9 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24rpx;
+  gap: 40rpx; /* 增加间距 */
   margin-top: auto; /* 推到底部 */
-  padding-bottom: 20rpx;
+  padding-bottom: 40rpx;
 }
 
 .footer-section {
@@ -492,7 +508,7 @@ export default {
 /* 第三方登录 */
 .third-party-login {
   width: 100%;
-  margin-top: 32rpx;
+  margin-top: 80rpx; /* 增加与其他登录方式的距离 */
 }
 
 .divider {
