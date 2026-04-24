@@ -523,7 +523,7 @@ app.use('/api/wechat', wechatRoutes);
 
 async function processScheduledNotifications() {
   try {
-    const [results] = await db.query(
+    const [results] = await db.promiseQuery(
       `UPDATE notifications
        SET status = 'active'
        WHERE status = 'pending'
@@ -549,7 +549,7 @@ async function updatePopularPostsCache() {
       LIMIT 10
     `;
     
-    const [results] = await db.query(query);
+    const [results] = await db.promiseQuery(query);
     
     // 将热门帖子存入Redis
     // 使用随机过期时间防止缓存雪崩（5-10分钟）
