@@ -1,17 +1,5 @@
 <template>
   <view class="chat-container page-enter">
-    <view class="header">
-      <text class="back-icon" @click="goBack">‹</text>
-      <view class="header-title-wrapper">
-        <text class="header-title">{{ username }}</text>
-        <view v-if="wsConnected" class="ws-status online"></view>
-        <view v-else class="ws-status offline"></view>
-      </view>
-      <view class="header-right">
-        <text class="clear-text" @click="showClearDialog">清空</text>
-      </view>
-    </view>
-
     <view v-if="showClearModal" class="modal-overlay" @click="closeClearModal">
       <view class="modal-content" @click.stop>
         <view class="modal-header">
@@ -689,69 +677,6 @@ export default {
   height: 100vh;
   background: linear-gradient(135deg, #FFF5F7 0%, #FFF0F3 100%);
   position: relative;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12rpx 24rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
-  height: 70rpx;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-}
-
-.back-icon {
-  font-size: 40rpx;
-  color: #FFFFFF;
-  width: 50rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-title-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.header-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #FFFFFF;
-}
-
-.header-right {
-  width: 100rpx;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 16rpx;
-}
-
-.ws-status {
-  width: 14rpx;
-  height: 14rpx;
-  border-radius: 50%;
-}
-
-.ws-status.online {
-  background: #4CAF50;
-  box-shadow: 0 0 6rpx #4CAF50;
-}
-
-.ws-status.offline {
-  background: #999;
-}
-
-.clear-text {
-  font-size: 28rpx;
-  color: #FFFFFF;
 }
 
 .modal-overlay {

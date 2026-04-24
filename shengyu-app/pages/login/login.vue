@@ -488,26 +488,26 @@ export default {
   gap: 6rpx;
   padding: 16rpx 40rpx;
   border-radius: 16rpx;
-  background: rgba(7, 193, 96, 0.06);
-  border: 1rpx solid rgba(7, 193, 96, 0.15);
+  background: rgba(129, 199, 132, 0.08);
+  border: 1rpx solid rgba(129, 199, 132, 0.2);
   transition: all 0.3s ease;
 }
 
 .third-party-btn:active {
   transform: scale(0.98);
-  background: rgba(7, 193, 96, 0.1);
-  border-color: rgba(7, 193, 96, 0.25);
+  background: rgba(129, 199, 132, 0.12);
+  border-color: rgba(129, 199, 132, 0.3);
 }
 
 .wechat-icon {
   width: 56rpx;
   height: 56rpx;
-  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+  background: linear-gradient(135deg, #81C784 0%, #A5D6A7 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2rpx 8rpx rgba(76, 175, 80, 0.2);
+  box-shadow: 0 2rpx 8rpx rgba(129, 199, 132, 0.15);
 }
 
 .wechat-img {
@@ -517,7 +517,7 @@ export default {
 
 .third-party-text {
   font-size: 24rpx;
-  color: #4CAF50;
+  color: #66BB6A;
   font-weight: 500;
 }
 </style>

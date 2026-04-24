@@ -1,14 +1,5 @@
 <template>
   <view class="messages-container page-enter">
-    <view class="header">
-      <text class="back-icon" @click="goBack">‹</text>
-      <text class="header-title">私信</text>
-      <view class="header-right">
-        <view v-if="wsConnected" class="ws-status online"></view>
-        <view v-else class="ws-status offline"></view>
-      </view>
-    </view>
-
     <view class="messages-list">
       <view v-if="loading" class="loading">
         <text>加载中...</text>
@@ -326,47 +317,6 @@ export default {
 .messages-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #FFF5F7 0%, #FFF0F3 100%);
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 80rpx 30rpx 20rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
-}
-
-.back-icon {
-  font-size: 48rpx;
-  color: #FFFFFF;
-  width: 60rpx;
-}
-
-.header-title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #FFFFFF;
-}
-
-.header-right {
-  width: 60rpx;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.ws-status {
-  width: 16rpx;
-  height: 16rpx;
-  border-radius: 50%;
-}
-
-.ws-status.online {
-  background: #4CAF50;
-  box-shadow: 0 0 8rpx #4CAF50;
-}
-
-.ws-status.offline {
-  background: #999;
 }
 
 .messages-list {

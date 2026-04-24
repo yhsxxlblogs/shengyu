@@ -1,12 +1,5 @@
 <template>
   <view class="follows-container page-enter">
-    <!-- 标题栏 -->
-    <view class="header">
-      <text class="back-icon" @click="goBack">‹</text>
-      <text class="header-title">{{ title }}</text>
-      <view class="header-right"></view>
-    </view>
-
     <!-- 用户列表 -->
     <view class="user-list">
       <view v-if="loading" class="loading">
@@ -189,37 +182,6 @@ export default {
 .follows-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #FFF5F7 0%, #FFF0F3 100%);
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24rpx 32rpx;
-  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FF9A9E 100%);
-  background-size: 200% 200%;
-  animation: gradient-flow 5s ease infinite;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 8rpx 24rpx rgba(255, 154, 158, 0.25);
-}
-
-.back-icon {
-  font-size: 48rpx;
-  color: #FFFFFF;
-  font-weight: bold;
-  padding: 0 20rpx;
-}
-
-.header-title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #FFFFFF;
-}
-
-.header-right {
-  width: 60rpx;
 }
 
 .user-list {

@@ -18,18 +18,18 @@
         <button @click="getPosts" class="retry-btn">重试</button>
       </view>
       <view v-else class="post-list-content">
-        <view class="post-item" v-for="(post, index) in posts" :key="post.id" @click="goPostDetail(post.id)" :style="{ animationDelay: index * 0.05 + 's' }">
+        <view class="post-item" v-for="(post, index) in posts" :key="post.id" :style="{ animationDelay: index * 0.05 + 's' }">
           <view class="post-header">
-            <image :src="getImageUrl(post.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.username || 'User')}&background=FF69B4&color=fff&size=60`" class="avatar" mode="aspectFit"></image>
-            <view class="user-info">
+            <image @click.stop="goToUserProfile(post.user_id)" :src="getImageUrl(post.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.username || 'User')}&background=FF69B4&color=fff&size=60`" class="avatar" mode="aspectFit"></image>
+            <view class="user-info" @click.stop="goToUserProfile(post.user_id)">
               <text class="username">{{ post.username }}</text>
               <text class="post-time">{{ formatTime(post.created_at) }}</text>
             </view>
           </view>
-          <view class="post-content">
+          <view class="post-content" @click="goPostDetail(post.id)">
             <text class="content">{{ post.content }}</text>
             <image v-if="post.image_url" :src="getImageUrl(post.image_url)" class="post-image" mode="aspectFit"></image>
-            <view v-if="post.sound_url" class="audio-container" @click="playSound(post.sound_url)">
+            <view v-if="post.sound_url" class="audio-container" @click.stop="playSound(post.sound_url)">
               <text class="audio-icon">🎵</text>
               <text class="audio-text">点击播放声音</text>
             </view>
@@ -336,6 +336,10 @@ export default {
     goPostDetail(postId) {
       // 跳转到帖子详情页面
       uni.navigateTo({ url: `/pages/post-detail/post-detail?id=${postId}` });
+    },
+    goToUserProfile(userId) {
+      // 跳转到用户个人主页
+      uni.navigateTo({ url: `/pages/user-profile/user-profile?id=${userId}` });
     },
     getImageUrl
   }
