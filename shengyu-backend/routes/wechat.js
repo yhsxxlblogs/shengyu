@@ -66,7 +66,14 @@ const isWechatConfigValid = () => {
 router.post('/login', async (req, res) => {
     try {
         // 检查微信配置
+        console.log('微信配置检查:', { 
+            appId: WECHAT_CONFIG.appId, 
+            hasAppId: !!WECHAT_CONFIG.appId,
+            hasAppSecret: !!WECHAT_CONFIG.appSecret 
+        });
+        
         if (!isWechatConfigValid()) {
+            console.error('微信配置无效');
             return res.status(503).json({ 
                 error: '微信登录未配置',
                 message: '服务器未配置微信登录功能，请联系管理员'
@@ -88,9 +95,11 @@ router.post('/login', async (req, res) => {
         console.log('微信 token 响应:', tokenRes);
 
         if (tokenRes.errcode) {
+            console.error('微信授权失败:', tokenRes.errcode, tokenRes.errmsg);
             return res.status(400).json({ 
                 error: '微信授权失败', 
-                message: tokenRes.errmsg 
+                message: tokenRes.errmsg,
+                errcode: tokenRes.errcode
             });
         }
 
