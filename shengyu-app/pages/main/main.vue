@@ -1,4 +1,4 @@
-﻿﻿﻿<template>
+﻿﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -643,10 +643,17 @@ export default {
     this.checkNotifications()
     // 如果当前在私信标签页，强制重新加载私信列表以修复样式
     if (this.communityTab === 'messages') {
-      this.messagePage = 1
-      this.hasMoreMessages = true
-      this.messageList = []
-      this.loadMessageList()
+      // 使用 nextTick 确保 DOM 更新后再加载数据
+      this.$nextTick(() => {
+        this.messagePage = 1
+        this.hasMoreMessages = true
+        this.messageScrollTop = 0
+        this.messageList = []
+        // 延迟加载确保 swiper 渲染完成
+        setTimeout(() => {
+          this.loadMessageList()
+        }, 100)
+      })
     }
     // 轮播图自动滚动会在数据加载完成后自动启动
   },
@@ -2617,11 +2624,17 @@ export default {
   flex: 1;
   width: 100%;
   height: 100%;
+  /* 强制硬件加速，防止渲染问题 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .community-swiper-item {
   width: 100%;
   height: 100%;
+  /* 强制硬件加速 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* 社区面板 - 使用 flex 布局确保高度正确计算 */
