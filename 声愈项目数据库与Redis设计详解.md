@@ -57,12 +57,22 @@ const db = mysql.createPool({
 ```sql
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(50) NOT NULL,
-  email VARCHAR(100) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
+  username VARCHAR(50) NULL,
+  email VARCHAR(100) NULL UNIQUE,
+  password VARCHAR(255) NULL,
   avatar VARCHAR(255),
+  nickname VARCHAR(100),
+  bio TEXT,
+  is_admin BOOLEAN DEFAULT FALSE,
+  login_type ENUM('password', 'wechat') DEFAULT 'password',
+  wechat_openid VARCHAR(64) UNIQUE,
+  wechat_unionid VARCHAR(64),
+  wechat_nickname VARCHAR(100),
+  wechat_avatar VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_email (email),
+  INDEX idx_wechat_openid (wechat_openid),
   INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
@@ -73,8 +83,21 @@ CREATE TABLE IF NOT EXISTS users (
 |------|------|----------|
 | `password VARCHAR(255)` | 存储bcrypt加密后的密码（60字符），预留空间 | 支持未来更强的加密算法 |
 | `email UNIQUE` | 邮箱唯一约束 | 快速查找用户，防止重复注册 |
+| `login_type` | 登录方式：password或wechat | 支持多种登录方式 |
+| `wechat_openid` | 微信用户唯一标识 | 微信登录关联 |
+| `wechat_unionid` | 微信开放平台统一标识 | 多应用用户打通 |
+| `wechat_nickname` | 微信昵称 | 快速展示用户信息 |
+| `wechat_avatar` | 微信头像URL | 快速展示用户头像 |
 | `idx_email` | 邮箱索引 | 加速登录查询 |
+| `idx_wechat_openid` | 微信openid索引 | 加速微信登录查询 |
 | `idx_created_at` | 时间索引 | 加速用户排序查询 |
+
+**微信登录设计说明：**
+- `login_type` 字段区分用户注册方式（密码/微信）
+- `wechat_openid` 用于唯一标识微信用户，建立索引加速查询
+- `wechat_unionid` 用于微信开放平台多应用用户打通
+- 支持账号绑定：已有账号可绑定微信，实现多种登录方式
+- 微信相关字段允许NULL，兼容纯密码注册用户
 
 **统计查询（通过视图）：**
 ```sql

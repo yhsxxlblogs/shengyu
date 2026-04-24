@@ -18,6 +18,7 @@ description: "声愈项目的技术文档和开发指南。包含项目概述、
 5. **后台管理** - 轮播图管理、通知发布、内容审核
 6. **二维码扫描** - 支持扫描二维码，跳转链接或识别内容
 7. **热门推荐** - 首页展示高热度帖子（按点赞数+评论数排序），支持Redis缓存和定时更新
+8. **微信登录** - 支持微信OAuth登录，账号绑定/解绑功能
 
 ## 技术栈
 
@@ -146,6 +147,13 @@ shengyu-backend/
 | system_sounds | 系统声音表 | id, type_id, emotion, sound_url, duration |
 | banners | 轮播图表 | id, title, image_url, link_url, sort_order, is_active |
 
+**用户表微信登录字段：**
+- `login_type`: ENUM('password', 'wechat') - 登录方式
+- `wechat_openid`: VARCHAR(64) UNIQUE - 微信用户唯一标识
+- `wechat_unionid`: VARCHAR(64) - 微信开放平台统一标识
+- `wechat_nickname`: VARCHAR(100) - 微信昵称
+- `wechat_avatar`: VARCHAR(255) - 微信头像URL
+
 ## API接口设计
 
 ### 认证模块 (/api/auth)
@@ -209,6 +217,31 @@ shengyu-backend/
 | GET | /messages/unread/count | 未读消息数 |
 | GET | /messages/limit/:userId | 私信限制状态 |
 | DELETE | /messages/clear/:userId | 清空聊天记录 |
+
+### 微信登录模块 (/api/wechat)
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | /login | 微信登录（获取code后调用） |
+| POST | /bind | 绑定微信到现有账号（需登录） |
+| POST | /unbind | 解绑微信（需登录） |
+| GET | /status | 获取微信绑定状态（需登录） |
+| GET | /config | 获取微信配置（前端用） |
+
+**微信登录流程**：
+1. 前端调用 `plus.oauth.getServices` 获取微信服务
+2. 调用 `wechatService.login()` 拉起微信授权
+3. 用户确认后返回 `code` 和 `state`
+4. 前端发送 `code` 到后端 `/api/wechat/login`
+5. 后端用 `code` 换取 `access_token` 和 `openid`
+6. 后端获取微信用户信息，创建/更新用户
+7. 后端返回 JWT token，前端保存完成登录
+
+**微信绑定功能**：
+- 已登录用户可在"我的"页面绑定微信账号
+- 绑定后支持使用微信快速登录
+- 支持解绑微信（保留账号密码登录方式）
+- 一个微信只能绑定一个账号
 
 ## WebSocket实时通信
 
@@ -345,6 +378,7 @@ await redis.setAsync('popular:posts', JSON.stringify(results), cacheTTL);
 9. 扫码功能安卓兼容性优化（已完成：添加权限检查、生命周期管理）
 10. 轮播图UI优化（已完成：圆角24rpx，中心放大1.08倍，阴影效果）
 11. 热门推荐UI优化（已完成：隐藏帖子图片，突出文字内容）
+12. 微信登录功能（已完成：支持OAuth登录和账号绑定/解绑）
 
 ## 系统运行流程
 
