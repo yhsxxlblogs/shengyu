@@ -211,13 +211,13 @@ router.get('/validate', (req, res) => {
 // 获取用户信息
 router.get('/user', (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: '未授权' });
+  if (!token) return res.status(401).json({ code: 401, error: '未授权' });
   
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
     db.query('SELECT id, username, email, avatar, nickname, password, wechat_nickname, wechat_avatar, wechat_openid, login_type, is_admin FROM users WHERE id = ?', [decoded.id], (err, results) => {
-      if (err) return res.status(500).json({ error: '服务器错误' });
-      if (results.length === 0) return res.status(404).json({ error: '用户不存在' });
+      if (err) return res.status(500).json({ code: 500, error: '服务器错误' });
+      if (results.length === 0) return res.status(404).json({ code: 404, error: '用户不存在' });
 
       const user = results[0];
       // 合并微信信息
@@ -236,10 +236,10 @@ router.get('/user', (req, res) => {
         is_admin: user.is_admin
       };
 
-      res.status(200).json({ user: userResponse });
+      res.status(200).json({ code: 200, user: userResponse });
     });
   } catch (error) {
-    res.status(401).json({ error: '无效的token' });
+    res.status(401).json({ code: 401, error: '无效的token' });
   }
 });
 
@@ -442,6 +442,7 @@ router.get('/user/:id', (req, res) => {
     Promise.all([getUserStats, getUserAudios, getUserPosts, getUserComments])
       .then(([stats, audios, userPosts, userComments]) => {
         res.status(200).json({
+          code: 200,
           user: {
             ...user,
             posts: stats.posts_count,
@@ -458,7 +459,7 @@ router.get('/user/:id', (req, res) => {
       })
       .catch(err => {
         console.error('获取用户公开信息失败:', err);
-        res.status(500).json({ error: '服务器错误' });
+        res.status(500).json({ code: 500, error: '服务器错误' });
       });
   });
 });

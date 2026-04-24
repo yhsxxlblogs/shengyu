@@ -87,7 +87,7 @@ router.get('/list', optionalAuth, (req, res) => {
         return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ code: 200, data: results });
+      res.status(200).json({ code: 200, posts: results });
     }
   );
 });
@@ -282,7 +282,7 @@ router.get('/comments/:post_id', (req, res) => {
         return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ code: 200, data: results });
+      res.status(200).json({ code: 200, comments: results });
     }
   );
 });
@@ -316,7 +316,7 @@ router.get('/my', authenticateToken, (req, res) => {
         return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ code: 200, data: results });
+      res.status(200).json({ code: 200, posts: results });
     }
   );
 });
@@ -352,7 +352,7 @@ router.get('/likes', authenticateToken, (req, res) => {
         return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ code: 200, data: results });
+      res.status(200).json({ code: 200, posts: results });
     }
   );
 });

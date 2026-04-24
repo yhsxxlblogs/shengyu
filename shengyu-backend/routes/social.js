@@ -260,7 +260,7 @@ router.get('/messages', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取消息列表失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
       // 按会话分组
@@ -284,7 +284,7 @@ router.get('/messages', authenticateToken, (req, res) => {
         }
       });
 
-      res.status(200).json({ conversations: Object.values(conversations) });
+      res.status(200).json({ code: 200, messages: Object.values(conversations) });
     }
   );
 });
@@ -301,7 +301,7 @@ router.get('/messages/:userId', authenticateToken, (req, res) => {
   const offset = (pageNum - 1) * limitNum;
 
   if (isNaN(pageNum) || pageNum < 1) {
-    return res.status(400).json({ error: '无效的分页参数' });
+    return res.status(400).json({ code: 400, error: '无效的分页参数' });
   }
 
   db.query(
@@ -316,10 +316,10 @@ router.get('/messages/:userId', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取聊天记录失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ messages: results.reverse() });
+      res.status(200).json({ code: 200, messages: results.reverse() });
     }
   );
 });
@@ -334,10 +334,10 @@ router.get('/messages/unread/count', authenticateToken, (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取未读消息数失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ count: results[0].count });
+      res.status(200).json({ code: 200, count: results[0].count });
     }
   );
 });
