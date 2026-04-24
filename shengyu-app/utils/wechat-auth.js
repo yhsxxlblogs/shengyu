@@ -1,7 +1,9 @@
 /**
  * 微信登录工具类
  * 基于 uni-app 的微信登录功能
- * 文档参考：https://uniapp.dcloud.net.cn/tutorial/app-oauth-weixin.html
+ * 文档参考：
+ * - https://uniapp.dcloud.net.cn/tutorial/app-oauth-weixin.html
+ * - https://developers.weixin.qq.com/doc/oplatform/Mobile_App/WeChat_Login/Development_Guide.html
  */
 
 const BASE_URL = 'http://shengyu.supersyh.xyz'
@@ -28,31 +30,15 @@ class WechatAuth {
     }
 
     /**
-     * 检查微信是否已安装（仅APP端）
+     * 生成随机 state 防止 CSRF 攻击
      */
-    async isWechatInstalled() {
-        // #ifdef APP-PLUS
-        return new Promise((resolve) => {
-            uni.getProvider({
-                service: 'oauth',
-                success: (res) => {
-                    const hasWechat = res.provider.includes('weixin')
-                    resolve(hasWechat)
-                },
-                fail: () => {
-                    resolve(false)
-                }
-            })
-        })
-        // #endif
-        
-        // #ifndef APP-PLUS
-        return false
-        // #endif
+    generateState() {
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
     }
 
     /**
      * 微信登录 - APP端使用 plus.oauth API
+     * 根据微信官方文档实现完整的 OAuth2.0 流程
      */
     async login() {
         // 检查是否已配置
@@ -91,7 +77,7 @@ class WechatAuth {
                 plus.oauth.getServices((services) => {
                     resolve(services)
                 }, (error) => {
-                    reject(error)
+                    reject(new Error('获取OAuth服务失败: ' + error.message))
                 })
             })
 
@@ -102,22 +88,45 @@ class WechatAuth {
                 throw new Error('未找到微信登录服务，请确保已安装微信客户端')
             }
 
-            // 3. 调用微信登录
+            // 3. 配置授权参数
+            // scope: 必须设置为 snsapi_userinfo 才能获取用户信息
+            // state: 用于防止 CSRF 攻击
+            const state = this.generateState()
+            wechatService.scope = 'snsapi_userinfo'
+            wechatService.state = state
+
+            // 4. 调用微信登录
             const authResult = await new Promise((resolve, reject) => {
                 wechatService.login((result) => {
                     resolve(result)
                 }, (error) => {
-                    reject(error)
+                    // 处理微信登录错误码
+                    // ERR_AUTH_DENIED = -4（用户拒绝授权）
+                    // ERR_USER_CANCEL = -2（用户取消）
+                    let errorMsg = '微信登录失败'
+                    if (error.code === -4) {
+                        errorMsg = '用户拒绝授权'
+                    } else if (error.code === -2) {
+                        errorMsg = '用户取消登录'
+                    } else if (error.message) {
+                        errorMsg = error.message
+                    }
+                    reject(new Error(errorMsg))
                 })
             })
 
             console.log('微信登录结果:', authResult)
 
+            // 5. 验证 state 防止 CSRF 攻击
+            if (authResult.state !== state) {
+                throw new Error('安全验证失败，请重新登录')
+            }
+
             if (!authResult.code) {
                 throw new Error('获取微信授权码失败')
             }
 
-            // 4. 获取用户信息（可选）
+            // 6. 获取用户信息（使用 getUserInfo 方法）
             let userInfo = null
             try {
                 const userRes = await new Promise((resolve, reject) => {
@@ -131,15 +140,17 @@ class WechatAuth {
                 console.log('微信用户信息:', userInfo)
             } catch (e) {
                 console.log('获取微信用户信息失败:', e.message)
+                // 继续登录流程，用户信息可以从后端获取
             }
 
-            // 5. 发送 code 到后端换取 token
+            // 7. 发送 code 到后端换取 token
             const res = await uni.request({
                 url: `${API_BASE}/api/wechat/login`,
                 method: 'POST',
                 data: {
                     code: authResult.code,
-                    userInfo: userInfo
+                    userInfo: userInfo,
+                    state: state
                 }
             })
 
@@ -147,7 +158,7 @@ class WechatAuth {
                 throw new Error(res.data.error)
             }
 
-            // 6. 保存 token
+            // 8. 保存 token
             if (res.data.token) {
                 uni.setStorageSync('token', res.data.token)
                 uni.setStorageSync('userInfo', res.data.user)
@@ -164,7 +175,8 @@ class WechatAuth {
             console.error('微信登录错误:', error)
             uni.showToast({
                 title: error.message || '登录失败',
-                icon: 'none'
+                icon: 'none',
+                duration: 2000
             })
             return { success: false, message: error.message }
         }
@@ -200,14 +212,30 @@ class WechatAuth {
                 throw new Error('未找到微信登录服务')
             }
 
-            // 2. 调用微信登录获取 code
+            // 2. 配置授权参数
+            const state = this.generateState()
+            wechatService.scope = 'snsapi_userinfo'
+            wechatService.state = state
+
+            // 3. 调用微信登录获取 code
             const authResult = await new Promise((resolve, reject) => {
                 wechatService.login((result) => {
                     resolve(result)
                 }, (error) => {
-                    reject(error)
+                    let errorMsg = '微信登录失败'
+                    if (error.code === -4) {
+                        errorMsg = '用户拒绝授权'
+                    } else if (error.code === -2) {
+                        errorMsg = '用户取消登录'
+                    }
+                    reject(new Error(errorMsg))
                 })
             })
+
+            // 4. 验证 state
+            if (authResult.state !== state) {
+                throw new Error('安全验证失败')
+            }
 
             const token = uni.getStorageSync('token')
             const res = await uni.request({
@@ -217,7 +245,8 @@ class WechatAuth {
                     'Authorization': `Bearer ${token}`
                 },
                 data: {
-                    code: authResult.code
+                    code: authResult.code,
+                    state: state
                 }
             })
 
