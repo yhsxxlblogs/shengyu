@@ -158,28 +158,28 @@ export default {
 </script>
 
 <style scoped>
-/* 页面容器 - 使用flex布局确保居中 */
+/* 页面容器 - 内容偏上布局 */
 .register-page {
   height: 100vh;
   height: 100dvh; /* 动态视口高度，适配移动端浏览器 */
   background: linear-gradient(180deg, #FFF0F5 0%, #FFF8FA 50%, #FFFFFF 100%);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   overflow: hidden; /* 禁止滚动 */
-  padding: 0 40rpx;
+  padding: 60rpx 40rpx 40rpx;
   box-sizing: border-box;
 }
 
-/* 注册容器 - 垂直居中 */
+/* 注册容器 - 内容偏上 */
 .register-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   width: 100%;
   max-width: 560rpx;
-  gap: 24rpx; /* 使用gap控制间距 */
+  gap: 32rpx; /* 使用gap控制间距 */
+  margin-top: 40rpx; /* 顶部留白 */
 }
 
 /* 头部区域 */
@@ -331,13 +331,14 @@ export default {
   to { transform: rotate(360deg); }
 }
 
-/* 底部区域 */
+/* 底部区域 - 推到底部 */
 .footer-section {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 8rpx;
-  margin-top: 8rpx;
+  margin-top: auto; /* 推到底部 */
+  padding-bottom: 20rpx;
 }
 
 .footer-text {
