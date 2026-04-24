@@ -82,11 +82,13 @@ router.use(requireAdmin);
 
 // 获取所有用户
 router.get('/users', (req, res) => {
+  console.log('[/admin/users] 收到请求');
   db.query('SELECT id, username, email, avatar, is_active, is_admin, created_at FROM users ORDER BY created_at DESC', (err, results) => {
     if (err) {
-      console.error('获取用户数据失败:', err);
-      return res.status(500).json({ code: 500, error: '服务器错误' });
+      console.error('[/admin/users] 获取用户数据失败:', err);
+      return res.status(500).json({ code: 500, error: '服务器错误', details: err.message });
     }
+    console.log('[/admin/users] 查询到', results.length, '个用户');
     
     // 为每个用户获取统计数据
     const users = results;
