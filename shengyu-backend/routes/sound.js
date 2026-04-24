@@ -399,7 +399,7 @@ router.get('/admin/categories', authenticateToken, (req, res) => {
       console.error('获取分类失败:', err);
       return res.status(500).json({ error: '服务器错误' });
     }
-    res.status(200).json({ categories: results });
+    res.status(200).json({ data: results });
   });
 });
 
@@ -455,7 +455,7 @@ router.get('/admin/animal-types', authenticateToken, (req, res) => {
       console.error('获取动物类型失败:', err);
       return res.status(500).json({ error: '服务器错误' });
     }
-    res.status(200).json({ animalTypes: results });
+    res.status(200).json({ data: results });
   });
 });
 
@@ -513,7 +513,7 @@ router.get('/admin/system-sounds', authenticateToken, (req, res) => {
         console.error('获取系统声音失败:', err);
         return res.status(500).json({ error: '服务器错误' });
       }
-      res.status(200).json({ sounds: results });
+      res.status(200).json({ data: results });
     }
   );
 });
@@ -584,7 +584,7 @@ router.get('/admin/user-sounds', authenticateToken, (req, res) => {
         console.error('获取用户声音失败:', err);
         return res.status(500).json({ error: '服务器错误' });
       }
-      res.status(200).json({ sounds: results });
+      res.status(200).json({ data: results });
     }
   );
 });

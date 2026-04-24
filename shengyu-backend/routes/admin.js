@@ -57,7 +57,7 @@ router.get('/users', (req, res) => {
     const userIds = users.map(u => u.id);
     
     if (userIds.length === 0) {
-      return res.status(200).json({ users: [] });
+      return res.status(200).json({ data: [] });
     }
     
     // 获取帖子数统计
@@ -74,7 +74,7 @@ router.get('/users', (req, res) => {
         postsResults.forEach(row => {
           postsCount[row.user_id] = row.count;
         });
-        
+
         // 获取声音数统计
         db.query(
           `SELECT user_id, COUNT(*) as count FROM sounds WHERE user_id IN (?) GROUP BY user_id`,
@@ -82,14 +82,14 @@ router.get('/users', (req, res) => {
           (err, soundsResults) => {
             if (err) {
               console.error('获取声音统计失败:', err);
-              return res.status(200).json({ users: results });
+              return res.status(200).json({ data: results });
             }
-            
+
             const soundsCount = {};
             soundsResults.forEach(row => {
               soundsCount[row.user_id] = row.count;
             });
-            
+
             // 获取评论数统计
             db.query(
               `SELECT user_id, COUNT(*) as count FROM comments WHERE user_id IN (?) GROUP BY user_id`,
@@ -97,14 +97,14 @@ router.get('/users', (req, res) => {
               (err, commentsResults) => {
                 if (err) {
                   console.error('获取评论统计失败:', err);
-                  return res.status(200).json({ users: results });
+                  return res.status(200).json({ data: results });
                 }
-                
+
                 const commentsCount = {};
                 commentsResults.forEach(row => {
                   commentsCount[row.user_id] = row.count;
                 });
-                
+
                 // 合并统计数据到用户数据
                 const usersWithStats = users.map(user => ({
                   ...user,
@@ -112,8 +112,8 @@ router.get('/users', (req, res) => {
                   sounds_count: soundsCount[user.id] || 0,
                   comments_count: commentsCount[user.id] || 0
                 }));
-                
-                res.status(200).json({ users: usersWithStats });
+
+                res.status(200).json({ data: usersWithStats });
               }
             );
           }
@@ -462,7 +462,7 @@ router.get('/posts', (req, res) => {
         console.error('获取帖子数据失败:', err);
         return res.status(500).json({ error: '服务器错误' });
       }
-      res.status(200).json({ posts: results });
+      res.status(200).json({ data: results });
     }
   );
 });

@@ -76,7 +76,7 @@ const config = {
   // 微信配置
   wechat: {
     appId: 'wx4e46471a06b5124c',
-    appSecret: '309618603345d01dbc0c356f52e1e979',
+    appSecret: 'a4d717bdb57054454be38bcef2756318',
   },
 
   // 日志配置
