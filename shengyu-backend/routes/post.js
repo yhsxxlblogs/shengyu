@@ -106,7 +106,7 @@ router.get('/popular', (req, res) => {
             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
      FROM posts p
      LEFT JOIN users u ON p.user_id = u.id
-     ORDER BY (like_count + comment_count) DESC, p.created_at DESC
+     ORDER BY ((SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) + (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)) DESC, p.created_at DESC
      LIMIT ?`,
     [limitNum],
     (err, results) => {
