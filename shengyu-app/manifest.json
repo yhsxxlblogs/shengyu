@@ -21,6 +21,8 @@
             "Barcode" : {},
             "Record" : {}
         },
+        "queryScheme" : ["weixin"],
+        "actions" : ["action.system.home", "wxentity.action.open"],
         "distribute" : {
             "android" : {
                 "permissions" : [
