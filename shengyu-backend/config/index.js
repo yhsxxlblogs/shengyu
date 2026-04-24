@@ -5,8 +5,8 @@
 
 const path = require('path');
 
-// 加载环境变量
-require('dotenv').config();
+// 加载环境变量 - 指定正确的路径
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // 默认配置
 const config = {
