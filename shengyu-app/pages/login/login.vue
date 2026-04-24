@@ -435,7 +435,7 @@ export default {
 
 .guest-section {
   text-align: center;
-  margin-bottom: 30rpx;
+  margin-bottom: 50rpx;
 }
 
 .guest-link {
@@ -478,7 +478,7 @@ export default {
 .third-party-buttons {
   display: flex;
   justify-content: center;
-  margin-top: 10rpx;
+  margin-top: 20rpx;
 }
 
 .third-party-btn {
