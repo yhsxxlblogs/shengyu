@@ -40,8 +40,8 @@ const config = {
 
   // JWT配置
   jwt: {
-    secret: 'your_random_secret_key_here_min_64_chars_long',
-    expiresIn: '24h',
+    secret: 'secret_key',
+    expiresIn: '1d',
     refreshExpiresIn: '7d',
   },
 
