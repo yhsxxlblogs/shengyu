@@ -182,8 +182,9 @@
 
       <!-- 社区 -->
       <swiper-item class="swiper-item">
-        <view class="page-container">
-          <view class="community-content">
+        <view class="community-page-container">
+          <!-- 固定顶部区域 -->
+          <view class="community-fixed-header">
             <!-- 二级滑动栏 -->
             <view class="sub-tabs">
               <view class="sub-tab" :class="{ active: communityTab === 'community' }" @click="switchCommunityTab('community')">
@@ -195,26 +196,31 @@
               </view>
             </view>
 
-            <!-- 社区内容 -->
-            <view v-if="communityTab === 'community'" class="community-panel">
-              <view class="publish-btn" @click="goPublish">
-                <svg-icon name="plus" :size="40" class="publish-icon-svg" />
-              </view>
+            <!-- 社区标题 -->
+            <view v-if="communityTab === 'community'" class="community-header">
+              <text class="header-title">社区</text>
+            </view>
+            <view v-else-if="communityTab === 'messages'" class="community-header">
+              <text class="header-title">私信</text>
+            </view>
+          </view>
 
-              <view class="community-header">
-                <text class="header-title">社区</text>
-              </view>
+          <!-- 社区内容 -->
+          <view v-if="communityTab === 'community'" class="community-panel">
+            <view class="publish-btn" @click="goPublish">
+              <svg-icon name="plus" :size="40" class="publish-icon-svg" />
+            </view>
 
-              <scroll-view
-                class="post-list-scroll"
-                scroll-y
-                :scroll-top="scrollTop"
-                @scrolltolower="loadMorePosts"
-                :lower-threshold="100"
-                refresher-enabled
-                :refresher-triggered="isRefreshing"
-                @refresherrefresh="onRefresh"
-              >
+            <scroll-view
+              class="post-list-scroll"
+              scroll-y
+              :scroll-top="scrollTop"
+              @scrolltolower="loadMorePosts"
+              :lower-threshold="100"
+              refresher-enabled
+              :refresher-triggered="isRefreshing"
+              @refresherrefresh="onRefresh"
+            >
                 <view v-if="communityLoading && !isRefreshing" class="loading-container">
                   <view class="loading-animation">
                     <view class="loading-dot"></view>
@@ -284,10 +290,16 @@
 
             <!-- 私信面板 -->
             <view v-else-if="communityTab === 'messages'" class="messages-panel">
-            <view class="messages-header">
-              <text class="header-title">私信</text>
-            </view>
-            <view class="messages-list">
+              <scroll-view
+                class="messages-list-scroll"
+                scroll-y
+                :scroll-top="messageScrollTop"
+                @scrolltolower="loadMoreMessages"
+                :lower-threshold="100"
+                refresher-enabled
+                :refresher-triggered="isRefreshingMessages"
+                @refresherrefresh="onRefreshMessages"
+              >
               <view v-if="loadingMessages" class="loading-container">
                 <text class="loading-text">加载中...</text>
               </view>
@@ -313,9 +325,8 @@
                   </view>
                 </view>
               </view>
-            </view>
+            </scroll-view>
           </view>
-        </view>
         </view>
 
         <!-- 评论弹窗 -->
@@ -561,6 +572,10 @@ export default {
       loadingMessages: false,
       unreadMessageTimer: null,
       wsConnected: false,
+      messageScrollTop: 0,
+      isRefreshingMessages: false,
+      messagePage: 1,
+      hasMoreMessages: true,
 
       // 我的页面数据
       userInfo: {},
@@ -644,7 +659,7 @@ export default {
       }
     },
 
-    async loadMessageList() {
+    async loadMessageList(loadMore = false) {
       // 如果已经在加载中，不重复加载
       if (this.loadingMessages) return
 
@@ -656,19 +671,47 @@ export default {
       }
       try {
         const res = await uni.request({
-          url: 'http://shengyu.supersyh.xyz/api/social/messages',
+          url: `http://shengyu.supersyh.xyz/api/social/messages?page=${this.messagePage}`,
           method: 'GET',
           header: { Authorization: `Bearer ${token}` }
         })
         if (res.statusCode === 200) {
           const newMessages = res.data.messages || []
-          // 智能合并：避免闪烁，只更新变化的数据
-          this.smartMergeMessageList(newMessages)
+          if (loadMore) {
+            // 合并新消息，避免重复
+            const existingIds = new Set(this.messageList.map(m => m.user_id))
+            const uniqueNewMessages = newMessages.filter(m => !existingIds.has(m.user_id))
+            this.messageList = [...this.messageList, ...uniqueNewMessages]
+          } else {
+            // 智能合并：避免闪烁，只更新变化的数据
+            this.smartMergeMessageList(newMessages)
+          }
+          this.hasMoreMessages = newMessages.length === 10
         }
       } catch (e) {
         console.error('加载私信列表失败:', e)
       }
       this.loadingMessages = false
+    },
+
+    loadMoreMessages() {
+      if (!this.loadingMessages && this.hasMoreMessages) {
+        this.messagePage++
+        this.loadMessageList(true)
+      }
+    },
+
+    async onRefreshMessages() {
+      this.isRefreshingMessages = true
+      this.messagePage = 1
+      this.hasMoreMessages = true
+      await this.loadMessageList(false)
+      this.isRefreshingMessages = false
+      uni.showToast({
+        title: '刷新成功',
+        icon: 'success',
+        duration: 1000
+      })
     },
 
     // 智能合并私信列表 - 避免闪烁
@@ -1792,6 +1835,7 @@ export default {
 .swiper-item {
   height: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 .page-container {
@@ -2044,35 +2088,35 @@ export default {
   transition: transform 0.2s ease;
 }
 
-/* 淡淡的炫彩渐变配色 */
+/* 淡淡的炫彩渐变配色 - 更淡更柔和 */
 .app-item:nth-child(6n+1) .app-icon-wrapper {
-  background: linear-gradient(135deg, #e0e7ff 0%, #c7b8f0 100%);
-  box-shadow: 0 6rpx 20rpx rgba(199, 184, 240, 0.35);
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8e0f7 100%);
+  box-shadow: 0 4rpx 16rpx rgba(199, 184, 240, 0.25);
 }
 
 .app-item:nth-child(6n+2) .app-icon-wrapper {
-  background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
-  box-shadow: 0 6rpx 20rpx rgba(248, 187, 217, 0.35);
+  background: linear-gradient(135deg, #fff5f8 0%, #ffe0ed 100%);
+  box-shadow: 0 4rpx 16rpx rgba(248, 187, 217, 0.25);
 }
 
 .app-item:nth-child(6n+3) .app-icon-wrapper {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  box-shadow: 0 6rpx 20rpx rgba(187, 222, 251, 0.35);
+  background: linear-gradient(135deg, #f0f9ff 0%, #d6ebfa 100%);
+  box-shadow: 0 4rpx 16rpx rgba(187, 222, 251, 0.25);
 }
 
 .app-item:nth-child(6n+4) .app-icon-wrapper {
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-  box-shadow: 0 6rpx 20rpx rgba(200, 230, 201, 0.35);
+  background: linear-gradient(135deg, #f0faf0 0%, #dbf0dc 100%);
+  box-shadow: 0 4rpx 16rpx rgba(200, 230, 201, 0.25);
 }
 
 .app-item:nth-child(6n+5) .app-icon-wrapper {
-  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-  box-shadow: 0 6rpx 20rpx rgba(255, 224, 178, 0.35);
+  background: linear-gradient(135deg, #fffbf0 0%, #fff0d9 100%);
+  box-shadow: 0 4rpx 16rpx rgba(255, 224, 178, 0.25);
 }
 
 .app-item:nth-child(6n+6) .app-icon-wrapper {
-  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
-  box-shadow: 0 6rpx 20rpx rgba(225, 190, 231, 0.35);
+  background: linear-gradient(135deg, #faf0fa 0%, #f0e0f0 100%);
+  box-shadow: 0 4rpx 16rpx rgba(225, 190, 231, 0.25);
 }
 
 .app-item:active .app-icon-wrapper {
@@ -2354,27 +2398,36 @@ export default {
   color: #999999;
 }
 
-/* 社区样式 */
-.community-content {
-  padding: 20rpx;
-  padding-top: 60rpx;
-  position: relative;
+/* 社区页面容器 - 使用百分比高度确保安卓适配 */
+.community-page-container {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  background: linear-gradient(180deg, #FFF5F7 0%, #F8F8F8 100%);
   overflow: hidden;
 }
 
-/* 二级滑动栏 - 固定顶部 */
+/* 固定顶部区域 - 使用 flex-shrink 防止压缩 */
+.community-fixed-header {
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #FFF5F7 0%, #F8F8F8 100%);
+  padding: 20rpx 20rpx 10rpx;
+  z-index: 100;
+  /* 确保在安卓上正确显示 */
+  position: relative;
+}
+
+/* 二级滑动栏 - 固定在顶部，使用更兼容的样式 */
 .sub-tabs {
   display: flex;
   justify-content: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 10rpx;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 40rpx;
   padding: 8rpx;
   box-shadow: 0 2rpx 10rpx rgba(255, 154, 158, 0.15);
-  flex-shrink: 0;
+  /* 安卓适配：确保背景色正确 */
+  background-color: rgba(255, 255, 255, 0.95);
 }
 
 .sub-tab {
@@ -2418,32 +2471,45 @@ export default {
   box-shadow: 0 2rpx 8rpx rgba(255, 71, 87, 0.4);
 }
 
-/* 私信面板 */
-.messages-panel {
-  padding: 20rpx 0;
+/* 社区面板 - 使用 flex 布局确保高度正确计算 */
+.community-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+  /* 安卓适配：最小高度确保内容可见 */
+  min-height: 0;
 }
 
-.messages-header {
-  text-align: center;
-  margin-bottom: 20rpx;
-  flex-shrink: 0;
-}
-
-/* 私信列表 - 可滚动区域 */
-.messages-list {
+/* 帖子列表区域 - 独立滚动，使用更可靠的高度设置 */
+.post-list-scroll {
   flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  height: 100%;
+  padding: 0 20rpx;
+  /* 安卓适配：确保滚动区域正确计算 */
+  box-sizing: border-box;
 }
 
-.messages-header .header-title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333333;
+/* 私信面板 */
+.messages-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 20rpx;
+  /* 安卓适配：最小高度确保内容可见 */
+  min-height: 0;
+}
+
+/* 私信列表 - 独立滚动区域 */
+.messages-list-scroll {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  /* 安卓适配：确保滚动区域正确计算 */
+  box-sizing: border-box;
 }
 
 .empty-messages {
@@ -2553,7 +2619,7 @@ export default {
   font-weight: 500;
 }
 
-.publish-btn {
+.community-panel .publish-btn {
   position: fixed;
   right: 40rpx;
   bottom: 160rpx;
@@ -2565,16 +2631,16 @@ export default {
   align-items: center;
   justify-content: center;
   box-shadow: 0 8rpx 32rpx rgba(255, 154, 158, 0.4);
-  z-index: 100;
+  z-index: 99;
 }
 
-.publish-icon-svg {
+.community-panel .publish-icon-svg {
   color: #FFFFFF;
 }
 
 .community-header {
-  margin-bottom: 20rpx;
-  flex-shrink: 0;
+  padding: 10rpx 0;
+  text-align: center;
 }
 
 .header-title {
@@ -2779,12 +2845,7 @@ export default {
   color: #999999;
 }
 
-/* 帖子列表滚动区域 - 唯一可滚动区域 */
-.post-list-scroll {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
+
 
 /* 底部安全区域 - 防止被导航栏遮盖 */
 .safe-area-bottom {

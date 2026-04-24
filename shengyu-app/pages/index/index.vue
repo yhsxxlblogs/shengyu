@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <view class="index-container page-enter">
     <view class="search-bar">
       <view class="search-input-wrapper" @click="goSearch">

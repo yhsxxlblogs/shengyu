@@ -118,6 +118,7 @@
 
 <script>
 import wsService from '@/utils/websocket.js'
+import { formatDateTime } from '@/utils/api.js'
 
 export default {
   data() {
@@ -401,15 +402,8 @@ export default {
     },
     
     formatTime(time) {
-      if (!time) return '';
-      const date = new Date(time);
-      const now = new Date();
-      const isToday = date.toDateString() === now.toDateString();
-      
-      if (isToday) {
-        return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-      }
-      return date.toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      // 使用通用的日期格式化函数，确保安卓兼容性
+      return formatDateTime(time, 'datetime');
     },
     
     showTime(index) {
