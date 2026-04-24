@@ -11,19 +11,31 @@ const https = require('https');
  */
 function httpsGet(url) {
     return new Promise((resolve, reject) => {
+        console.log('httpsGet 请求:', url.replace(/secret=[^&]+/, 'secret=***'));
+        
         https.get(url, (res) => {
             let data = '';
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
+                console.log('httpsGet 响应状态:', res.statusCode);
+                console.log('httpsGet 响应数据:', data.substring(0, 200));
+                
                 try {
                     const jsonData = JSON.parse(data);
                     resolve(jsonData);
                 } catch (e) {
-                    reject(new Error('解析响应数据失败'));
+                    console.error('解析响应数据失败:', e.message);
+                    console.error('原始数据:', data);
+                    reject(new Error('解析微信API响应失败'));
                 }
             });
         }).on('error', (err) => {
-            reject(err);
+            console.error('httpsGet 请求失败:', err.message);
+            console.error('错误代码:', err.code);
+            reject(new Error(`微信API请求失败: ${err.message}`));
+        }).on('timeout', () => {
+            console.error('httpsGet 请求超时');
+            reject(new Error('微信API请求超时'));
         });
     });
 }
@@ -208,9 +220,26 @@ router.post('/login', async (req, res) => {
 
     } catch (error) {
         console.error('微信登录错误:', error);
-        res.status(500).json({ 
-            error: '服务器错误',
-            message: error.message 
+        console.error('错误堆栈:', error.stack);
+        
+        // 区分不同类型的错误
+        let errorType = '服务器错误';
+        let statusCode = 500;
+        
+        if (error.message && error.message.includes('微信')) {
+            errorType = '微信API错误';
+            statusCode = 400;
+        } else if (error.message && error.message.includes('数据库')) {
+            errorType = '数据库错误';
+        } else if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+            errorType = '网络连接错误';
+            statusCode = 503;
+        }
+        
+        res.status(statusCode).json({ 
+            error: errorType,
+            message: error.message,
+            code: error.code || 'UNKNOWN'
         });
     }
 });
