@@ -38,19 +38,27 @@ const requireAdmin = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  console.log('[requireAdmin] 收到请求，authHeader:', authHeader ? '存在' : '不存在');
+  console.log('[requireAdmin] token:', token ? '存在' : '不存在');
+
   if (!token) {
+    console.log('[requireAdmin] 错误: 未提供访问令牌');
     return res.status(401).json({ error: '未提供访问令牌' });
   }
 
   jwt.verify(token, config.jwt.secret, (err, user) => {
     if (err) {
+      console.log('[requireAdmin] 错误: 令牌无效', err.message);
       return res.status(403).json({ error: '令牌无效' });
     }
-    
+
+    console.log('[requireAdmin] token验证成功，用户:', user.id, 'is_admin:', user.is_admin);
+
     if (!user.is_admin) {
+      console.log('[requireAdmin] 错误: 需要管理员权限');
       return res.status(403).json({ error: '需要管理员权限' });
     }
-    
+
     req.user = user;
     next();
   });
