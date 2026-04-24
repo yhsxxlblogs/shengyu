@@ -35,11 +35,19 @@ function createTables() {
       id INT AUTO_INCREMENT PRIMARY KEY,
       username VARCHAR(50) NOT NULL,
       email VARCHAR(100) NOT NULL UNIQUE,
-      password VARCHAR(255) NOT NULL,
+      password VARCHAR(255),
+      nickname VARCHAR(100),
       avatar VARCHAR(255),
+      wechat_openid VARCHAR(100),
+      wechat_unionid VARCHAR(100),
+      wechat_nickname VARCHAR(100),
+      wechat_avatar VARCHAR(255),
+      login_type VARCHAR(20) DEFAULT 'password',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_email (email),
-      INDEX idx_created_at (created_at)
+      INDEX idx_created_at (created_at),
+      INDEX idx_wechat_openid (wechat_openid)
     )
   `;
 
