@@ -6,20 +6,51 @@ let categoriesData = [];
 let typesData = [];
 let systemSoundsData = [];
 let userSoundsData = [];
+let cachedToken = null;
 
 // 获取认证头
 function getAuthHeaders() {
-  const token = localStorage.getItem('adminToken');
+  // 优先使用缓存的 token，避免频繁读取 localStorage
+  if (!cachedToken) {
+    cachedToken = localStorage.getItem('adminToken');
+  }
+  
+  if (!cachedToken) {
+    console.error('未找到 adminToken，请重新登录');
+    // 重定向到登录页面
+    window.location.href = '/admin/login.html';
+    return {
+      'Authorization': 'Bearer ',
+      'Content-Type': 'application/json'
+    };
+  }
+  
   return {
-    'Authorization': `Bearer ${token}`,
+    'Authorization': `Bearer ${cachedToken}`,
     'Content-Type': 'application/json'
   };
 }
 
+// 设置 token（登录时调用）
+function setAuthToken(token) {
+  cachedToken = token;
+  localStorage.setItem('adminToken', token);
+}
+
+// 清除 token（登出时调用）
+function clearAuthToken() {
+  cachedToken = null;
+  localStorage.removeItem('adminToken');
+}
+
 // 检查登录状态
 function checkAuth() {
-  const token = localStorage.getItem('adminToken');
-  if (!token) {
+  // 优先使用缓存的 token
+  if (!cachedToken) {
+    cachedToken = localStorage.getItem('adminToken');
+  }
+  
+  if (!cachedToken) {
     window.location.href = '/admin/login.html';
     return false;
   }
@@ -87,7 +118,7 @@ function initNavigation() {
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('adminToken');
+      clearAuthToken();
       window.location.href = '/admin/login.html';
     });
   }
