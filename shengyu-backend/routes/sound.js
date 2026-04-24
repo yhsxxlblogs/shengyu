@@ -412,11 +412,13 @@ router.delete('/:id', authenticateToken, (req, res) => {
 
 // 获取分类列表（管理后台）
 router.get('/admin/categories', authenticateToken, (req, res) => {
+  console.log('[/sound/admin/categories] 收到请求，用户ID:', req.user?.id);
   db.query('SELECT * FROM categories ORDER BY sort_order', (err, results) => {
     if (err) {
-      console.error('获取分类失败:', err);
+      console.error('[/sound/admin/categories] 获取分类失败:', err);
       return res.status(500).json({ code: 500, error: '服务器错误' });
     }
+    console.log('[/sound/admin/categories] 查询成功，返回', results.length, '条数据');
     res.status(200).json({ code: 200, data: results });
   });
 });
