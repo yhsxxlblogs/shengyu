@@ -94,6 +94,8 @@
 </template>
 
 <script>
+import { wechatAuth } from '@/utils/wechat-auth.js'
+
 export default {
   data() {
     return {
@@ -176,8 +178,6 @@ export default {
     },
     async wechatLogin() {
       // 使用微信登录
-      const { wechatAuth } = await import('@/utils/wechat-auth.js');
-      
       uni.showLoading({ title: '微信登录中...' });
       
       try {
