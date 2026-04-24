@@ -178,7 +178,7 @@ export default {
     },
     async wechatLogin() {
       // 使用微信登录
-      uni.showLoading({ title: '微信登录中...' });
+      uni.showLoading({ title: '微信登录中...', mask: true });
       
       try {
         const result = await wechatAuth.login();
@@ -204,10 +204,22 @@ export default {
             });
             this.afterWechatLogin(result);
           }
+        } else {
+          // 登录失败，显示错误信息
+          uni.showToast({
+            title: result.message || '登录失败',
+            icon: 'none',
+            duration: 2000
+          });
         }
       } catch (error) {
         uni.hideLoading();
         console.error('微信登录失败:', error);
+        uni.showToast({
+          title: error.message || '登录失败',
+          icon: 'none',
+          duration: 2000
+        });
       }
     },
     async afterWechatLogin(result) {

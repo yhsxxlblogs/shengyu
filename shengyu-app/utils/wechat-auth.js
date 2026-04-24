@@ -7,7 +7,7 @@
  */
 
 const BASE_URL = 'http://shengyu.supersyh.xyz'
-const API_BASE = `${BASE_URL}/api`
+const API_BASE = `${BASE_URL}`
 
 class WechatAuth {
     constructor() {
@@ -164,6 +164,7 @@ class WechatAuth {
                 uni.setStorageSync('userInfo', res.data.user)
                 return { 
                     success: true, 
+                    token: res.data.token,
                     user: res.data.user,
                     isNewUser: res.data.user?.isNewUser || false
                 }
