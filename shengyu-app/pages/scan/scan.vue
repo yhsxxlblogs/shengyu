@@ -11,14 +11,14 @@
 
     <!-- 扫描区域 -->
     <view class="scan-wrapper">
-      <view class="scan-frame">
+      <view class="scan-frame" :class="{ 'scanning': scanning }">
         <view class="corner corner-tl"></view>
         <view class="corner corner-tr"></view>
         <view class="corner corner-bl"></view>
         <view class="corner corner-br"></view>
-        <view class="scan-line"></view>
+        <view v-if="scanning" class="scan-line"></view>
       </view>
-      <text class="scan-tip">将二维码放入框内，即可自动扫描</text>
+      <text class="scan-tip">{{ scanning ? '将二维码放入框内，即可自动扫描' : '扫描已暂停' }}</text>
     </view>
 
     <!-- 底部操作栏 -->
@@ -44,36 +44,51 @@ export default {
   data() {
     return {
       flashOn: false,
-      scanning: false
+      scanning: false,
+      scanTimer: null,
+      isProcessing: false  // 防止重复处理
     }
   },
   onLoad() {
     // 延迟启动扫描，确保页面已完全渲染
-    setTimeout(() => {
+    this.scanTimer = setTimeout(() => {
       this.startScan()
-    }, 500)
+    }, 600)
   },
   onUnload() {
-    this.stopScan()
+    this.cleanup()
   },
   onHide() {
     // 页面隐藏时停止扫描
     this.stopScan()
   },
   onShow() {
-    // 页面显示时重新开始扫描
-    if (!this.scanning) {
-      setTimeout(() => {
+    // 页面显示时重新开始扫描（如果不在处理中）
+    if (!this.scanning && !this.isProcessing) {
+      this.scanTimer = setTimeout(() => {
         this.startScan()
-      }, 300)
+      }, 400)
     }
   },
   methods: {
     goBack() {
-      this.stopScan()
+      this.cleanup()
       uni.navigateBack()
     },
+    
+    // 清理资源
+    cleanup() {
+      this.stopScan()
+      if (this.scanTimer) {
+        clearTimeout(this.scanTimer)
+        this.scanTimer = null
+      }
+    },
+    
     startScan() {
+      // 防止重复启动
+      if (this.scanning || this.isProcessing) return
+      
       // #ifdef APP-PLUS
       this.scanning = true
       
@@ -81,6 +96,7 @@ export default {
       this.checkCameraPermission().then(() => {
         this.doScan()
       }).catch(() => {
+        this.scanning = false
         uni.showModal({
           title: '权限提示',
           content: '需要相机权限才能扫码，请在设置中开启',
@@ -103,19 +119,28 @@ export default {
       // #endif
     },
     
-    // 检查相机权限（主要用于安卓）
+    // 检查相机权限（主要用于安卓）- 使用非阻塞方式
     checkCameraPermission() {
       return new Promise((resolve, reject) => {
         // #ifdef APP-PLUS
-        const os = plus.os.name
-        if (os === 'Android') {
-          const Camera = plus.android.importClass('android.hardware.Camera')
-          try {
-            const camera = Camera.open(0)
-            camera.release()
+        // 使用权限API而不是直接打开相机
+        if (plus.android) {
+          const main = plus.android.runtimeMainActivity()
+          const PackageManager = plus.android.importClass('android.content.pm.PackageManager')
+          const permission = 'android.permission.CAMERA'
+          
+          const hasPermission = main.checkSelfPermission(permission) === PackageManager.PERMISSION_GRANTED
+          if (hasPermission) {
             resolve()
-          } catch (e) {
-            reject()
+          } else {
+            // 请求权限
+            main.requestPermissions([permission], (result) => {
+              if (result.granted && result.granted.length > 0) {
+                resolve()
+              } else {
+                reject()
+              }
+            })
           }
         } else {
           resolve()
@@ -129,38 +154,46 @@ export default {
     },
     
     doScan() {
-      if (!this.scanning) return
+      if (!this.scanning || this.isProcessing) return
       
       uni.scanCode({
         onlyFromCamera: true,
         scanType: ['qrCode', 'barCode'],
         success: (res) => {
+          this.isProcessing = true
           this.handleScanResult(res.result)
         },
         fail: (err) => {
           console.error('扫描失败:', err)
           // 用户取消不提示错误
           if (err.errMsg && err.errMsg.includes('cancel')) {
+            this.stopScan()
             return
           }
-          uni.showToast({
-            title: '扫描失败',
-            icon: 'none'
-          })
+          // 其他错误继续扫描
+          this.continueScan()
         },
         complete: () => {
-          // 继续扫描（如果还在扫描状态）
-          if (this.scanning) {
-            setTimeout(() => {
-              this.doScan()
-            }, 800)
-          }
+          // 不在这里自动继续，避免无限循环
         }
       })
     },
     
+    // 继续扫描（带延迟，避免过于频繁）
+    continueScan() {
+      if (!this.scanning || this.isProcessing) return
+      
+      this.scanTimer = setTimeout(() => {
+        this.doScan()
+      }, 1200)  // 增加到1.2秒间隔，减少性能消耗
+    },
+    
     stopScan() {
       this.scanning = false
+      if (this.scanTimer) {
+        clearTimeout(this.scanTimer)
+        this.scanTimer = null
+      }
     },
     
     handleScanResult(result) {
@@ -192,6 +225,7 @@ export default {
               // #endif
             } else {
               // 用户取消，重新开始扫描
+              this.isProcessing = false
               this.startScan()
             }
           }
@@ -223,6 +257,7 @@ export default {
             }
             // 重新开始扫描
             setTimeout(() => {
+              this.isProcessing = false
               this.startScan()
             }, 500)
           }
@@ -383,6 +418,8 @@ export default {
   height: 500rpx;
   position: relative;
   border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 8rpx;
+  overflow: hidden;
 }
 
 .corner {
@@ -424,18 +461,20 @@ export default {
   right: 0;
   height: 4rpx;
   background: linear-gradient(90deg, transparent, #FF69B4, transparent);
-  animation: scan 2s linear infinite;
+  animation: scan 2.5s ease-in-out infinite;
+  will-change: top;  /* 优化动画性能 */
 }
 
+/* 扫描动画 - 使用transform优化性能 */
 @keyframes scan {
   0% {
-    top: 0;
+    transform: translateY(0);
   }
   50% {
-    top: 100%;
+    transform: translateY(500rpx);
   }
   100% {
-    top: 0;
+    transform: translateY(0);
   }
 }
 
