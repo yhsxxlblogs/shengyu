@@ -222,6 +222,14 @@ export default {
       }
     },
     async afterWechatLogin(result) {
+      // 保存登录状态
+      uni.setStorageSync('isLoggedIn', true);
+      uni.setStorageSync('userId', result.user.id);
+      uni.setStorageSync('userAvatar', result.user.avatar || '');
+      
+      // 移除游客模式标记
+      uni.removeStorageSync('guest');
+      
       await this.loadFollowingList(result.token);
       
       setTimeout(() => {

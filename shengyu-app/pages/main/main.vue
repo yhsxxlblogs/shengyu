@@ -1,4 +1,4 @@
-﻿﻿<template>
+﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -425,7 +425,7 @@
                 <view class="user-header">
                   <image :src="getAvatarUrl(userInfo.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(userInfo.username || 'User')}&background=FF69B4&color=fff&size=200`" class="user-avatar-large" mode="aspectFill"></image>
                   <view class="user-detail">
-                    <text class="user-name">{{ userInfo.username || '用户' }}</text>
+                    <text class="user-name">{{ userInfo.nickname || userInfo.username || '用户' }}</text>
                     <text class="user-email">{{ userInfo.email || '' }}</text>
                   </view>
                   <view class="edit-icon" @click="changeAvatar">

@@ -183,10 +183,22 @@ router.get('/user', (req, res) => {
   
   try {
     const decoded = jwt.verify(token, 'secret_key');
-    db.query('SELECT id, username, email, avatar FROM users WHERE id = ?', [decoded.id], (err, results) => {
+    db.query('SELECT id, username, email, avatar, nickname, wechat_nickname, wechat_avatar, wechat_openid FROM users WHERE id = ?', [decoded.id], (err, results) => {
       if (err) return res.status(500).json({ error: '服务器错误' });
       if (results.length === 0) return res.status(404).json({ error: '用户不存在' });
-      res.status(200).json({ user: results[0] });
+      
+      const user = results[0];
+      // 合并微信信息
+      const userResponse = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar || user.wechat_avatar,
+        nickname: user.nickname || user.wechat_nickname,
+        isWechatBound: !!user.wechat_openid
+      };
+      
+      res.status(200).json({ user: userResponse });
     });
   } catch (error) {
     res.status(401).json({ error: '无效的token' });

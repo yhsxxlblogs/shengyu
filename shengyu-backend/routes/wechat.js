@@ -193,7 +193,7 @@ router.post('/login', async (req, res) => {
                 username: user.username,
                 openid: openid 
             },
-            process.env.JWT_SECRET || 'your-secret-key',
+            process.env.JWT_SECRET || 'secret_key',
             { expiresIn: '7d' }
         );
 
