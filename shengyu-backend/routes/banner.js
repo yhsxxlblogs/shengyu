@@ -55,9 +55,9 @@ router.get('/admin/list', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取轮播图失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ banners: results });
+      res.status(200).json({ code: 200, banners: results });
     }
   );
 });
@@ -71,12 +71,12 @@ router.get('/admin/:id', (req, res) => {
     (err, results) => {
       if (err) {
         console.error('获取轮播图失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
+        return res.status(500).json({ code: 500, error: '服务器错误' });
       }
       if (results.length === 0) {
-        return res.status(404).json({ error: '轮播图不存在' });
+        return res.status(404).json({ code: 404, error: '轮播图不存在' });
       }
-      res.status(200).json({ banner: results[0] });
+      res.status(200).json({ code: 200, banner: results[0] });
     }
   );
 });
