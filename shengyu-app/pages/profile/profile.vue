@@ -121,6 +121,21 @@
         </view>
         
         <view class="menu-section">
+          <text class="menu-title">账号绑定</text>
+          
+          <view class="menu-item" @click="handleWechatBind">
+            <view class="menu-icon-wrapper wechat-bg">
+              <svg-icon name="message" :size="28" color="#FFFFFF" />
+            </view>
+            <text class="menu-text">微信绑定</text>
+            <view class="bind-status">
+              <text class="bind-status-text" :class="{ 'bound': wechatBound }">{{ wechatBound ? '已绑定' : '未绑定' }}</text>
+              <svg-icon name="arrow-right" :size="20" color="#CCCCCC" />
+            </view>
+          </view>
+        </view>
+        
+        <view class="menu-section">
           <text class="menu-title">设置与帮助</text>
           
           <view class="menu-item" @click="settings">
@@ -150,6 +165,8 @@
 
 <script>
 import api, { getImageUrl } from '../../utils/api.js';
+import { wechatAuth } from '@/utils/wechat-auth.js';
+
 export default {
   data() {
     return {
@@ -165,17 +182,21 @@ export default {
       },
       loading: false,
       error: '',
-      isLoggedIn: false
+      isLoggedIn: false,
+      wechatBound: false,
+      wechatInfo: null
     };
   },
   onLoad() {
     this.checkLoginStatus();
     this.getUserInfo();
+    this.checkWechatBindStatus();
     this.startAutoUpdate();
   },
   onShow() {
     this.checkLoginStatus();
     this.getUserInfo();
+    this.checkWechatBindStatus();
   },
   onPullDownRefresh() {
     this.checkLoginStatus();
@@ -337,6 +358,101 @@ export default {
       if (user && user.id) {
         uni.navigateTo({ url: `/pages/follows/follows?type=followers&userId=${user.id}` });
       }
+    },
+    async checkWechatBindStatus() {
+      const token = uni.getStorageSync('token');
+      if (!token) return;
+      
+      try {
+        const result = await wechatAuth.checkBindStatus();
+        this.wechatBound = result.bound;
+        this.wechatInfo = result.wechatInfo;
+      } catch (error) {
+        console.error('检查微信绑定状态失败:', error);
+      }
+    },
+    async handleWechatBind() {
+      const token = uni.getStorageSync('token');
+      if (!token) {
+        uni.showToast({ title: '请先登录', icon: 'none' });
+        return;
+      }
+
+      if (this.wechatBound) {
+        // 已绑定，显示解绑选项
+        uni.showActionSheet({
+          title: '微信绑定',
+          itemList: ['查看绑定信息', '解绑微信'],
+          success: (res) => {
+            if (res.tapIndex === 0) {
+              // 查看绑定信息
+              uni.showModal({
+                title: '微信绑定信息',
+                content: `微信昵称：${this.wechatInfo?.nickname || '未知'}\n绑定状态：已绑定`,
+                showCancel: false
+              });
+            } else if (res.tapIndex === 1) {
+              // 解绑微信
+              this.unbindWechat();
+            }
+          }
+        });
+      } else {
+        // 未绑定，执行绑定
+        uni.showModal({
+          title: '绑定微信',
+          content: '绑定微信后，您可以使用微信快速登录此账号。是否继续？',
+          success: (res) => {
+            if (res.confirm) {
+              this.bindWechat();
+            }
+          }
+        });
+      }
+    },
+    async bindWechat() {
+      uni.showLoading({ title: '绑定中...' });
+      
+      try {
+        const result = await wechatAuth.bindWechat();
+        
+        uni.hideLoading();
+        
+        if (result.success) {
+          this.wechatBound = true;
+          this.wechatInfo = result.wechatInfo;
+          uni.showToast({ title: '绑定成功', icon: 'success' });
+        }
+      } catch (error) {
+        uni.hideLoading();
+        uni.showToast({ title: error.message || '绑定失败', icon: 'none' });
+      }
+    },
+    async unbindWechat() {
+      uni.showModal({
+        title: '解绑微信',
+        content: '解绑后将无法使用微信登录，确定要解绑吗？',
+        success: async (res) => {
+          if (res.confirm) {
+            uni.showLoading({ title: '解绑中...' });
+            
+            try {
+              const result = await wechatAuth.unbindWechat();
+              
+              uni.hideLoading();
+              
+              if (result.success) {
+                this.wechatBound = false;
+                this.wechatInfo = null;
+                uni.showToast({ title: '解绑成功', icon: 'success' });
+              }
+            } catch (error) {
+              uni.hideLoading();
+              uni.showToast({ title: error.message || '解绑失败', icon: 'none' });
+            }
+          }
+        }
+      });
     },
     getImageUrl
   }
@@ -774,6 +890,23 @@ export default {
 .followers-bg { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); }
 .settings-bg { background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); }
 .about-bg { background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); }
+.wechat-bg { background: linear-gradient(135deg, #07C160 0%, #10B981 100%); }
+
+/* 绑定状态 */
+.bind-status {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.bind-status-text {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.bind-status-text.bound {
+  color: #07C160;
+}
 
 .menu-text {
   flex: 1;

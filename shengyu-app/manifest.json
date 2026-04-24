@@ -16,7 +16,10 @@
             "delay" : 0
         },
         "modules" : {
-            "OAuth" : {}
+            "OAuth" : {},
+            "Camera" : {},
+            "Barcode" : {},
+            "Record" : {}
         },
         "distribute" : {
             "android" : {
