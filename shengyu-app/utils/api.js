@@ -98,6 +98,7 @@ export default {
     login: `${API_BASE_URL}/auth/login`,
     register: `${API_BASE_URL}/auth/register`,
     user: `${API_BASE_URL}/auth/user`,
+    userStats: `${API_BASE_URL}/auth/user/stats`,
     avatar: `${API_BASE_URL}/auth/avatar`,
     search: (keyword) => `${API_BASE_URL}/auth/search?q=${encodeURIComponent(keyword)}`
   },

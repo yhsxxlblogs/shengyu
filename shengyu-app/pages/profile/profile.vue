@@ -250,12 +250,12 @@ export default {
           
           if (userRes.statusCode === 200 && userRes.data && userRes.data.user) {
             const statsRes = await uni.request({
-              url: 'http://shengyu.supersyh.xyz/api/auth/user/stats',
-              method: 'GET',
-              header: {
-                Authorization: `Bearer ${token}`
-              }
-            });
+            url: api.auth.userStats,
+            method: 'GET',
+            header: {
+              Authorization: `Bearer ${token}`
+            }
+          });
             
             this.user = {
               ...userRes.data.user,
