@@ -31,7 +31,7 @@ class WechatAuth {
 
     /**
      * 微信登录 - 使用 uni.login 标准 API
-     * 这是 uni-app 推荐的方式，兼容性更好
+     * 官方文档参考：https://uniapp.dcloud.net.cn/tutorial/app-oauth-weixin.html
      */
     async login() {
         // 检查是否已配置
@@ -65,52 +65,46 @@ class WechatAuth {
 
         // #ifdef APP-PLUS
         try {
-            // 使用 uni.login 标准 API
+            // 使用 uni.login 标准 API，仅请求授权认证
             const loginRes = await new Promise((resolve, reject) => {
                 uni.login({
                     provider: 'weixin',
-                    onlyAuthorize: true, // 仅获取授权code，不获取用户信息
-                    success: (res) => {
-                        console.log('uni.login 成功:', res)
-                        resolve(res)
+                    onlyAuthorize: true, // 微信登录仅请求授权认证，获取code
+                    success: (event) => {
+                        console.log('uni.login 成功:', event)
+                        resolve(event)
                     },
                     fail: (err) => {
                         console.error('uni.login 失败:', err)
-                        reject(new Error(err.errMsg || '微信登录失败'))
+                        // err.code 是错误码
+                        let errorMsg = '微信登录失败'
+                        if (err.code === -2) {
+                            errorMsg = '用户取消登录'
+                        } else if (err.code === -100) {
+                            errorMsg = '微信登录失败，请检查配置'
+                        } else if (err.errMsg) {
+                            errorMsg = err.errMsg
+                        }
+                        reject(new Error(errorMsg))
                     }
                 })
             })
 
-            // 检查是否获取到 code
-            if (!loginRes.code) {
+            // 客户端成功获取授权临时票据（code）
+            const { code } = loginRes
+            
+            if (!code) {
                 throw new Error('获取微信授权码失败')
             }
 
-            console.log('获取到微信code:', loginRes.code)
+            console.log('获取到微信code:', code)
 
-            // 获取用户信息（可选）
-            let userInfo = null
-            try {
-                const infoRes = await new Promise((resolve, reject) => {
-                    uni.getUserInfo({
-                        provider: 'weixin',
-                        success: (res) => resolve(res),
-                        fail: (err) => reject(err)
-                    })
-                })
-                userInfo = infoRes.userInfo
-                console.log('获取到微信用户信息:', userInfo)
-            } catch (e) {
-                console.log('获取微信用户信息失败（非必须）:', e.message)
-            }
-
-            // 发送 code 到后端换取 token
+            // 向业务服务器发起登录请求
             const res = await uni.request({
                 url: `${API_BASE}/api/wechat/login`,
                 method: 'POST',
                 data: {
-                    code: loginRes.code,
-                    userInfo: userInfo
+                    code: code
                 }
             })
 
@@ -120,7 +114,7 @@ class WechatAuth {
                 throw new Error(res.data.error)
             }
 
-            // 保存 token
+            // 获得token完成登录
             if (res.data.token) {
                 uni.setStorageSync('token', res.data.token)
                 uni.setStorageSync('userInfo', res.data.user)
@@ -165,12 +159,22 @@ class WechatAuth {
                 uni.login({
                     provider: 'weixin',
                     onlyAuthorize: true,
-                    success: (res) => resolve(res),
-                    fail: (err) => reject(new Error(err.errMsg || '微信登录失败'))
+                    success: (event) => resolve(event),
+                    fail: (err) => {
+                        let errorMsg = '微信登录失败'
+                        if (err.code === -2) {
+                            errorMsg = '用户取消登录'
+                        } else if (err.errMsg) {
+                            errorMsg = err.errMsg
+                        }
+                        reject(new Error(errorMsg))
+                    }
                 })
             })
 
-            if (!loginRes.code) {
+            const { code } = loginRes
+            
+            if (!code) {
                 throw new Error('获取微信授权码失败')
             }
 
@@ -182,7 +186,7 @@ class WechatAuth {
                     'Authorization': `Bearer ${token}`
                 },
                 data: {
-                    code: loginRes.code
+                    code: code
                 }
             })
 
