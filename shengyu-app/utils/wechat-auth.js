@@ -42,6 +42,25 @@ class WechatAuth {
             return { success: false, message: '微信登录未配置' }
         }
 
+        // 检查平台支持
+        // #ifdef H5
+        uni.showModal({
+            title: '提示',
+            content: 'H5端暂不支持微信登录，请使用账号密码登录',
+            showCancel: false
+        })
+        return { success: false, message: 'H5端不支持微信登录' }
+        // #endif
+
+        // #ifndef APP-PLUS || MP-WEIXIN
+        uni.showModal({
+            title: '提示',
+            content: '当前平台暂不支持微信登录，请使用账号密码登录',
+            showCancel: false
+        })
+        return { success: false, message: '当前平台不支持微信登录' }
+        // #endif
+
         try {
             // 1. 获取微信登录授权码（code）
             const loginRes = await uni.login({

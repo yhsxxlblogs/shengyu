@@ -180,29 +180,34 @@ export default {
       
       uni.showLoading({ title: '微信登录中...' });
       
-      const result = await wechatAuth.login();
-      
-      uni.hideLoading();
-      
-      if (result.success) {
-        // 如果是新用户，显示提示
-        if (result.isNewUser) {
-          uni.showModal({
-            title: '欢迎新用户',
-            content: '您已成功创建账号！\n\n提示：如果您已有账号密码账号，可以在个人中心设置中绑定微信，实现两种方式登录同一账号。',
-            showCancel: false,
-            confirmText: '知道了',
-            success: () => {
-              this.afterWechatLogin(result);
-            }
-          });
-        } else {
-          uni.showToast({
-            title: '登录成功',
-            icon: 'success'
-          });
-          this.afterWechatLogin(result);
+      try {
+        const result = await wechatAuth.login();
+        
+        uni.hideLoading();
+        
+        if (result.success) {
+          // 如果是新用户，显示提示
+          if (result.isNewUser) {
+            uni.showModal({
+              title: '欢迎新用户',
+              content: '您已成功创建账号！\n\n提示：如果您已有账号密码账号，可以在个人中心设置中绑定微信，实现两种方式登录同一账号。',
+              showCancel: false,
+              confirmText: '知道了',
+              success: () => {
+                this.afterWechatLogin(result);
+              }
+            });
+          } else {
+            uni.showToast({
+              title: '登录成功',
+              icon: 'success'
+            });
+            this.afterWechatLogin(result);
+          }
         }
+      } catch (error) {
+        uni.hideLoading();
+        console.error('微信登录失败:', error);
       }
     },
     async afterWechatLogin(result) {
