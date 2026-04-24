@@ -129,40 +129,58 @@ router.get('/animal-types', (req, res) => {
 
 // 获取按分类分组的动物类型
 router.get('/animal-types-grouped', (req, res) => {
-  db.query(
-    `SELECT category, 
-            JSON_ARRAYAGG(
-              JSON_OBJECT(
-                'id', id,
-                'type', type,
-                'name', name,
-                'icon', icon,
-                'description', description
-              )
-            ) as types
-     FROM animal_types 
-     WHERE is_active = 1 
-     GROUP BY category 
-     ORDER BY MIN(sort_order)`,
-    (err, results) => {
-      if (err) {
-        console.error('获取分组动物类型失败:', err);
-        return res.status(500).json({ error: '服务器错误' });
-      }
-
-      // 解析JSON字符串
-      try {
-        const grouped = results.map(row => ({
-          category: row.category,
-          types: typeof row.types === 'string' ? JSON.parse(row.types) : row.types
-        }));
-        res.status(200).json({ code: 200, data: grouped });
-      } catch (parseErr) {
-        console.error('解析JSON失败:', parseErr);
-        res.status(200).json({ code: 200, data: [] });
-      }
+  // 首先获取分类信息
+  db.query('SELECT name, display_name FROM categories WHERE is_active = 1 ORDER BY sort_order', (err, catResults) => {
+    if (err) {
+      console.error('获取分类失败:', err);
+      return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-  );
+
+    // 创建分类名称到显示名称的映射
+    const categoryMap = {};
+    catResults.forEach(cat => {
+      categoryMap[cat.name] = cat.display_name;
+    });
+
+    db.query(
+      `SELECT category, 
+              JSON_ARRAYAGG(
+                JSON_OBJECT(
+                  'id', id,
+                  'type', type,
+                  'name', name,
+                  'icon', icon,
+                  'description', description
+                )
+              ) as types
+       FROM animal_types 
+       WHERE is_active = 1 
+       GROUP BY category 
+       ORDER BY MIN(sort_order)`,
+      (err, results) => {
+        if (err) {
+          console.error('获取分组动物类型失败:', err);
+          return res.status(500).json({ code: 500, error: '服务器错误' });
+        }
+
+        // 解析JSON字符串并转换为前端期望的格式
+        try {
+          const grouped = {};
+          results.forEach(row => {
+            const types = typeof row.types === 'string' ? JSON.parse(row.types) : row.types;
+            grouped[row.category] = {
+              display_name: categoryMap[row.category] || row.category,
+              items: types
+            };
+          });
+          res.status(200).json({ code: 200, data: grouped });
+        } catch (parseErr) {
+          console.error('解析JSON失败:', parseErr);
+          res.status(200).json({ code: 200, data: {} });
+        }
+      }
+    );
+  });
 });
 
 // 按动物类型获取声音

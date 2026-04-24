@@ -57,7 +57,7 @@ router.get('/users', (req, res) => {
     const userIds = users.map(u => u.id);
     
     if (userIds.length === 0) {
-      return res.status(200).json({ code: 200, data: [] });
+      return res.status(200).json({ code: 200, users: [] });
     }
     
     // 获取帖子数统计
@@ -67,7 +67,7 @@ router.get('/users', (req, res) => {
       (err, postsResults) => {
         if (err) {
           console.error('获取帖子统计失败:', err);
-          return res.status(200).json({ code: 200, data: results });
+          return res.status(200).json({ code: 200, users: results });
         }
         
         const postsCount = {};
@@ -82,7 +82,7 @@ router.get('/users', (req, res) => {
           (err, soundsResults) => {
             if (err) {
               console.error('获取声音统计失败:', err);
-              return res.status(200).json({ code: 200, data: results });
+              return res.status(200).json({ code: 200, users: results });
             }
 
             const soundsCount = {};
@@ -97,7 +97,7 @@ router.get('/users', (req, res) => {
               (err, commentsResults) => {
                 if (err) {
                   console.error('获取评论统计失败:', err);
-                  return res.status(200).json({ code: 200, data: results });
+                  return res.status(200).json({ code: 200, users: results });
                 }
 
                 const commentsCount = {};
@@ -113,7 +113,7 @@ router.get('/users', (req, res) => {
                   comments_count: commentsCount[user.id] || 0
                 }));
 
-                res.status(200).json({ code: 200, data: usersWithStats });
+                res.status(200).json({ code: 200, users: usersWithStats });
               }
             );
           }
@@ -462,7 +462,7 @@ router.get('/posts', (req, res) => {
         console.error('获取帖子数据失败:', err);
         return res.status(500).json({ code: 500, error: '服务器错误' });
       }
-      res.status(200).json({ code: 200, data: results });
+      res.status(200).json({ code: 200, posts: results });
     }
   );
 });

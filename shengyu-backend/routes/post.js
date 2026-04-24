@@ -116,7 +116,7 @@ router.get('/popular', (req, res) => {
         return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      res.status(200).json({ code: 200, data: results });
+      res.status(200).json({ code: 200, posts: results });
     }
   );
 });
