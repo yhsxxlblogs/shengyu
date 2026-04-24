@@ -313,15 +313,24 @@ router.get('/user/:id', (req, res) => {
 // 获取用户信息（当前登录用户）
 router.get('/user', (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
+  console.log('[/auth/user] 收到请求，token:', token ? '存在' : '不存在');
   if (!token) return res.status(401).json({ code: 401, error: '未授权' });
 
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
+    console.log('[/auth/user] token解码成功，用户ID:', decoded.id);
     db.query('SELECT id, username, email, avatar, nickname, password, wechat_nickname, wechat_avatar, wechat_openid, login_type, is_admin FROM users WHERE id = ?', [decoded.id], (err, results) => {
-      if (err) return res.status(500).json({ code: 500, error: '服务器错误' });
-      if (results.length === 0) return res.status(404).json({ code: 404, error: '用户不存在' });
+      if (err) {
+        console.error('[/auth/user] 数据库查询错误:', err);
+        return res.status(500).json({ code: 500, error: '服务器错误' });
+      }
+      if (results.length === 0) {
+        console.log('[/auth/user] 用户不存在，ID:', decoded.id);
+        return res.status(404).json({ code: 404, error: '用户不存在' });
+      }
 
       const user = results[0];
+      console.log('[/auth/user] 查询成功，用户名:', user.username);
       // 合并微信信息
       const userResponse = {
         id: user.id,
@@ -341,6 +350,7 @@ router.get('/user', (req, res) => {
       res.status(200).json({ code: 200, user: userResponse });
     });
   } catch (error) {
+    console.error('[/auth/user] token验证失败:', error.message);
     res.status(401).json({ code: 401, error: '无效的token' });
   }
 });
@@ -348,11 +358,13 @@ router.get('/user', (req, res) => {
 // 获取用户统计数据
 router.get('/user/stats', (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
+  console.log('[/auth/user/stats] 收到请求，token:', token ? '存在' : '不存在');
   if (!token) return res.status(401).json({ code: 401, error: '未授权' });
 
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
     const userId = decoded.id;
+    console.log('[/auth/user/stats] token解码成功，用户ID:', userId);
 
     // 使用子查询获取用户统计数据（规范化设计）
     db.query(
@@ -366,14 +378,16 @@ router.get('/user/stats', (req, res) => {
       [userId, userId, userId, userId, userId, userId],
       (err, results) => {
         if (err) {
-          console.error('获取用户统计失败:', err);
+          console.error('[/auth/user/stats] 数据库查询错误:', err);
           return res.status(500).json({ code: 500, error: '服务器错误' });
         }
         if (results.length === 0) {
+          console.log('[/auth/user/stats] 用户不存在，ID:', userId);
           return res.status(404).json({ code: 404, error: '用户不存在' });
         }
 
         const stats = results[0];
+        console.log('[/auth/user/stats] 查询成功，统计数据:', stats);
         res.status(200).json({
           code: 200,
           stats: {
@@ -388,6 +402,7 @@ router.get('/user/stats', (req, res) => {
       }
     );
   } catch (error) {
+    console.error('[/auth/user/stats] token验证失败:', error.message);
     res.status(401).json({ code: 401, error: '无效的token' });
   }
 });
