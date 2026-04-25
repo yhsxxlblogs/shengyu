@@ -302,7 +302,7 @@ export default {
               follower_count: 0
             };
             this.isLoggedIn = false;
-            uni.showToast({ title: '退出登录成功', icon: 'success' });
+            uni.showToast({ title: '退出登录成功', icon: 'none' });
             setTimeout(() => {
               uni.reLaunch({ url: '/pages/index/index' });
             }, 1500);

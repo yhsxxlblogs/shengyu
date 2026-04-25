@@ -176,10 +176,10 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  max-width: 560rpx;
-  gap: 24rpx; /* 使用gap控制间距 */
-  margin-top: 160rpx; /* 顶部留白增大，主体下移更多 */
+  width: 85%;
+  max-width: 520rpx;
+  gap: 28rpx; /* 使用gap控制间距 */
+  margin-top: 120rpx; /* 顶部留白 */
 }
 
 /* 头部区域 */
@@ -191,20 +191,20 @@ export default {
 }
 
 .app-icon {
-  width: 160rpx;
-  height: 160rpx;
+  width: 200rpx;
+  height: 200rpx;
   background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 50%, #FFD1DC 100%);
-  border-radius: 36rpx;
+  border-radius: 48rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 32rpx rgba(255, 182, 193, 0.4);
+  box-shadow: 0 12rpx 40rpx rgba(255, 182, 193, 0.35);
   overflow: hidden;
 }
 
 .app-logo {
-  width: 110rpx;
-  height: 110rpx;
+  width: 140rpx;
+  height: 140rpx;
 }
 
 .app-title {
@@ -238,10 +238,10 @@ export default {
   display: flex;
   align-items: center;
   background: #FFFFFF;
-  border-radius: 14rpx;
-  padding: 0 20rpx;
-  height: 80rpx;
-  border: 2rpx solid #F5F5F5;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  height: 88rpx;
+  border: 2rpx solid #F0F0F0;
   transition: all 0.3s ease;
 }
 
@@ -283,19 +283,19 @@ export default {
 /* 注册按钮 */
 .register-btn {
   width: 100%;
-  height: 76rpx;
+  height: 84rpx;
   background: linear-gradient(135deg, #FF9A9E 0%, #FF6B9D 100%);
   color: #fff;
-  border-radius: 38rpx;
-  font-size: 30rpx;
+  border-radius: 42rpx;
+  font-size: 32rpx;
   font-weight: 600;
-  box-shadow: 0 6rpx 20rpx rgba(255, 107, 157, 0.35);
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   transition: all 0.3s ease;
-  margin-top: 8rpx;
+  margin-top: 12rpx;
 }
 
 .register-btn:active {
@@ -355,34 +355,35 @@ export default {
 /* 适配小屏幕 */
 @media screen and (max-height: 700px) {
   .register-container {
-    gap: 16rpx;
+    gap: 20rpx;
+    margin-top: 100rpx;
   }
-  
+
   .app-icon {
-    width: 100rpx;
-    height: 100rpx;
-    border-radius: 24rpx;
+    width: 160rpx;
+    height: 160rpx;
+    border-radius: 40rpx;
   }
-  
+
   .app-logo {
-    width: 68rpx;
-    height: 68rpx;
+    width: 110rpx;
+    height: 110rpx;
   }
-  
+
   .app-title {
     font-size: 36rpx;
   }
-  
+
   .app-subtitle {
     font-size: 22rpx;
   }
-  
+
   .input-wrapper {
-    height: 72rpx;
+    height: 76rpx;
   }
-  
+
   .register-btn {
-    height: 70rpx;
+    height: 72rpx;
     font-size: 28rpx;
   }
 }
@@ -391,16 +392,18 @@ export default {
 @media screen and (min-height: 900px) {
   .register-container {
     gap: 32rpx;
+    margin-top: 140rpx;
   }
-  
+
   .app-icon {
-    width: 140rpx;
-    height: 140rpx;
+    width: 220rpx;
+    height: 220rpx;
+    border-radius: 52rpx;
   }
-  
+
   .app-logo {
-    width: 100rpx;
-    height: 100rpx;
+    width: 160rpx;
+    height: 160rpx;
   }
 }
 </style>

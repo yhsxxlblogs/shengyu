@@ -1933,7 +1933,7 @@ export default {
             this.isLoggedIn = false
             this.userInfo = { username: '游客' }
             this.userStats = { posts: 0, likes: 0, comments: 0 }
-            uni.showToast({ title: '已退出登录', icon: 'success' })
+            uni.showToast({ title: '已退出登录', icon: 'none' })
           }
         }
       })
@@ -2996,7 +2996,7 @@ export default {
 .follow-btn-small.following {
   background: #F5F5F5;
   box-shadow: none;
-  border: 2rpx solid #E0E0E0;
+  border: 2rpx solid #EEEEEE;
 }
 
 .follow-btn-text {

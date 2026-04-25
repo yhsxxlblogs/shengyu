@@ -594,7 +594,7 @@ export default {
   display: flex;
   align-items: center;
   background-color: #F8F8F8;
-  border: 1rpx solid #EEEEEE;
+  border: 1rpx solid #F0F0F0;
   border-radius: 10rpx;
   padding: 20rpx;
   margin-bottom: 15rpx;
@@ -892,7 +892,7 @@ export default {
   .comment-input {
     flex: 1;
     height: 80rpx;
-    border: 1rpx solid #ddd;
+    border: 1rpx solid #E8E8E8;
     border-radius: 40rpx;
     padding: 0 20rpx;
     font-size: 28rpx;
