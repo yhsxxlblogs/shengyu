@@ -66,9 +66,9 @@ const config = {
   // 文件上传配置
   upload: {
     path: '/www/wwwroot/shengyu/shengyu-backend/uploads',
-    maxFileSize: 5 * 1024 * 1024,
-    maxImageSize: 2 * 1024 * 1024,
-    maxSoundSize: 10 * 1024 * 1024,
+    maxFileSize: 100 * 1024 * 1024,  // 100MB
+    maxImageSize: 100 * 1024 * 1024, // 100MB，支持大图片上传
+    maxSoundSize: 100 * 1024 * 1024, // 100MB
     allowedImageTypes: /jpeg|jpg|png|gif|webp/,
     allowedSoundTypes: /wav|mp3|ogg|aac|flac|m4a|webm/,
   },
