@@ -1,5 +1,9 @@
 -- 添加 sounds 表缺失的字段
--- 用于支持系统声音的 is_active 和 description 字段
+-- 用于支持系统声音的 is_system、is_active 和 description 字段
+
+-- 添加 is_system 字段（标记是否为系统声音）
+ALTER TABLE sounds
+ADD COLUMN IF NOT EXISTS is_system TINYINT(1) NULL DEFAULT 0 COMMENT '是否为系统声音：1-是，0-否';
 
 -- 添加 is_active 字段
 ALTER TABLE sounds
@@ -10,4 +14,5 @@ ALTER TABLE sounds
 ADD COLUMN IF NOT EXISTS description TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '声音描述';
 
 -- 添加索引
+CREATE INDEX IF NOT EXISTS idx_sounds_is_system ON sounds(is_system);
 CREATE INDEX IF NOT EXISTS idx_sounds_is_active ON sounds(is_active);
