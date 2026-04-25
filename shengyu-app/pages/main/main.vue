@@ -781,7 +781,8 @@ export default {
       uni.showToast({
         title: '刷新成功',
         icon: 'success',
-        duration: 1000
+        duration: 1200,
+        position: 'center'
       })
     },
 

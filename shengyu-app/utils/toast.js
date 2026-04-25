@@ -1,11 +1,11 @@
 /**
- * 简洁的原生提示工具
- * 统一使用纯文字提示，不带图标
+ * 优化版消息提示工具
+ * 统一使用美观的提示样式
  */
 
 const toast = {
   /**
-   * 显示提示（纯文字，无图标）
+   * 显示普通提示
    * @param {string} title 提示文字
    * @param {number} duration 显示时长，默认2000ms
    */
@@ -13,20 +13,22 @@ const toast = {
     uni.showToast({
       title,
       icon: 'none',
-      duration
+      duration,
+      position: 'center'
     })
   },
 
   /**
-   * 成功提示
+   * 成功提示 - 使用原生 success 图标
    * @param {string} title 提示文字
    * @param {number} duration 显示时长
    */
-  success(title = '操作成功', duration = 2000) {
+  success(title = '操作成功', duration = 1500) {
     uni.showToast({
       title,
-      icon: 'none',
-      duration
+      icon: 'success',
+      duration,
+      position: 'center'
     })
   },
 
@@ -39,7 +41,22 @@ const toast = {
     uni.showToast({
       title,
       icon: 'none',
-      duration
+      duration,
+      position: 'center'
+    })
+  },
+
+  /**
+   * 刷新成功提示
+   * @param {string} title 提示文字
+   * @param {number} duration 显示时长
+   */
+  refreshSuccess(title = '刷新成功', duration = 1000) {
+    uni.showToast({
+      title,
+      icon: 'success',
+      duration,
+      position: 'center'
     })
   },
 
@@ -60,6 +77,22 @@ const toast = {
    */
   hideLoading() {
     uni.hideLoading()
+  },
+
+  /**
+   * 显示模态对话框
+   * @param {Object} options 配置选项
+   */
+  modal(options = {}) {
+    const defaultOptions = {
+      title: '提示',
+      content: '',
+      showCancel: true,
+      cancelText: '取消',
+      confirmText: '确定',
+      confirmColor: '#FFB6C1'
+    }
+    return uni.showModal({ ...defaultOptions, ...options })
   }
 }
 
