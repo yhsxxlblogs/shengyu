@@ -98,11 +98,12 @@ router.post('/system-sounds', requireAdmin, upload.single('sound'), handleMulter
       return res.status(400).json({ code: 400, error: '无效的动物类型' });
     }
 
-    const animalTypeId = results[0].id;
+    // sounds.animal_type 是 varchar，应该存储 animal_types.type 而不是 id
+    const animalTypeValue = results[0].type;
 
     db.query(
       'INSERT INTO sounds (animal_type, emotion, sound_url, duration, is_system, description, review_status) VALUES (?, ?, ?, ?, 1, ?, "approved")',
-      [animalTypeId, emotion, soundUrl, duration || 0, description || ''],
+      [animalTypeValue, emotion, soundUrl, duration || 0, description || ''],
       (err, result) => {
         if (err) {
           console.error('添加系统声音失败:', err);
@@ -157,11 +158,12 @@ router.put('/system-sounds/:id', requireAdmin, upload.single('sound'), handleMul
         return res.status(400).json({ code: 400, error: '无效的动物类型' });
       }
 
-      const animalTypeId = typeResults[0].id;
+      // sounds.animal_type 是 varchar，应该存储 animal_types.type 而不是 id
+      const animalTypeValue = typeResults[0].type;
 
       db.query(
         'UPDATE sounds SET animal_type = ?, emotion = ?, sound_url = ?, duration = ?, description = ? WHERE id = ? AND is_system = 1',
-        [animalTypeId, emotion, finalSoundUrl, duration || 0, description || '', id],
+        [animalTypeValue, emotion, finalSoundUrl, duration || 0, description || '', id],
         (err) => {
           if (err) {
             console.error('更新系统声音失败:', err);
