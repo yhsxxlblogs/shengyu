@@ -1691,7 +1691,73 @@ export default {
       uni.navigateTo({ url: '/pages/search/search' });
     },
     goScan() {
-      uni.navigateTo({ url: '/pages/scan/scan' });
+      // 使用 uni.scanCode 调起系统扫码界面
+      uni.scanCode({
+        onlyFromCamera: false, // 允许从相机和相册扫码
+        scanType: ['qrCode', 'barCode'], // 支持二维码和条形码
+        success: (res) => {
+          console.log('扫码结果:', res);
+          // 处理扫码结果
+          this.handleScanResult(res.result);
+        },
+        fail: (err) => {
+          console.error('扫码失败:', err);
+          if (err.errMsg !== 'scanCode:fail cancel') {
+            uni.showToast({
+              title: '扫码失败',
+              icon: 'none'
+            });
+          }
+        }
+      });
+    },
+    // 处理扫码结果
+    handleScanResult(result) {
+      if (!result) return;
+      
+      // 判断是否为 URL
+      if (result.startsWith('http://') || result.startsWith('https://')) {
+        // 如果是 URL，可以跳转或复制
+        uni.showModal({
+          title: '扫码结果',
+          content: result,
+          confirmText: '打开链接',
+          cancelText: '复制',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              // 打开链接
+              uni.navigateTo({
+                url: `/pages/webview/webview?url=${encodeURIComponent(result)}`
+              });
+            } else if (modalRes.cancel) {
+              // 复制到剪贴板
+              uni.setClipboardData({
+                data: result,
+                success: () => {
+                  uni.showToast({ title: '已复制', icon: 'success' });
+                }
+              });
+            }
+          }
+        });
+      } else {
+        // 普通文本，显示并复制
+        uni.showModal({
+          title: '扫码结果',
+          content: result,
+          confirmText: '复制',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              uni.setClipboardData({
+                data: result,
+                success: () => {
+                  uni.showToast({ title: '已复制', icon: 'success' });
+                }
+              });
+            }
+          }
+        });
+      }
     },
     goRecord() {
       const token = uni.getStorageSync('token');
