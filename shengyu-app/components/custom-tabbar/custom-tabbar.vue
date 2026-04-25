@@ -157,23 +157,23 @@ export default {
   transform: scale(0.95);
 }
 
-/* 未读消息气泡 - 与私信列表保持一致 */
+/* 未读消息气泡 */
 .unread-badge {
   position: absolute;
-  top: -2rpx;
-  right: -2rpx;
+  top: 0;
+  right: 0;
   background: #FF4757;
   color: #FFFFFF;
-  font-size: 22rpx;
-  min-width: 40rpx;
-  height: 40rpx;
-  border-radius: 20rpx;
+  font-size: 20rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  border-radius: 16rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 10rpx;
+  padding: 0 6rpx;
   font-weight: 600;
-  box-shadow: 0 4rpx 12rpx rgba(255, 71, 87, 0.4);
+  box-shadow: 0 2rpx 8rpx rgba(255, 71, 87, 0.4);
   animation: badge-pulse 2s ease-in-out infinite;
 }
 
