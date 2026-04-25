@@ -472,24 +472,46 @@ router.get('/search', (req, res) => {
     return res.status(400).json({ error: '搜索关键词过长' });
   }
 
+  // 至少2个字符才能搜索，避免单字符匹配过多结果
+  if (q.length < 2) {
+    return res.status(200).json({ users: [] });
+  }
+
   const searchPattern = `%${q}%`;
+  // 优先匹配开头
+  const startPattern = `${q}%`;
 
   db.query(
     `SELECT id, 
             COALESCE(nickname, wechat_nickname, username) as username, 
             email, 
-            COALESCE(avatar, wechat_avatar) as avatar 
+            COALESCE(avatar, wechat_avatar) as avatar,
+            CASE 
+              WHEN username LIKE ? THEN 1
+              WHEN nickname LIKE ? THEN 2
+              WHEN wechat_nickname LIKE ? THEN 3
+              ELSE 4
+            END as match_priority
      FROM users 
      WHERE username LIKE ? 
-        OR email LIKE ? 
         OR nickname LIKE ? 
         OR wechat_nickname LIKE ? 
-     ORDER BY created_at DESC 
+     ORDER BY match_priority ASC, created_at DESC 
      LIMIT 20`,
-    [searchPattern, searchPattern, searchPattern, searchPattern],
+    [startPattern, startPattern, startPattern, searchPattern, searchPattern, searchPattern],
     (err, results) => {
-      if (err) return res.status(500).json({ error: '服务器错误' });
-      res.status(200).json({ users: results });
+      if (err) {
+        console.error('搜索用户失败:', err);
+        return res.status(500).json({ error: '服务器错误' });
+      }
+      // 移除排序用的字段
+      const users = results.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar
+      }));
+      res.status(200).json({ users });
     }
   );
 });

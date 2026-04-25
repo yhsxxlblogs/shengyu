@@ -63,6 +63,10 @@ export default {
   onLoad(options) {
     this.type = options.type || 'following';
     this.userId = options.userId;
+    // 设置页面标题
+    uni.setNavigationBarTitle({
+      title: this.type === 'following' ? '我的关注' : '我的粉丝'
+    });
     this.loadUsers();
     // 监听关注状态变化事件
     uni.$on('followStatusChanged', this.handleFollowStatusChanged);
