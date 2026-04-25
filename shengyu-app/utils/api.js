@@ -104,7 +104,7 @@ export default {
   },
   sound: {
     base: `${API_BASE_URL}/sound`,
-    upload: `${API_BASE_URL}/sound/upload`,
+    upload: `${API_BASE_URL}/sound-upload/upload`,
     popular: `${API_BASE_URL}/sound/popular`,
     byAnimal: (type) => `${API_BASE_URL}/sound/by-animal/${type}`,
     search: (keyword) => `${API_BASE_URL}/sound/search?q=${encodeURIComponent(keyword)}`,
