@@ -25,20 +25,11 @@ const storage = multer.diskStorage({
   }
 });
 
+// 创建 multer 实例用于解析 multipart 表单（包括文件和字段）
 const upload = multer({
   storage: storage,
   limits: {
     fileSize: config.upload.maxSoundSize
-  },
-  fileFilter: function (req, file, cb) {
-    const filetypes = config.upload.allowedSoundTypes;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-    if (extname && mimetype) {
-      return cb(null, true);
-    } else {
-      cb(new Error('只允许上传音频文件'));
-    }
   }
 });
 
@@ -58,11 +49,34 @@ const handleMulterError = (err, req, res, next) => {
 
 // 用户上传声音 - 在 body-parser 之前注册
 router.post('/upload', authenticateToken, upload.single('sound'), handleMulterError, (req, res) => {
+  console.log('[sound-upload] 收到请求');
+  console.log('[sound-upload] req.body:', req.body);
+  console.log('[sound-upload] req.file:', req.file);
+  
+  // 检查 req.body 是否存在
+  if (!req.body) {
+    return res.status(400).json({ code: 400, error: '请求体解析失败' });
+  }
+  
   const userId = req.user.id;
-  const { animal_type, emotion, duration, visible, submit_for_review } = req.body;
+  const animal_type = req.body.animal_type;
+  const emotion = req.body.emotion;
+  const duration = req.body.duration;
+  const visible = req.body.visible;
+  const submit_for_review = req.body.submit_for_review;
 
   if (!req.file) {
     return res.status(400).json({ code: 400, error: '请选择要上传的音频文件' });
+  }
+  
+  // 验证文件类型
+  const filetypes = config.upload.allowedSoundTypes;
+  const extname = filetypes.test(path.extname(req.file.originalname).toLowerCase());
+  const mimetype = filetypes.test(req.file.mimetype);
+  if (!extname || !mimetype) {
+    // 删除无效文件
+    fs.unlinkSync(req.file.path);
+    return res.status(400).json({ code: 400, error: '只允许上传音频文件' });
   }
 
   if (!animal_type || !emotion) {

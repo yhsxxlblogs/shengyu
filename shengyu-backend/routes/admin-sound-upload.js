@@ -26,20 +26,11 @@ const storage = multer.diskStorage({
   }
 });
 
+// 创建 multer 实例用于解析 multipart 表单（包括文件和字段）
 const upload = multer({
   storage: storage,
   limits: {
     fileSize: config.upload.maxSoundSize
-  },
-  fileFilter: function (req, file, cb) {
-    const filetypes = config.upload.allowedSoundTypes;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-    if (extname && mimetype) {
-      return cb(null, true);
-    } else {
-      cb(new Error('只允许上传音频文件'));
-    }
   }
 });
 
@@ -59,13 +50,38 @@ const handleMulterError = (err, req, res, next) => {
 
 // 添加系统声音（支持文件上传）- 在 body-parser 之前注册
 router.post('/system-sounds', requireAdmin, upload.single('sound'), handleMulterError, (req, res) => {
-  // 前端发送的是 type_id，需要兼容处理
-  const animal_type = req.body.animal_type || req.body.type_id;
-  const { emotion, duration, description } = req.body;
+  console.log('[admin-sound-upload] 收到请求');
+  console.log('[admin-sound-upload] req.body:', req.body);
+  console.log('[admin-sound-upload] req.file:', req.file);
+  
+  // 检查 req.body 是否存在
+  if (!req.body) {
+    return res.status(400).json({ code: 400, error: '请求体解析失败' });
+  }
+  
+  // multer 会将表单字段解析到 req.body
+  const animal_type = req.body.type_id || req.body.animal_type;
+  const emotion = req.body.emotion;
+  const duration = req.body.duration;
+  const description = req.body.description;
   const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body.sound_url;
+
+  console.log('[admin-sound-upload] 解析参数:', { animal_type, emotion, duration, soundUrl: soundUrl ? '存在' : '缺失' });
 
   if (!animal_type || !emotion || !soundUrl) {
     return res.status(400).json({ code: 400, error: '缺少必要参数' });
+  }
+  
+  // 验证文件类型
+  if (req.file) {
+    const filetypes = config.upload.allowedSoundTypes;
+    const extname = filetypes.test(path.extname(req.file.originalname).toLowerCase());
+    const mimetype = filetypes.test(req.file.mimetype);
+    if (!extname || !mimetype) {
+      // 删除无效文件
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ code: 400, error: '只允许上传音频文件' });
+    }
   }
 
   // 验证 animal_type 是否有效（可能是 ID 或 type 字符串）
@@ -102,7 +118,11 @@ router.post('/system-sounds', requireAdmin, upload.single('sound'), handleMulter
 // 更新系统声音（支持文件上传）- 在 body-parser 之前注册
 router.put('/system-sounds/:id', requireAdmin, upload.single('sound'), handleMulterError, (req, res) => {
   const { id } = req.params;
-  const { animal_type, emotion, duration, description } = req.body;
+  // multer 会将表单字段解析到 req.body
+  const animal_type = req.body.type_id || req.body.animal_type;
+  const emotion = req.body.emotion;
+  const duration = req.body.duration;
+  const description = req.body.description;
   const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body.sound_url;
 
   if (!animal_type || !emotion) {
