@@ -8,6 +8,12 @@ const { authenticateToken, optionalAuth, sanitizeInput } = require('../middlewar
 // 发布帖子
 router.post('/create', authenticateToken, (req, res) => {
   const userId = req.user.id;
+  
+  // 检查请求体是否存在
+  if (!req.body || typeof req.body !== 'object') {
+    return res.status(400).json({ code: 400, error: '请求体不能为空' });
+  }
+  
   const { content, image_url, sound_id } = req.body;
 
   if (!content) {
