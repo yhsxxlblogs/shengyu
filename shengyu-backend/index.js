@@ -505,14 +505,19 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// 文件上传路由需要在 body-parser 之前注册，避免 JSON 解析错误
-// 轮播图上传路由（使用 multipart/form-data，跳过 JSON 解析）
+// 文件上传路由需要在 JSON body-parser 之前注册，避免 JSON 解析错误
+// 但需要在 urlencoded 之后，以便解析表单文本字段
+// 轮播图上传路由（使用 multipart/form-data）
 const bannerUploadRoutes = require('./routes/banner-upload');
+
+// 先注册 urlencoded 解析器（用于解析表单文本字段）
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 然后注册上传路由（multer 会处理 multipart，跳过已解析的 body）
 app.use('/api/banner/admin', bannerUploadRoutes);
 
-// 增加请求体大小限制，支持大图片上传（默认100KB太小）
+// 最后注册 JSON 解析器（用于其他 API）
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 安全响应头
 app.use(securityHeaders);
