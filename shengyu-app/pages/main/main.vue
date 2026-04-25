@@ -503,20 +503,6 @@
               </view>
 
               <view class="menu-section">
-                <text class="menu-title">账号绑定</text>
-                <view class="menu-item" @click="handleWechatBind">
-                  <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #07C160 0%, #10B981 100%);">
-                    <svg-icon name="message" :size="32" class="menu-icon-svg" />
-                  </view>
-                  <text class="menu-text">微信绑定</text>
-                  <view class="bind-status">
-                    <text class="bind-status-text" :class="{ 'bound': wechatBound }">{{ wechatBound ? '已绑定' : '未绑定' }}</text>
-                    <svg-icon name="arrow-right" :size="24" class="menu-arrow-svg" />
-                  </view>
-                </view>
-              </view>
-
-              <view class="menu-section">
                 <text class="menu-title">账号安全</text>
                 <view class="menu-item" @click="goToSetPassword">
                   <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);">
