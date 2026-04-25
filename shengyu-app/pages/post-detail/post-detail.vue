@@ -23,7 +23,7 @@
           </view>
         </view>
         <text class="content">{{ post.content }}</text>
-        <image v-if="post.image_url" :src="getImageUrl(post.image_url)" class="post-image" mode="aspectFit"></image>
+        <image v-if="post.image_url" :src="getImageUrl(post.image_url)" class="post-image" mode="widthFix" @click="previewImage(post.image_url)"></image>
         <view v-if="post.sound_url" class="audio-container" @click="playSound(post.sound_url)">
           <text class="audio-icon">🎵</text>
           <text class="audio-text">点击播放声音</text>
@@ -298,6 +298,23 @@ export default {
       uni.showToast({ title: '播放声音', icon: 'none' });
       // 这里可以添加实际的声音播放逻辑
     },
+    previewImage(imageUrl) {
+      // 点击照片全图观看
+      const fullUrl = this.getImageUrl(imageUrl);
+      uni.previewImage({
+        urls: [fullUrl],
+        current: fullUrl,
+        longPressActions: {
+          itemList: ['发送给朋友', '保存图片', '收藏'],
+          success: function(data) {
+            console.log('选中了第' + (data.tapIndex + 1) + '个按钮,第' + (data.index + 1) + '张图片');
+          },
+          fail: function(err) {
+            console.log(err.errMsg);
+          }
+        }
+      });
+    },
     goToUserProfile(userId) {
       if (!userId) {
         uni.showToast({ title: '无法获取用户信息', icon: 'none' });
@@ -443,10 +460,11 @@ export default {
 
 .post-image {
   width: 100%;
-  height: 320rpx;
+  max-height: 800rpx;
   border-radius: 16rpx;
   margin-bottom: 20rpx;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  background-color: #f5f5f5;
 }
 
 /* 音频容器 - 玻璃拟态 */

@@ -583,11 +583,12 @@ export default {
 }
 
 .post-image {
-  width: 200rpx;
-  height: 200rpx;
-  border-radius: 10rpx;
+  width: 100%;
+  max-height: 600rpx;
+  border-radius: 16rpx;
   margin-bottom: 15rpx;
-  object-fit: cover;
+  object-fit: contain;
+  background-color: #f5f5f5;
 }
 
 .audio-container {

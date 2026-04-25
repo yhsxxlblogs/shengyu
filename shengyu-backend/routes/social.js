@@ -47,7 +47,22 @@ router.post('/follow/:userId', authenticateToken, (req, res) => {
               console.error('关注失败:', err);
               return res.status(500).json({ error: '服务器错误' });
             }
-            res.status(200).json({ message: '关注成功', isFollowing: true });
+            
+            // 关注成功后，创建一条系统消息，让被关注的人出现在私信列表中
+            // 使用特殊标记的系统消息，不会显示在聊天内容中
+            db.query(
+              `INSERT INTO messages (sender_id, receiver_id, content, is_system) 
+               VALUES (?, ?, '你们已经成为好友，开始聊天吧！', TRUE)
+               ON DUPLICATE KEY UPDATE created_at = NOW()`,
+              [followerId, followingId],
+              (err) => {
+                if (err) {
+                  console.error('创建关注消息失败:', err);
+                  // 不影响关注成功的返回
+                }
+                res.status(200).json({ message: '关注成功', isFollowing: true });
+              }
+            );
           }
         );
       }
@@ -262,52 +277,86 @@ router.post('/message', authenticateToken, (req, res) => {
 router.get('/messages', authenticateToken, (req, res) => {
   const userId = req.user.id;
 
+  // 获取有消息记录的用户 + 关注的人 + 粉丝
   db.query(
-    `SELECT
-      m.*,
-      COALESCE(u.nickname, u.wechat_nickname, u.username) as username,
-      COALESCE(u.avatar, u.wechat_avatar) as avatar,
-      CASE
-        WHEN m.sender_id = ? THEN m.receiver_id
-        ELSE m.sender_id
-      END as other_user_id
-    FROM messages m
-    JOIN users u ON (
-      CASE
-        WHEN m.sender_id = ? THEN m.receiver_id = u.id
-        ELSE m.sender_id = u.id
-      END
-    )
-    WHERE m.sender_id = ? OR m.receiver_id = ?
-    ORDER BY m.created_at DESC`,
-    [userId, userId, userId, userId],
-    (err, results) => {
+    `SELECT DISTINCT other_user_id FROM (
+      -- 有消息记录的用户
+      SELECT 
+        CASE 
+          WHEN sender_id = ? THEN receiver_id 
+          ELSE sender_id 
+        END as other_user_id,
+        created_at
+      FROM messages 
+      WHERE (sender_id = ? OR receiver_id = ?) AND (is_system IS NULL OR is_system = FALSE)
+      
+      UNION ALL
+      
+      -- 我关注的人
+      SELECT following_id as other_user_id, created_at 
+      FROM follows 
+      WHERE follower_id = ?
+      
+      UNION ALL
+      
+      -- 我的粉丝
+      SELECT follower_id as other_user_id, created_at 
+      FROM follows 
+      WHERE following_id = ?
+    ) as all_users
+    ORDER BY created_at DESC`,
+    [userId, userId, userId, userId, userId],
+    (err, userResults) => {
       if (err) {
-        console.error('获取消息列表失败:', err);
+        console.error('获取用户列表失败:', err);
         return res.status(500).json({ code: 500, error: '服务器错误' });
       }
 
-      // 按会话分组
-      const conversations = {};
-      results.forEach(msg => {
-        const otherId = msg.sender_id == userId ? msg.receiver_id : msg.sender_id;
-        if (!conversations[otherId]) {
-          conversations[otherId] = {
-            user_id: otherId,
-            username: msg.username,
-            avatar: msg.avatar,
-            last_message: msg.content,
-            last_time: msg.created_at,
-            unread_count: 0
-          };
-        }
+      if (userResults.length === 0) {
+        return res.status(200).json({ code: 200, messages: [] });
+      }
 
-        if (msg.receiver_id == userId && !msg.is_read) {
-          conversations[otherId].unread_count++;
-        }
-      });
+      const userIds = userResults.map(u => u.other_user_id);
+      
+      // 获取这些用户的详细信息和最新消息
+      db.query(
+        `SELECT 
+          u.id as user_id,
+          COALESCE(u.nickname, u.wechat_nickname, u.username) as username,
+          COALESCE(u.avatar, u.wechat_avatar) as avatar,
+          (SELECT content FROM messages 
+           WHERE ((sender_id = ? AND receiver_id = u.id) OR (sender_id = u.id AND receiver_id = ?))
+           AND (is_system IS NULL OR is_system = FALSE)
+           ORDER BY created_at DESC LIMIT 1) as last_message,
+          (SELECT created_at FROM messages 
+           WHERE ((sender_id = ? AND receiver_id = u.id) OR (sender_id = u.id AND receiver_id = ?))
+           AND (is_system IS NULL OR is_system = FALSE)
+           ORDER BY created_at DESC LIMIT 1) as last_time,
+          (SELECT COUNT(*) FROM messages 
+           WHERE sender_id = u.id AND receiver_id = ? AND is_read = FALSE) as unread_count
+        FROM users u
+        WHERE u.id IN (?)
+        ORDER BY last_time DESC`,
+        [userId, userId, userId, userId, userId, userIds],
+        (err, results) => {
+          if (err) {
+            console.error('获取消息列表失败:', err);
+            return res.status(500).json({ code: 500, error: '服务器错误' });
+          }
 
-      res.status(200).json({ code: 200, messages: Object.values(conversations) });
+          // 格式化结果
+          const conversations = results.map(user => ({
+            user_id: user.user_id,
+            username: user.username,
+            avatar: user.avatar,
+            last_message: user.last_message || '点击开始聊天',
+            last_time: user.last_time,
+            unread_count: user.unread_count || 0
+          }));
+
+          res.status(200).json({ code: 200, messages: conversations });
+        }
+      );
     }
   );
 });
@@ -333,8 +382,9 @@ router.get('/messages/:userId', authenticateToken, (req, res) => {
             COALESCE(u.avatar, u.wechat_avatar) as avatar
      FROM messages m
      LEFT JOIN users u ON m.sender_id = u.id
-     WHERE (m.sender_id = ? AND m.receiver_id = ?)
-        OR (m.sender_id = ? AND m.receiver_id = ?)
+     WHERE ((m.sender_id = ? AND m.receiver_id = ?)
+        OR (m.sender_id = ? AND m.receiver_id = ?))
+        AND (m.is_system IS NULL OR m.is_system = FALSE)
      ORDER BY m.created_at DESC
      LIMIT ? OFFSET ?`,
     [currentUserId, otherUserId, otherUserId, currentUserId, limitNum, offset],
