@@ -34,8 +34,20 @@ const upload = multer({
   }
 });
 
+// 处理 multipart 表单数据的中间件（包含文件和文本字段）
+const handleMultipart = (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('文件上传错误:', err);
+      return res.status(400).json({ error: err.message || '文件上传失败' });
+    }
+    // multer 会自动将文本字段解析到 req.body
+    next();
+  });
+};
+
 // 创建轮播图（支持文件上传）
-router.post('/create', upload.single('image'), (req, res) => {
+router.post('/create', handleMultipart, (req, res) => {
   const { title, link_url, sort_order } = req.body;
   const image_url = req.file ? `/uploads/banners/${req.file.filename}` : '';
 
@@ -63,7 +75,7 @@ router.post('/create', upload.single('image'), (req, res) => {
 });
 
 // 更新轮播图（支持文件上传）
-router.put('/update/:id', upload.single('image'), (req, res) => {
+router.put('/update/:id', handleMultipart, (req, res) => {
   const { id } = req.params;
   const { title, link_url, sort_order, is_active } = req.body;
 
