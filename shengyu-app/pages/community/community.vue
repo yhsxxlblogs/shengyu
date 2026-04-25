@@ -36,8 +36,8 @@
           </view>
           <view class="post-footer">
             <view class="action-item" @click.stop="likePost(post.id)">
-              <text class="action-icon" :class="{ liked: post.liked }">{{ post.liked ? '♥' : '♡' }}</text>
-              <text class="action-text" :class="{ liked: post.liked }">{{ post.like_count }}</text>
+              <text class="action-icon" :class="{ liked: post.is_liked }">{{ post.is_liked ? '♥' : '♡' }}</text>
+              <text class="action-text" :class="{ liked: post.is_liked }">{{ post.like_count }}</text>
             </view>
             <view class="action-item" @click.stop="showComments(post.id)">
               <text class="action-icon">💬</text>

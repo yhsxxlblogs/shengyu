@@ -30,7 +30,7 @@
         </view>
         <view class="post-footer">
           <view class="action-item" @click="likePost">
-            <text class="action-icon">{{ post.liked ? '♥' : '♡' }}</text>
+            <text class="action-icon">{{ post.is_liked ? '♥' : '♡' }}</text>
             <text class="action-text">{{ post.like_count }}</text>
           </view>
           <view class="action-item">
@@ -132,13 +132,13 @@ export default {
         });
         if (res.data.post) {
           // 将 is_following 转换为布尔值
-          // 优先使用后端返回的liked字段，如果没有则使用本地缓存
-          const isLikedFromServer = Boolean(res.data.post.liked);
+          // 优先使用后端返回的is_liked字段，如果没有则使用本地缓存
+          const isLikedFromServer = Boolean(res.data.post.is_liked);
           const isLikedFromCache = likedIdsSet.has(String(this.postId));
           this.post = {
             ...res.data.post,
             is_following: Boolean(res.data.post.is_following),
-            liked: isLikedFromServer || isLikedFromCache
+            is_liked: isLikedFromServer || isLikedFromCache
           };
         } else {
           this.error = '获取帖子详情失败';
@@ -178,9 +178,9 @@ export default {
       }
 
       // 乐观更新UI
-      const originalLiked = this.post.liked;
+      const originalLiked = this.post.is_liked;
       const originalCount = this.post.like_count || 0;
-      this.post.liked = !originalLiked;
+      this.post.is_liked = !originalLiked;
       this.post.like_count = originalLiked ? originalCount - 1 : originalCount + 1;
 
       try {
@@ -211,12 +211,12 @@ export default {
           });
         } else {
           // 请求失败，恢复原始状态
-          this.post.liked = originalLiked;
+          this.post.is_liked = originalLiked;
           this.post.like_count = originalCount;
         }
       } catch (error) {
         // 网络错误，恢复原始状态
-        this.post.liked = originalLiked;
+        this.post.is_liked = originalLiked;
         this.post.like_count = originalCount;
         console.error('点赞失败:', error);
         uni.showToast({ title: '操作失败，请重试', icon: 'none' });

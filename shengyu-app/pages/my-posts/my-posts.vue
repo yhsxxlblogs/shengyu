@@ -35,7 +35,7 @@
           </view>
           <view class="post-footer">
             <view class="action-item" @click="likePost(post.id)">
-              <text class="action-icon">{{ post.liked ? '♥' : '♡' }}</text>
+              <text class="action-icon">{{ post.is_liked ? '♥' : '♡' }}</text>
               <text class="action-text">{{ post.like_count }}</text>
             </view>
             <view class="action-item" @click="showComments(post.id)">

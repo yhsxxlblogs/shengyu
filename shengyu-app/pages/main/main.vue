@@ -267,7 +267,7 @@
                         </view>
                         <view class="post-footer">
                           <view class="action-item" @click.stop="likePost(post.id)">
-                            <svg-icon :name="post.liked ? 'heart' : 'heart-o'" :size="28" class="action-icon-svg" :class="{ liked: post.liked }" />
+                            <svg-icon :name="post.is_liked ? 'heart' : 'heart-o'" :size="28" class="action-icon-svg" :class="{ liked: post.is_liked }" />
                             <text class="action-text">{{ post.like_count || 0 }}</text>
                           </view>
                           <view class="action-item" @click.stop="showComments(post.id)">
@@ -1273,17 +1273,17 @@ export default {
         if (res.data.posts) {
           // 获取缓存的关注列表（仅登录用户）
           const followingSet = token ? new Set(uni.getStorageSync('followingSet') || []) : new Set()
-          // 将 is_following 和 liked 转换为布尔值，并使用缓存的关注列表进行补充
+          // 将 is_following 和 is_liked 转换为布尔值，并使用缓存的关注列表进行补充
           const posts = res.data.posts.map(post => {
             const isFollowingFromServer = Boolean(post.is_following)
             const isFollowingFromCache = token ? followingSet.has(String(post.user_id)) : false
-            // 优先使用后端返回的liked字段，如果没有则使用本地缓存的点赞列表
-            const isLikedFromServer = Boolean(post.liked)
+            // 优先使用后端返回的is_liked字段，如果没有则使用本地缓存的点赞列表
+            const isLikedFromServer = Boolean(post.is_liked)
             const isLikedFromCache = likedIdsSet.has(String(post.id))
             return {
               ...post,
               is_following: isFollowingFromServer || isFollowingFromCache,
-              liked: isLikedFromServer || isLikedFromCache
+              is_liked: isLikedFromServer || isLikedFromCache
             }
           })
           if (loadMore) {
@@ -1361,11 +1361,11 @@ export default {
       if (postIndex === -1) return
 
       const post = this.posts[postIndex]
-      const originalLiked = post.liked
+      const originalLiked = post.is_liked
       const originalCount = post.like_count || 0
 
       // 乐观更新UI
-      this.posts[postIndex].liked = !originalLiked
+      this.posts[postIndex].is_liked = !originalLiked
       this.posts[postIndex].like_count = originalLiked ? originalCount - 1 : originalCount + 1
 
       try {
@@ -1395,7 +1395,7 @@ export default {
           })
         } else {
           // 请求失败，恢复原始状态
-          this.posts[postIndex].liked = originalLiked
+          this.posts[postIndex].is_liked = originalLiked
           this.posts[postIndex].like_count = originalCount
           uni.showToast({
             title: '操作失败，请重试',
@@ -1404,7 +1404,7 @@ export default {
         }
       } catch (error) {
         // 网络错误，恢复原始状态
-        this.posts[postIndex].liked = originalLiked
+        this.posts[postIndex].is_liked = originalLiked
         this.posts[postIndex].like_count = originalCount
         uni.showToast({
           title: '网络错误，请重试',
