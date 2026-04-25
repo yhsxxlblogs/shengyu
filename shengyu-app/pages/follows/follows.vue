@@ -74,20 +74,6 @@ export default {
       }
     }
   },
-  methods: {
-    // 判断是否显示关注按钮
-    showFollowButton(user) {
-      // 不显示自己的关注按钮
-      if (String(user.id) === String(this.currentUserId)) {
-        return false;
-      }
-      // 查看自己的列表时，显示所有关注按钮
-      if (this.isMyList) {
-        return true;
-      }
-      // 查看别人的列表时，只显示关注状态（已关注/关注），不显示互相关注
-      return true;
-    },
   onLoad(options) {
     this.type = options.type || 'following';
     this.userId = options.userId;
@@ -107,6 +93,19 @@ export default {
     uni.$off('followStatusChanged', this.handleFollowStatusChanged);
   },
   methods: {
+    // 判断是否显示关注按钮
+    showFollowButton(user) {
+      // 不显示自己的关注按钮
+      if (String(user.id) === String(this.currentUserId)) {
+        return false;
+      }
+      // 查看自己的列表时，显示所有关注按钮
+      if (this.isMyList) {
+        return true;
+      }
+      // 查看别人的列表时，显示关注按钮
+      return true;
+    },
     goBack() {
       uni.navigateBack();
     },
