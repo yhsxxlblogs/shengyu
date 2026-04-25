@@ -662,12 +662,33 @@ router.put('/admin/system-sounds/:id', authenticateToken, (req, res) => {
 // 删除系统声音
 router.delete('/admin/system-sounds/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM sounds WHERE id = ? AND user_id IS NULL', [id], (err) => {
+  
+  // 先获取声音文件路径
+  db.query('SELECT sound_url FROM sounds WHERE id = ? AND user_id IS NULL', [id], (err, results) => {
     if (err) {
-      console.error('删除系统声音失败:', err);
+      console.error('获取系统声音失败:', err);
       return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ code: 200, message: '删除成功' });
+    
+    // 删除文件
+    if (results.length > 0 && results[0].sound_url) {
+      const soundPath = path.join(__dirname, '..', results[0].sound_url);
+      if (fs.existsSync(soundPath)) {
+        try {
+          fs.unlinkSync(soundPath);
+        } catch (e) {
+          console.error('删除声音文件失败:', e);
+        }
+      }
+    }
+    
+    db.query('DELETE FROM sounds WHERE id = ? AND user_id IS NULL', [id], (err) => {
+      if (err) {
+        console.error('删除系统声音失败:', err);
+        return res.status(500).json({ code: 500, error: '服务器错误' });
+      }
+      res.status(200).json({ code: 200, message: '删除成功' });
+    });
   });
 });
 
@@ -711,12 +732,33 @@ router.put('/admin/user-sounds/:id/review', authenticateToken, (req, res) => {
 // 删除用户声音
 router.delete('/admin/user-sounds/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM sounds WHERE id = ?', [id], (err) => {
+  
+  // 先获取声音文件路径
+  db.query('SELECT sound_url FROM sounds WHERE id = ?', [id], (err, results) => {
     if (err) {
-      console.error('删除用户声音失败:', err);
+      console.error('获取用户声音失败:', err);
       return res.status(500).json({ code: 500, error: '服务器错误' });
     }
-    res.status(200).json({ code: 200, message: '删除成功' });
+    
+    // 删除文件
+    if (results.length > 0 && results[0].sound_url) {
+      const soundPath = path.join(__dirname, '..', results[0].sound_url);
+      if (fs.existsSync(soundPath)) {
+        try {
+          fs.unlinkSync(soundPath);
+        } catch (e) {
+          console.error('删除声音文件失败:', e);
+        }
+      }
+    }
+    
+    db.query('DELETE FROM sounds WHERE id = ?', [id], (err) => {
+      if (err) {
+        console.error('删除用户声音失败:', err);
+        return res.status(500).json({ code: 500, error: '服务器错误' });
+      }
+      res.status(200).json({ code: 200, message: '删除成功' });
+    });
   });
 });
 

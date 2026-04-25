@@ -466,7 +466,7 @@ router.delete('/delete/:post_id', authenticateToken, (req, res) => {
 
   // 检查帖子是否存在且属于当前用户
   db.query(
-    'SELECT id, user_id FROM posts WHERE id = ?',
+    'SELECT id, user_id, image_url FROM posts WHERE id = ?',
     [postId],
     (err, results) => {
       if (err) {
@@ -483,6 +483,18 @@ router.delete('/delete/:post_id', authenticateToken, (req, res) => {
       // 检查是否是帖子作者或管理员
       if (post.user_id !== userId && !req.user.is_admin) {
         return res.status(403).json({ code: 403, error: '无权删除此帖子' });
+      }
+
+      // 删除帖子图片
+      if (post.image_url) {
+        const imagePath = path.join(__dirname, '..', post.image_url);
+        if (fs.existsSync(imagePath)) {
+          try {
+            fs.unlinkSync(imagePath);
+          } catch (e) {
+            console.error('删除帖子图片失败:', e);
+          }
+        }
       }
 
       // 删除相关的点赞和评论
