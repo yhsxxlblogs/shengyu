@@ -437,8 +437,8 @@ SELECT
     p.content,
     p.image_url,
     p.created_at,
-    u.username,
-    u.avatar,
+    COALESCE(u.nickname, u.wechat_nickname, u.username) as username,
+    COALESCE(u.avatar, u.wechat_avatar) as avatar,
     (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
     (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) * 2 + 
@@ -447,6 +447,35 @@ FROM posts p
 JOIN users u ON p.user_id = u.id
 HAVING heat_score > 0
 ORDER BY heat_score DESC, p.created_at DESC;
+```
+
+### 2.10 视图修复记录（2025-04-25）
+
+**问题**：posts表结构变更后，视图引用不存在的列
+
+**修复后的视图使用子查询**：
+```sql
+-- 帖子详情视图（修复版）
+CREATE VIEW v_post_details AS
+SELECT
+    p.id,
+    p.user_id,
+    p.sound_id,
+    p.content,
+    p.image_url,
+    p.created_at,
+    (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count,
+    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
+    COALESCE(u.nickname, u.wechat_nickname, u.username) AS username,
+    COALESCE(u.avatar, u.wechat_avatar) AS avatar
+FROM posts p
+JOIN users u ON p.user_id = u.id;
+```
+
+**优化点**：
+1. 使用子查询动态计算点赞数和评论数
+2. 使用COALESCE优先显示微信昵称和头像
+3. 修复mysqldump报错问题
 ```
 
 ---
