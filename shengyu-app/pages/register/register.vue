@@ -178,8 +178,8 @@ export default {
   align-items: center;
   width: 78%;
   max-width: 480rpx;
-  gap: 24rpx; /* 使用gap控制间距 */
-  margin-top: 100rpx; /* 顶部留白 */
+  gap: 32rpx; /* 增大间距 */
+  margin-top: 80rpx; /* 顶部留白 */
 }
 
 /* 头部区域 */
@@ -191,20 +191,42 @@ export default {
 }
 
 .app-icon {
-  width: 200rpx;
-  height: 200rpx;
+  width: 240rpx;
+  height: 240rpx;
   background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 50%, #FFD1DC 100%);
-  border-radius: 48rpx;
+  border-radius: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12rpx 40rpx rgba(255, 182, 193, 0.35);
+  box-shadow: 0 16rpx 48rpx rgba(255, 182, 193, 0.4);
   overflow: hidden;
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 16rpx 48rpx rgba(255, 182, 193, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 20rpx 56rpx rgba(255, 182, 193, 0.5);
+  }
 }
 
 .app-logo {
-  width: 140rpx;
-  height: 140rpx;
+  width: 170rpx;
+  height: 170rpx;
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8rpx);
+  }
 }
 
 .app-title {
@@ -227,7 +249,7 @@ export default {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 24rpx; /* 增大输入框间距 */
 }
 
 .form-item {
@@ -238,16 +260,38 @@ export default {
   display: flex;
   align-items: center;
   background: #FFFFFF;
-  border-radius: 14rpx;
-  padding: 0 20rpx;
-  height: 80rpx;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  height: 88rpx;
   border: 2rpx solid #F0F0F0;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.input-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 182, 193, 0.1), transparent);
+  transition: left 0.5s ease;
 }
 
 .input-wrapper:focus-within {
   border-color: #FFB6C1;
-  box-shadow: 0 4rpx 16rpx rgba(255, 182, 193, 0.2);
+  box-shadow: 0 8rpx 24rpx rgba(255, 182, 193, 0.25);
+  transform: translateY(-2rpx);
+}
+
+.input-wrapper:focus-within::before {
+  left: 100%;
+}
+
+.input-wrapper:active {
+  transform: scale(0.98);
 }
 
 .input-icon {
@@ -355,19 +399,19 @@ export default {
 /* 适配小屏幕 */
 @media screen and (max-height: 700px) {
   .register-container {
-    gap: 18rpx;
-    margin-top: 80rpx;
+    gap: 20rpx;
+    margin-top: 60rpx;
   }
 
   .app-icon {
-    width: 160rpx;
-    height: 160rpx;
-    border-radius: 40rpx;
+    width: 180rpx;
+    height: 180rpx;
+    border-radius: 44rpx;
   }
 
   .app-logo {
-    width: 110rpx;
-    height: 110rpx;
+    width: 130rpx;
+    height: 130rpx;
   }
 
   .app-title {
@@ -378,12 +422,16 @@ export default {
     font-size: 22rpx;
   }
 
+  .form-section {
+    gap: 18rpx;
+  }
+
   .input-wrapper {
-    height: 72rpx;
+    height: 76rpx;
   }
 
   .register-btn {
-    height: 68rpx;
+    height: 72rpx;
     font-size: 28rpx;
   }
 }
@@ -391,19 +439,23 @@ export default {
 /* 适配大屏幕 */
 @media screen and (min-height: 900px) {
   .register-container {
-    gap: 28rpx;
-    margin-top: 120rpx;
+    gap: 40rpx;
+    margin-top: 100rpx;
   }
 
   .app-icon {
-    width: 220rpx;
-    height: 220rpx;
-    border-radius: 52rpx;
+    width: 260rpx;
+    height: 260rpx;
+    border-radius: 64rpx;
   }
 
   .app-logo {
-    width: 160rpx;
-    height: 160rpx;
+    width: 190rpx;
+    height: 190rpx;
+  }
+
+  .form-section {
+    gap: 28rpx;
   }
 }
 </style>
