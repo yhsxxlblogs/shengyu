@@ -1525,7 +1525,11 @@ async function saveSystemSound() {
   formData.append('description', description);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin-upload/system-sounds`, { method: 'POST', headers: getAuthHeaders(),
+    // 使用 FormData 时不能设置 Content-Type，让浏览器自动设置（包含 boundary）
+    const headers = getAuthHeaders();
+    delete headers['Content-Type']; // 删除 Content-Type，让浏览器自动设置
+    
+    const response = await fetch(`${API_BASE_URL}/admin-upload/system-sounds`, { method: 'POST', headers,
       body: formData
     });
 
