@@ -577,6 +577,11 @@ app.use('/api/social', socialRoutes);
 app.use('/api/banner', bannerRoutes);
 app.use('/api/wechat', wechatRoutes);
 
+// 注意：banner-upload 路由必须在 /api/banner 之后注册
+// 因为 /api/banner/admin 路径会被 /api/banner 路由处理
+// 但实际上我们需要在 body-parser 之前处理 multipart 请求
+// 所以上面已经在 body-parser 之前注册了 /api/banner/admin 路由
+
 async function processScheduledNotifications() {
   try {
     const [results] = await db.promiseQuery(

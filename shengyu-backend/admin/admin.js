@@ -1080,7 +1080,7 @@ function showAddBannerModal() {
 async function editBanner(id) {
   try {
     // 获取轮播图详情
-    const response = await fetch(`${API_BASE_URL}/banner/admin/${id}`, { headers: getAuthHeaders() });
+    const response = await fetch(`${API_BASE_URL}/banner/admin/detail/${id}`, { headers: getAuthHeaders() });
     if (!response.ok) {
       showToast('获取轮播图信息失败', 'error');
       return;

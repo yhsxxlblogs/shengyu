@@ -34,7 +34,8 @@ router.get('/admin/list', (req, res) => {
 });
 
 // 获取单个轮播图
-router.get('/admin/:id', (req, res) => {
+// 注意：此路由必须在 /admin/list 之后，避免 list 被匹配为 id
+router.get('/admin/detail/:id', (req, res) => {
   const { id } = req.params;
   db.query(
     'SELECT * FROM banners WHERE id = ?',
