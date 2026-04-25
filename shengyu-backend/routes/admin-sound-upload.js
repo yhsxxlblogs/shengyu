@@ -102,7 +102,7 @@ router.post('/system-sounds', requireAdmin, upload.single('sound'), handleMulter
     const animalTypeValue = results[0].type;
 
     db.query(
-      'INSERT INTO sounds (animal_type, emotion, sound_url, duration, is_system, description, review_status) VALUES (?, ?, ?, ?, 1, ?, "approved")',
+      'INSERT INTO sounds (animal_type, emotion, sound_url, duration, is_system, description, review_status, visible) VALUES (?, ?, ?, ?, 1, ?, "approved", 1)',
       [animalTypeValue, emotion, soundUrl, duration || 0, description || ''],
       (err, result) => {
         if (err) {

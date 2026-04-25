@@ -573,7 +573,7 @@ router.delete('/admin/animal-types/:id', authenticateToken, (req, res) => {
 // 获取系统声音列表（管理后台）
 router.get('/admin/system-sounds', authenticateToken, (req, res) => {
   db.query(
-    'SELECT s.*, at.name as animal_type_name FROM sounds s LEFT JOIN animal_types at ON s.animal_type = at.type WHERE s.user_id IS NULL ORDER BY s.id DESC',
+    'SELECT s.*, at.name as type_name, at.id as type_id FROM sounds s LEFT JOIN animal_types at ON s.animal_type = at.type WHERE s.user_id IS NULL ORDER BY s.id DESC',
     (err, results) => {
       if (err) {
         console.error('获取系统声音失败:', err);
