@@ -138,6 +138,9 @@ export default {
             duration: item.duration,
             url: item.sound_url
           }));
+          
+          // 预加载音频获取实际时长（用于 duration 为 0 的情况）
+          this.preloadAudioDurations();
         } else {
           this.error = '获取数据失败: ' + (res.data.error || '未知错误');
           this.relatedSounds = [];
@@ -192,6 +195,41 @@ export default {
       const mins = Math.floor(seconds / 60);
       const secs = Math.floor(seconds % 60);
       return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    },
+    // 预加载音频获取实际时长
+    preloadAudioDurations() {
+      this.relatedSounds.forEach((sound, index) => {
+        // 只处理 duration 为 0 或 undefined 的音频
+        if (!sound.duration || sound.duration <= 0) {
+          const tempAudio = uni.createInnerAudioContext();
+          
+          // 处理 URL，确保完整路径
+          let soundUrl = sound.url;
+          if (!soundUrl.startsWith('http')) {
+            soundUrl = 'http://shengyu.supersyh.xyz' + (soundUrl.startsWith('/') ? soundUrl : '/' + soundUrl);
+          }
+          
+          tempAudio.src = soundUrl;
+          
+          tempAudio.onCanplay(() => {
+            if (tempAudio.duration > 0) {
+              // 更新对应声音的时长
+              this.$set(this.relatedSounds[index], 'duration', tempAudio.duration);
+              console.log(`音频 ${sound.id} 实际时长:`, tempAudio.duration);
+            }
+            tempAudio.destroy();
+          });
+          
+          tempAudio.onError(() => {
+            tempAudio.destroy();
+          });
+          
+          // 5秒后自动销毁，避免内存泄漏
+          setTimeout(() => {
+            tempAudio.destroy();
+          }, 5000);
+        }
+      });
     },
     goSoundPlayer(id) {
       uni.navigateTo({ url: `/pages/sound-player/sound-player?id=${id}&type=${this.type}` });
