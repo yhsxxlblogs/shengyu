@@ -86,11 +86,15 @@ export default {
       this.error = '';
 
       try {
+        console.log('loadSoundData type:', this.type);
+        
         // 先获取类型信息以获取type_id
         const typeRes = await uni.request({
           url: 'http://shengyu.supersyh.xyz/api/sound/animal-types-grouped',
           method: 'GET'
         });
+        
+        console.log('animal-types-grouped 响应:', typeRes);
 
         let typeId = null;
         if (typeRes.data.code === 200) {
@@ -105,19 +109,26 @@ export default {
             }
           }
         }
+        
+        console.log('找到的 typeId:', typeId);
 
         if (!typeId) {
-          this.error = '未找到该类型';
+          this.error = '未找到该类型: ' + this.type;
           this.relatedSounds = [];
           this.loading = false;
           return;
         }
 
         // 获取系统声音
+        const soundUrl = `http://shengyu.supersyh.xyz/api/sound/system/by-type/${typeId}`;
+        console.log('请求系统声音URL:', soundUrl);
+        
         const res = await uni.request({
-          url: `http://shengyu.supersyh.xyz/api/sound/system/by-type/${typeId}`,
+          url: soundUrl,
           method: 'GET'
         });
+        
+        console.log('系统声音响应:', res);
 
         if (res.data.code === 200) {
           const data = res.data.data;
@@ -128,12 +139,12 @@ export default {
             url: item.sound_url
           }));
         } else {
-          this.error = '获取数据失败';
+          this.error = '获取数据失败: ' + (res.data.error || '未知错误');
           this.relatedSounds = [];
         }
       } catch (error) {
         console.error('获取声音数据失败:', error);
-        this.error = '获取数据失败，请重试';
+        this.error = '获取数据失败: ' + (error.message || '网络错误');
         this.relatedSounds = [];
       } finally {
         this.loading = false;
