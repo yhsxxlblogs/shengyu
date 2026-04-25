@@ -137,7 +137,7 @@ export default {
 
         const responseData = res.data;
         if (responseData.message === '注册成功') {
-          uni.showToast({ title: '注册成功', icon: 'success' });
+          uni.showToast({ title: '注册成功', icon: 'none' });
           setTimeout(() => {
             uni.navigateTo({ url: '/pages/login/login' });
           }, 1500);

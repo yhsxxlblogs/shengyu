@@ -137,25 +137,23 @@ export default {
           
           uni.showToast({ 
             title: '登录成功', 
-            icon: 'success',
-            duration: 1500,
-            complete: () => {
-              setTimeout(() => {
-                uni.reLaunch({ 
-                  url: '/pages/main/main',
-                  success: () => {
-                    console.log('登录跳转成功')
-                  },
-                  fail: (err) => {
-                    console.error('登录跳转失败:', err)
-                    uni.switchTab({
-                      url: '/pages/main/main'
-                    })
-                  }
-                });
-              }, 1500);
-            }
+            icon: 'none',
+            duration: 1500
           });
+          setTimeout(() => {
+            uni.reLaunch({ 
+              url: '/pages/main/main',
+              success: () => {
+                console.log('登录跳转成功')
+              },
+              fail: (err) => {
+                console.error('登录跳转失败:', err)
+                uni.switchTab({
+                  url: '/pages/main/main'
+                })
+              }
+            });
+          }, 1500);
         } else {
           uni.showToast({ title: responseData.error || '登录失败', icon: 'none' });
         }
@@ -200,7 +198,7 @@ export default {
           } else {
             uni.showToast({
               title: '登录成功',
-              icon: 'success'
+              icon: 'none'
             });
             this.afterWechatLogin(result);
           }
