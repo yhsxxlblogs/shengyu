@@ -53,17 +53,13 @@ router.post('/upload', authenticateToken, upload.single('sound'), handleMulterEr
   console.log('[sound-upload] req.body:', req.body);
   console.log('[sound-upload] req.file:', req.file);
   
-  // 检查 req.body 是否存在
-  if (!req.body) {
-    return res.status(400).json({ code: 400, error: '请求体解析失败' });
-  }
-  
   const userId = req.user.id;
-  const animal_type = req.body.animal_type;
-  const emotion = req.body.emotion;
-  const duration = req.body.duration;
-  const visible = req.body.visible;
-  const submit_for_review = req.body.submit_for_review;
+  // 使用可选链访问 req.body
+  const animal_type = req.body?.animal_type;
+  const emotion = req.body?.emotion;
+  const duration = req.body?.duration;
+  const visible = req.body?.visible;
+  const submit_for_review = req.body?.submit_for_review;
 
   if (!req.file) {
     return res.status(400).json({ code: 400, error: '请选择要上传的音频文件' });

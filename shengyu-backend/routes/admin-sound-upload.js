@@ -54,17 +54,12 @@ router.post('/system-sounds', requireAdmin, upload.single('sound'), handleMulter
   console.log('[admin-sound-upload] req.body:', req.body);
   console.log('[admin-sound-upload] req.file:', req.file);
   
-  // 检查 req.body 是否存在
-  if (!req.body) {
-    return res.status(400).json({ code: 400, error: '请求体解析失败' });
-  }
-  
-  // multer 会将表单字段解析到 req.body
-  const animal_type = req.body.type_id || req.body.animal_type;
-  const emotion = req.body.emotion;
-  const duration = req.body.duration;
-  const description = req.body.description;
-  const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body.sound_url;
+  // 检查 req.body 是否存在（使用可选链）
+  const animal_type = req.body?.type_id || req.body?.animal_type;
+  const emotion = req.body?.emotion;
+  const duration = req.body?.duration;
+  const description = req.body?.description;
+  const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body?.sound_url;
 
   console.log('[admin-sound-upload] 解析参数:', { animal_type, emotion, duration, soundUrl: soundUrl ? '存在' : '缺失' });
 
@@ -118,12 +113,12 @@ router.post('/system-sounds', requireAdmin, upload.single('sound'), handleMulter
 // 更新系统声音（支持文件上传）- 在 body-parser 之前注册
 router.put('/system-sounds/:id', requireAdmin, upload.single('sound'), handleMulterError, (req, res) => {
   const { id } = req.params;
-  // multer 会将表单字段解析到 req.body
-  const animal_type = req.body.type_id || req.body.animal_type;
-  const emotion = req.body.emotion;
-  const duration = req.body.duration;
-  const description = req.body.description;
-  const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body.sound_url;
+  // 使用可选链访问 req.body
+  const animal_type = req.body?.type_id || req.body?.animal_type;
+  const emotion = req.body?.emotion;
+  const duration = req.body?.duration;
+  const description = req.body?.description;
+  const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body?.sound_url;
 
   if (!animal_type || !emotion) {
     return res.status(400).json({ code: 400, error: '缺少必要参数' });
