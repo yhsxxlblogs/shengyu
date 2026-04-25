@@ -113,63 +113,37 @@ export default {
       try {
         uni.showLoading({ title: '发布中...' });
         
-        if (this.imageFile) {
-          const uploadRes = await new Promise((resolve, reject) => {
-            uni.uploadFile({
-              url: api.post.create,
-              filePath: this.imageUrl,
-              name: 'image',
-              formData: {
-                content: this.content,
-                sound_url: this.soundUrl || ''
-              },
-              header: {
-                Authorization: `Bearer ${token}`
-              },
-              success: (res) => {
-                resolve(res);
-              },
-              fail: (err) => {
-                reject(err);
-              }
-            });
-          });
-          
-          uni.hideLoading();
-          
-          const data = JSON.parse(uploadRes.data);
-          if (data.message === '发布成功') {
-            uni.showToast({ title: '发布成功', icon: 'success' });
-            setTimeout(() => {
-              uni.navigateBack();
-            }, 1500);
-          } else {
-            uni.showToast({ title: data.error || '发布失败', icon: 'none' });
-          }
+        // 准备请求数据
+        const postData = {
+          content: this.content,
+          image_url: this.imageUrl || '',
+          sound_id: this.soundUrl || null
+        };
+        
+        const res = await uni.request({
+          url: api.post.create,
+          method: 'POST',
+          header: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          data: postData
+        });
+        
+        uni.hideLoading();
+        
+        // 支持两种响应格式：{code: 201, message: '发布成功'} 或 {message: '发布成功'}
+        const responseData = res.data;
+        const isSuccess = responseData.message === '发布成功' || 
+                         (responseData.code === 201 && responseData.message === '发布成功');
+        
+        if (isSuccess) {
+          uni.showToast({ title: '发布成功', icon: 'success' });
+          setTimeout(() => {
+            uni.navigateBack();
+          }, 1500);
         } else {
-          const res = await uni.request({
-            url: api.post.create,
-            method: 'POST',
-            header: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            data: {
-              content: this.content,
-              sound_url: this.soundUrl || ''
-            }
-          });
-          
-          uni.hideLoading();
-          
-          if (res.data && res.data.message === '发布成功') {
-            uni.showToast({ title: '发布成功', icon: 'success' });
-            setTimeout(() => {
-              uni.navigateBack();
-            }, 1500);
-          } else {
-            uni.showToast({ title: res.data.error || '发布失败', icon: 'none' });
-          }
+          uni.showToast({ title: responseData.error || responseData.message || '发布失败', icon: 'none' });
         }
       } catch (error) {
         uni.hideLoading();
