@@ -84,7 +84,7 @@
           <view class="third-party-buttons">
             <view class="third-party-btn wechat" @click="wechatLogin">
               <view class="wechat-icon">
-                <svg-icon name="wechat" :size="44" color="#07C160" />
+                <svg-icon name="wechat" :size="44" color="#4CAF50" />
               </view>
               <text class="third-party-text">微信登录</text>
             </view>
@@ -541,31 +541,31 @@ export default {
   gap: 4rpx;
   padding: 12rpx 32rpx;
   border-radius: 14rpx;
-  background: rgba(129, 199, 132, 0.08);
-  border: 1rpx solid rgba(129, 199, 132, 0.15);
+  background: rgba(129, 199, 132, 0.06);
+  border: 1rpx solid rgba(129, 199, 132, 0.12);
   transition: all 0.3s ease;
 }
 
 .third-party-btn:active {
   transform: scale(0.98);
-  background: rgba(129, 199, 132, 0.12);
-  border-color: rgba(129, 199, 132, 0.25);
+  background: rgba(129, 199, 132, 0.1);
+  border-color: rgba(129, 199, 132, 0.2);
 }
 
 .wechat-icon {
   width: 48rpx;
   height: 48rpx;
-  background: linear-gradient(135deg, #81C784 0%, #A5D6A7 100%);
+  background: linear-gradient(135deg, #A8E6A3 0%, #C8E6C9 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2rpx 6rpx rgba(129, 199, 132, 0.08);
+  box-shadow: 0 2rpx 6rpx rgba(129, 199, 132, 0.06);
 }
 
 .third-party-text {
   font-size: 22rpx;
-  color: #66BB6A;
+  color: #81C784;
   font-weight: 500;
 }
 
