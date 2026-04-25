@@ -1525,7 +1525,7 @@ async function saveSystemSound() {
   formData.append('description', description);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds`, { method: 'POST', headers: getAuthHeaders(),
+    const response = await fetch(`${API_BASE_URL}/admin-upload/system-sounds`, { method: 'POST', headers: getAuthHeaders(),
       body: formData
     });
 

@@ -7,6 +7,9 @@ const path = require('path');
 const fs = require('fs');
 const { requireAdmin } = require('../middleware/security');
 
+// 注意：此路由文件在 index.js 中使用 /api/admin-upload 路径挂载
+// 所以这里的 /system-sounds 实际路径是 /api/admin-upload/system-sounds
+
 // 配置文件上传
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -42,15 +45,17 @@ const upload = multer({
 
 // 添加系统声音（支持文件上传）- 在 body-parser 之前注册
 router.post('/system-sounds', requireAdmin, upload.single('sound'), (req, res) => {
-  const { animal_type, emotion, duration, description } = req.body;
+  // 前端发送的是 type_id，需要兼容处理
+  const animal_type = req.body.animal_type || req.body.type_id;
+  const { emotion, duration, description } = req.body;
   const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body.sound_url;
 
   if (!animal_type || !emotion || !soundUrl) {
     return res.status(400).json({ code: 400, error: '缺少必要参数' });
   }
 
-  // 验证 animal_type 是否有效
-  db.query('SELECT id FROM animal_types WHERE type = ?', [animal_type], (err, results) => {
+  // 验证 animal_type 是否有效（可能是 ID 或 type 字符串）
+  db.query('SELECT id, type FROM animal_types WHERE id = ? OR type = ?', [animal_type, animal_type], (err, results) => {
     if (err) {
       console.error('验证动物类型失败:', err);
       return res.status(500).json({ code: 500, error: '服务器错误' });

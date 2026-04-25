@@ -511,8 +511,9 @@ const bannerUploadRoutes = require('./routes/banner-upload');
 app.use('/api/banner/admin', bannerUploadRoutes);
 
 // 后台声音上传路由（也需要在 body-parser 之前）
+// 注意：使用 /api/admin-upload 路径避免与 /api/admin 冲突
 const adminSoundUploadRoutes = require('./routes/admin-sound-upload');
-app.use('/api/admin', adminSoundUploadRoutes);
+app.use('/api/admin-upload', adminSoundUploadRoutes);
 
 // 注册 body-parser（用于其他 API）
 app.use(express.json({ limit: '10mb' }));

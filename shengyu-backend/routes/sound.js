@@ -609,11 +609,46 @@ router.post('/admin/system-sounds', authenticateToken, upload.single('sound'), (
 // 更新系统声音
 router.put('/admin/system-sounds/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
-  const { animal_type, emotion, sound_url, duration } = req.body;
+  const { animal_type, emotion, sound_url, duration, description, is_active } = req.body;
+
+  // 构建动态更新语句
+  const updates = [];
+  const values = [];
+
+  if (animal_type !== undefined) {
+    updates.push('animal_type = ?');
+    values.push(animal_type);
+  }
+  if (emotion !== undefined) {
+    updates.push('emotion = ?');
+    values.push(emotion);
+  }
+  if (sound_url !== undefined) {
+    updates.push('sound_url = ?');
+    values.push(sound_url);
+  }
+  if (duration !== undefined) {
+    updates.push('duration = ?');
+    values.push(duration);
+  }
+  if (description !== undefined) {
+    updates.push('description = ?');
+    values.push(description);
+  }
+  if (is_active !== undefined) {
+    updates.push('is_active = ?');
+    values.push(is_active);
+  }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ code: 400, error: '没有要更新的字段' });
+  }
+
+  values.push(id);
 
   db.query(
-    'UPDATE sounds SET animal_type = ?, emotion = ?, sound_url = ?, duration = ? WHERE id = ? AND user_id IS NULL',
-    [animal_type, emotion, sound_url, duration, id],
+    `UPDATE sounds SET ${updates.join(', ')} WHERE id = ? AND user_id IS NULL`,
+    values,
     (err) => {
       if (err) {
         console.error('更新系统声音失败:', err);
