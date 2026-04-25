@@ -66,13 +66,21 @@ router.post('/upload', authenticateToken, upload.single('sound'), handleMulterEr
   }
   
   // 验证文件类型
-  const filetypes = config.upload.allowedSoundTypes;
-  const extname = filetypes.test(path.extname(req.file.originalname).toLowerCase());
-  const mimetype = filetypes.test(req.file.mimetype);
-  if (!extname || !mimetype) {
+  const allowedExts = ['.wav', '.mp3', '.ogg', '.aac', '.flac', '.m4a', '.webm'];
+  const allowedMimes = ['audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/aac', 'audio/flac', 'audio/mp4', 'audio/webm'];
+  
+  const extname = path.extname(req.file.originalname).toLowerCase();
+  const mimetype = req.file.mimetype;
+  
+  const isValidExt = allowedExts.includes(extname);
+  const isValidMime = allowedMimes.includes(mimetype);
+  
+  console.log('[sound-upload] 文件验证:', { extname, mimetype, isValidExt, isValidMime });
+  
+  if (!isValidExt && !isValidMime) {
     // 删除无效文件
     fs.unlinkSync(req.file.path);
-    return res.status(400).json({ code: 400, error: '只允许上传音频文件' });
+    return res.status(400).json({ code: 400, error: '只允许上传音频文件 (支持: mp3, wav, ogg, aac, flac, m4a, webm)' });
   }
 
   if (!animal_type || !emotion) {
