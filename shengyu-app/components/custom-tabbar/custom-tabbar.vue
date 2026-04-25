@@ -102,20 +102,20 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64rpx;
-  height: 64rpx;
-  margin-bottom: 2rpx;
+  width: 72rpx;
+  height: 72rpx;
+  margin-bottom: 4rpx;
 }
 
 .tab-icon {
-  font-size: 40rpx;
+  font-size: 44rpx;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
 }
 
 .tab-item.active .tab-icon {
-  transform: scale(1.15) translateY(-4rpx);
-  filter: drop-shadow(0 4rpx 8rpx rgba(255, 107, 157, 0.3));
+  transform: scale(1.2) translateY(-6rpx);
+  filter: drop-shadow(0 4rpx 12rpx rgba(255, 107, 157, 0.4));
 }
 
 .active-indicator {
@@ -157,21 +157,21 @@ export default {
   transform: scale(0.95);
 }
 
-/* 未读消息气泡 */
+/* 未读消息气泡 - 与私信列表保持一致 */
 .unread-badge {
   position: absolute;
-  top: -4rpx;
-  right: -4rpx;
+  top: -2rpx;
+  right: -2rpx;
   background: #FF4757;
   color: #FFFFFF;
-  font-size: 20rpx;
-  min-width: 36rpx;
-  height: 36rpx;
-  border-radius: 18rpx;
+  font-size: 22rpx;
+  min-width: 40rpx;
+  height: 40rpx;
+  border-radius: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 8rpx;
+  padding: 0 10rpx;
   font-weight: 600;
   box-shadow: 0 4rpx 12rpx rgba(255, 71, 87, 0.4);
   animation: badge-pulse 2s ease-in-out infinite;

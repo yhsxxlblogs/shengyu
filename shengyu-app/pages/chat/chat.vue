@@ -177,11 +177,41 @@ export default {
   },
   onUnload() {
     this.removeWebSocketListeners();
+    // 标记消息为已读
+    this.markMessagesAsRead();
+    // 刷新消息列表和未读数
     uni.$emit('refreshMessages');
+    uni.$emit('updateUnreadCount');
+  },
+  onHide() {
+    // 页面隐藏时也标记已读
+    this.markMessagesAsRead();
   },
   methods: {
     goBack() {
       uni.navigateBack();
+    },
+
+    // 标记消息为已读
+    async markMessagesAsRead() {
+      const token = uni.getStorageSync('token');
+      if (!token) return;
+      
+      try {
+        // 调用后端API标记已读
+        await uni.request({
+          url: `http://shengyu.supersyh.xyz/api/social/messages/read/${this.userId}`,
+          method: 'PUT',
+          header: { Authorization: `Bearer ${token}` }
+        });
+        
+        // 通过WebSocket发送已读通知
+        if (this.wsConnected && wsService.getConnectionStatus()) {
+          wsService.markAsRead(this.userId);
+        }
+      } catch (e) {
+        console.error('标记已读失败:', e);
+      }
     },
 
     initWebSocket() {

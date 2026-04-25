@@ -442,14 +442,16 @@ export default {
   background: #FF4757;
   color: #FFFFFF;
   font-size: 22rpx;
-  min-width: 36rpx;
-  height: 36rpx;
-  border-radius: 18rpx;
+  min-width: 40rpx;
+  height: 40rpx;
+  border-radius: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 8rpx;
+  padding: 0 10rpx;
   box-sizing: border-box;
   flex-shrink: 0;
+  font-weight: 600;
+  box-shadow: 0 4rpx 12rpx rgba(255, 71, 87, 0.4);
 }
 </style>
