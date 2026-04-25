@@ -431,25 +431,64 @@ const config = {
 
 ### 登录/注册页面
 
-**图标尺寸**（2025-04-25优化）：
-- 应用图标：200rpx × 200rpx（小屏幕160rpx，大屏幕220rpx）
-- Logo图标：140rpx × 140rpx（小屏幕110rpx，大屏幕160rpx）
-- 圆角：48rpx（小屏幕40rpx，大屏幕52rpx）
-- 阴影：0 12rpx 40rpx rgba(255, 182, 193, 0.35)
+**图标尺寸**（2025-04-25最终优化）：
+- 应用图标：240rpx × 240rpx（小屏幕180rpx，大屏幕260rpx）
+- Logo图标：170rpx × 170rpx（小屏幕130rpx，大屏幕190rpx）
+- 圆角：60rpx（小屏幕44rpx，大屏幕64rpx）
+- 阴影：0 16rpx 48rpx rgba(255, 182, 193, 0.4)
 
-**页面布局**（2025-04-25优化）：
-- 顶部边距：100rpx（小屏幕80rpx，大屏幕120rpx）
+**图标动态特效**（2025-04-25新增）：
+```css
+/* 呼吸动画 */
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 16rpx 48rpx rgba(255, 182, 193, 0.4); }
+  50% { transform: scale(1.02); box-shadow: 0 20rpx 56rpx rgba(255, 182, 193, 0.5); }
+}
+
+/* 浮动动画 */
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8rpx); }
+}
+```
+
+**页面布局**（2025-04-25最终优化）：
+- 顶部边距：80rpx（小屏幕60rpx，大屏幕100rpx）
 - 容器宽度：78%（最大宽度480rpx）
-- 元素间距：24rpx（小屏幕18rpx，大屏幕28rpx）
+- 元素间距：32rpx（小屏幕20rpx，大屏幕40rpx）
 
-**输入框样式**（2025-04-25优化）：
-- 高度：80rpx（小屏幕72rpx）
-- 圆角：14rpx
-- 内边距：0 20rpx
+**输入框样式**（2025-04-25最终优化）：
+- 高度：88rpx（小屏幕76rpx）
+- 圆角：16rpx
+- 内边距：0 24rpx
 - 边框：2rpx solid #F0F0F0
+- 间距：24rpx（小屏幕18rpx，大屏幕28rpx）
+
+**输入框动态特效**（2025-04-25新增）：
+```css
+/* 聚焦效果 */
+.input-wrapper:focus-within {
+  border-color: #FFB6C1;
+  box-shadow: 0 8rpx 24rpx rgba(255, 182, 193, 0.25);
+  transform: translateY(-2rpx);
+}
+
+/* 流光动画 */
+.input-wrapper::before {
+  content: '';
+  position: absolute;
+  left: -100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 182, 193, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+.input-wrapper:focus-within::before { left: 100%; }
+
+/* 点击效果 */
+.input-wrapper:active { transform: scale(0.98); }
+```
 
 **按钮样式**（2025-04-25优化）：
-- 高度：76rpx（小屏幕68rpx）
+- 高度：76rpx（小屏幕72rpx）
 - 圆角：38rpx
 - 字体：30rpx
 - 阴影：0 6rpx 20rpx rgba(255, 107, 157, 0.3)
