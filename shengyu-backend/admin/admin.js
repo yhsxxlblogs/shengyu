@@ -1160,7 +1160,10 @@ async function updateBanner() {
   formData.append('is_active', is_active);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/banner/admin/update/${id}`, { method: 'PUT', headers: getAuthHeaders(),
+    // 使用 FormData 时不能设置 Content-Type，让浏览器自动设置（包含 boundary）
+    const headers = getAuthHeaders();
+    delete headers['Content-Type']; // 删除 Content-Type，让浏览器自动设置
+    const response = await fetch(`${API_BASE_URL}/banner/admin/update/${id}`, { method: 'PUT', headers,
       body: formData
     });
 
@@ -1589,7 +1592,10 @@ async function saveBanner() {
   formData.append('sort_order', sort_order);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/banner/admin/create`, { method: 'POST', headers: getAuthHeaders(),
+    // 使用 FormData 时不能设置 Content-Type，让浏览器自动设置（包含 boundary）
+    const headers = getAuthHeaders();
+    delete headers['Content-Type']; // 删除 Content-Type，让浏览器自动设置
+    const response = await fetch(`${API_BASE_URL}/banner/admin/create`, { method: 'POST', headers,
       body: formData
     });
 
