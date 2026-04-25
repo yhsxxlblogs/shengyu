@@ -517,6 +517,30 @@
               </view>
 
               <view class="menu-section">
+                <text class="menu-title">账号安全</text>
+                <view class="menu-item" @click="goToSetPassword">
+                  <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #FF6B9D 0%, #FF9A9E 100%);">
+                    <svg-icon name="lock" :size="32" class="menu-icon-svg" />
+                  </view>
+                  <text class="menu-text">设置密码</text>
+                  <view class="bind-status">
+                    <text class="bind-status-text" :class="{ 'bound': hasPassword }">{{ hasPassword ? '已设置' : '未设置' }}</text>
+                    <svg-icon name="arrow-right" :size="24" class="menu-arrow-svg" />
+                  </view>
+                </view>
+                <view class="menu-item" @click="handleWechatBind">
+                  <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #07C160 0%, #10B981 100%);">
+                    <svg-icon name="message" :size="32" class="menu-icon-svg" />
+                  </view>
+                  <text class="menu-text">微信绑定</text>
+                  <view class="bind-status">
+                    <text class="bind-status-text" :class="{ 'bound': wechatBound }">{{ wechatBound ? '已绑定' : '未绑定' }}</text>
+                    <svg-icon name="arrow-right" :size="24" class="menu-arrow-svg" />
+                  </view>
+                </view>
+              </view>
+
+              <view class="menu-section">
                 <text class="menu-title">设置与帮助</text>
                 <view class="menu-item" @click="goToSettings">
                   <view class="menu-icon-wrapper" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
@@ -618,7 +642,8 @@ export default {
       profileLoading: false,
       profileUpdateTimer: null,
       wechatBound: false,
-      wechatInfo: null
+      wechatInfo: null,
+      hasPassword: false
     }
   },
   computed: {
@@ -1620,6 +1645,8 @@ export default {
               following_count: statsRes.data?.stats?.following_count || 0,
               follower_count: statsRes.data?.stats?.follower_count || 0
             }
+            // 检查是否设置了密码
+            this.hasPassword = userData.hasPassword || false
             // 加载关注列表到缓存
             this.loadFollowingList(token)
           }
@@ -1718,6 +1745,36 @@ export default {
 
     goToAbout() {
       uni.navigateTo({ url: '/pages/about/about' })
+    },
+
+    goToSetPassword() {
+      uni.navigateTo({ url: '/pages/set-password/set-password' })
+    },
+
+    handleWechatBind() {
+      if (this.wechatBound) {
+        uni.showModal({
+          title: '提示',
+          content: '已绑定微信，是否解绑？',
+          success: (res) => {
+            if (res.confirm) {
+              this.unbindWechat()
+            }
+          }
+        })
+      } else {
+        this.bindWechat()
+      }
+    },
+
+    bindWechat() {
+      // 调用微信登录绑定
+      uni.showToast({ title: '微信绑定功能开发中', icon: 'none' })
+    },
+
+    unbindWechat() {
+      // 解绑微信
+      uni.showToast({ title: '微信解绑功能开发中', icon: 'none' })
     },
 
     goToFollows() {

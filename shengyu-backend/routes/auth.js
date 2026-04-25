@@ -475,8 +475,18 @@ router.get('/search', (req, res) => {
   const searchPattern = `%${q}%`;
 
   db.query(
-    'SELECT id, username, email, avatar FROM users WHERE username LIKE ? OR email LIKE ? ORDER BY created_at DESC LIMIT 20',
-    [searchPattern, searchPattern],
+    `SELECT id, 
+            COALESCE(nickname, wechat_nickname, username) as username, 
+            email, 
+            COALESCE(avatar, wechat_avatar) as avatar 
+     FROM users 
+     WHERE username LIKE ? 
+        OR email LIKE ? 
+        OR nickname LIKE ? 
+        OR wechat_nickname LIKE ? 
+     ORDER BY created_at DESC 
+     LIMIT 20`,
+    [searchPattern, searchPattern, searchPattern, searchPattern],
     (err, results) => {
       if (err) return res.status(500).json({ error: '服务器错误' });
       res.status(200).json({ users: results });
