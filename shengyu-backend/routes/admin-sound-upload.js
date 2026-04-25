@@ -43,8 +43,22 @@ const upload = multer({
   }
 });
 
+// 错误处理中间件
+const handleMulterError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ code: 400, error: '文件大小超过限制' });
+    }
+    return res.status(400).json({ code: 400, error: '文件上传错误: ' + err.message });
+  }
+  if (err) {
+    return res.status(400).json({ code: 400, error: err.message });
+  }
+  next();
+};
+
 // 添加系统声音（支持文件上传）- 在 body-parser 之前注册
-router.post('/system-sounds', requireAdmin, upload.single('sound'), (req, res) => {
+router.post('/system-sounds', requireAdmin, upload.single('sound'), handleMulterError, (req, res) => {
   // 前端发送的是 type_id，需要兼容处理
   const animal_type = req.body.animal_type || req.body.type_id;
   const { emotion, duration, description } = req.body;
@@ -86,7 +100,7 @@ router.post('/system-sounds', requireAdmin, upload.single('sound'), (req, res) =
 });
 
 // 更新系统声音（支持文件上传）- 在 body-parser 之前注册
-router.put('/system-sounds/:id', requireAdmin, upload.single('sound'), (req, res) => {
+router.put('/system-sounds/:id', requireAdmin, upload.single('sound'), handleMulterError, (req, res) => {
   const { id } = req.params;
   const { animal_type, emotion, duration, description } = req.body;
   const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body.sound_url;

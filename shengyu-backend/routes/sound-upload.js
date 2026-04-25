@@ -42,8 +42,22 @@ const upload = multer({
   }
 });
 
+// 错误处理中间件
+const handleMulterError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ code: 400, error: '文件大小超过限制' });
+    }
+    return res.status(400).json({ code: 400, error: '文件上传错误: ' + err.message });
+  }
+  if (err) {
+    return res.status(400).json({ code: 400, error: err.message });
+  }
+  next();
+};
+
 // 用户上传声音 - 在 body-parser 之前注册
-router.post('/upload', authenticateToken, upload.single('sound'), (req, res) => {
+router.post('/upload', authenticateToken, upload.single('sound'), handleMulterError, (req, res) => {
   const userId = req.user.id;
   const { animal_type, emotion, duration, visible, submit_for_review } = req.body;
 
