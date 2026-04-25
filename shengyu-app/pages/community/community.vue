@@ -172,9 +172,11 @@ export default {
       }
       
       try {
+        const token = uni.getStorageSync('token');
         const res = await uni.request({
           url: api.post.list,
-          method: 'GET'
+          method: 'GET',
+          header: token ? { Authorization: `Bearer ${token}` } : {}
         });
         
         if (res.data.posts) {

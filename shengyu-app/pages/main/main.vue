@@ -1268,7 +1268,8 @@ export default {
 
         const res = await uni.request({
           url: `http://shengyu.supersyh.xyz/api/post/list?page=${this.page}&pageSize=${this.pageSize}`,
-          method: 'GET'
+          method: 'GET',
+          header: token ? { Authorization: `Bearer ${token}` } : {}
         })
         if (res.data.posts) {
           // 获取缓存的关注列表（仅登录用户）
