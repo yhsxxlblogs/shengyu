@@ -176,10 +176,10 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 85%;
-  max-width: 520rpx;
-  gap: 28rpx; /* 使用gap控制间距 */
-  margin-top: 120rpx; /* 顶部留白 */
+  width: 78%;
+  max-width: 480rpx;
+  gap: 24rpx; /* 使用gap控制间距 */
+  margin-top: 100rpx; /* 顶部留白 */
 }
 
 /* 头部区域 */
@@ -238,9 +238,9 @@ export default {
   display: flex;
   align-items: center;
   background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 0 24rpx;
-  height: 88rpx;
+  border-radius: 14rpx;
+  padding: 0 20rpx;
+  height: 80rpx;
   border: 2rpx solid #F0F0F0;
   transition: all 0.3s ease;
 }
@@ -283,19 +283,19 @@ export default {
 /* 注册按钮 */
 .register-btn {
   width: 100%;
-  height: 84rpx;
+  height: 76rpx;
   background: linear-gradient(135deg, #FF9A9E 0%, #FF6B9D 100%);
   color: #fff;
-  border-radius: 42rpx;
-  font-size: 32rpx;
+  border-radius: 38rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.3);
+  box-shadow: 0 6rpx 20rpx rgba(255, 107, 157, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   transition: all 0.3s ease;
-  margin-top: 12rpx;
+  margin-top: 8rpx;
 }
 
 .register-btn:active {
@@ -355,8 +355,8 @@ export default {
 /* 适配小屏幕 */
 @media screen and (max-height: 700px) {
   .register-container {
-    gap: 20rpx;
-    margin-top: 100rpx;
+    gap: 18rpx;
+    margin-top: 80rpx;
   }
 
   .app-icon {
@@ -371,7 +371,7 @@ export default {
   }
 
   .app-title {
-    font-size: 36rpx;
+    font-size: 34rpx;
   }
 
   .app-subtitle {
@@ -379,11 +379,11 @@ export default {
   }
 
   .input-wrapper {
-    height: 76rpx;
+    height: 72rpx;
   }
 
   .register-btn {
-    height: 72rpx;
+    height: 68rpx;
     font-size: 28rpx;
   }
 }
@@ -391,8 +391,8 @@ export default {
 /* 适配大屏幕 */
 @media screen and (min-height: 900px) {
   .register-container {
-    gap: 32rpx;
-    margin-top: 140rpx;
+    gap: 28rpx;
+    margin-top: 120rpx;
   }
 
   .app-icon {
