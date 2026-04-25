@@ -67,7 +67,6 @@
                       mode="aspectFill"
                       :lazy-load="true"
                       :fade-show="true"
-                      :webp="true"
                       @error="onBannerImageError(index)"
                     />
                     <view v-else class="banner-placeholder">
