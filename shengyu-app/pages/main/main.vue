@@ -1,4 +1,4 @@
-﻿﻿﻿﻿<template>
+﻿﻿﻿﻿﻿﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -3346,7 +3346,9 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 80rpx 40rpx;
+  justify-content: center;
+  padding: 40rpx;
+  min-height: 60vh; /* 最小高度为视口的60%，垂直居中 */
 }
 
 .empty-avatar {
