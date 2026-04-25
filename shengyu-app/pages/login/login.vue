@@ -20,7 +20,7 @@
             <input 
               type="text" 
               v-model="form.email" 
-              placeholder="请输入用户名或邮箱" 
+              placeholder="请输入邮箱/用户名/微信名" 
               class="input"
               placeholder-class="input-placeholder"
             />

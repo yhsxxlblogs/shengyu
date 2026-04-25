@@ -106,41 +106,45 @@ router.post('/login', (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ error: '请填写邮箱和密码' });
+    return res.status(400).json({ error: '请填写邮箱/用户名/微信名和密码' });
   }
 
-  // 查找用户（支持邮箱或用户名登录）
-  db.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, email], (err, results) => {
-    if (err) return res.status(500).json({ error: '服务器错误' });
-    if (results.length === 0) return res.status(400).json({ error: '用户名/邮箱或密码错误' });
+  // 查找用户（支持邮箱、用户名或微信昵称登录）
+  db.query(
+    'SELECT * FROM users WHERE email = ? OR username = ? OR wechat_nickname = ?',
+    [email, email, email],
+    (err, results) => {
+      if (err) return res.status(500).json({ error: '服务器错误' });
+      if (results.length === 0) return res.status(400).json({ error: '用户名/邮箱/微信名或密码错误' });
 
-    const user = results[0];
-    
-    // 检查用户是否被禁用
-    if (user.is_active === 0) {
-      return res.status(403).json({ error: '账号已被禁用，请联系管理员' });
-    }
-
-    // 验证密码
-    if (!user.password || !bcrypt.compareSync(password, user.password)) {
-      return res.status(400).json({ error: '用户名/邮箱或密码错误' });
-    }
-
-    // 生成token
-    const token = jwt.sign({ id: user.id, is_admin: user.is_admin }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-
-    res.status(200).json({
-      message: '登录成功',
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-        is_admin: user.is_admin
+      const user = results[0];
+      
+      // 检查用户是否被禁用
+      if (user.is_active === 0) {
+        return res.status(403).json({ error: '账号已被禁用，请联系管理员' });
       }
-    });
-  });
+
+      // 验证密码
+      if (!user.password || !bcrypt.compareSync(password, user.password)) {
+        return res.status(400).json({ error: '用户名/邮箱/微信名或密码错误' });
+      }
+
+      // 生成token
+      const token = jwt.sign({ id: user.id, is_admin: user.is_admin }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
+
+      res.status(200).json({
+        message: '登录成功',
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar,
+          is_admin: user.is_admin
+        }
+      });
+    }
+  );
 });
 
 // 管理员登录（后台专用）
