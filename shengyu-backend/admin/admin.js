@@ -811,8 +811,9 @@ function refreshUserSounds() {
 
 async function reviewSound(id, status) {
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/user-sounds/${id}/review`, { method: 'PUT', headers: getAuthHeaders(),
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch(`${API_BASE_URL}/sound/admin/user-sounds/${id}/review`, { 
+      method: 'PUT', 
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     });
 
@@ -1190,8 +1191,9 @@ async function toggleBannerStatus(id, currentStatus) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/banner/admin/toggle/${id}`, { method: 'PUT', headers: getAuthHeaders(),
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch(`${API_BASE_URL}/banner/admin/toggle/${id}`, { 
+      method: 'PUT', 
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_active: newStatus })
     });
 
@@ -1390,8 +1392,9 @@ async function saveCategory() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/categories`, { method: 'POST', headers: getAuthHeaders(),
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch(`${API_BASE_URL}/sound/admin/categories`, { 
+      method: 'POST', 
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, display_name, sort_order })
     });
 
@@ -1421,8 +1424,9 @@ async function updateCategory() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/categories/${id}`, { method: 'PUT', headers: getAuthHeaders(),
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch(`${API_BASE_URL}/sound/admin/categories/${id}`, { 
+      method: 'PUT', 
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ display_name, sort_order, is_active })
     });
 
@@ -1453,8 +1457,9 @@ async function saveAnimalType() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types`, { method: 'POST', headers: getAuthHeaders(),
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types`, { 
+      method: 'POST', 
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ type, name, icon, category, sort_order })
     });
 
@@ -1486,8 +1491,9 @@ async function updateAnimalType() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types/${id}`, { method: 'PUT', headers: getAuthHeaders(),
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch(`${API_BASE_URL}/sound/admin/animal-types/${id}`, { 
+      method: 'PUT', 
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, icon, category, sort_order, is_active })
     });
 
@@ -1559,8 +1565,9 @@ async function updateSystemSound() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds/${id}`, { method: 'PUT', headers: getAuthHeaders(),
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch(`${API_BASE_URL}/sound/admin/system-sounds/${id}`, { 
+      method: 'PUT', 
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ emotion, description, is_active })
     });
 
