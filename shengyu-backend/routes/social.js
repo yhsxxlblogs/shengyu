@@ -80,7 +80,9 @@ router.get('/follows/:userId', authenticateToken, (req, res) => {
   const currentUserId = req.user.id;
 
   db.query(
-    `SELECT u.id, u.username, u.avatar,
+    `SELECT u.id, 
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username, 
+            COALESCE(u.avatar, u.wechat_avatar) as avatar,
             EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = u.id) as is_following
      FROM follows f
      JOIN users u ON f.following_id = u.id
@@ -110,7 +112,9 @@ router.get('/followers/:userId', authenticateToken, (req, res) => {
   const currentUserId = req.user.id;
 
   db.query(
-    `SELECT u.id, u.username, u.avatar,
+    `SELECT u.id,
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username,
+            COALESCE(u.avatar, u.wechat_avatar) as avatar,
             EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = u.id) as is_following
      FROM follows f
      JOIN users u ON f.follower_id = u.id
@@ -162,7 +166,9 @@ router.get('/following', authenticateToken, (req, res) => {
   const userId = req.user.id;
 
   db.query(
-    `SELECT u.id, u.username, u.avatar
+    `SELECT u.id,
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username,
+            COALESCE(u.avatar, u.wechat_avatar) as avatar
      FROM follows f
      JOIN users u ON f.following_id = u.id
      WHERE f.follower_id = ?
@@ -228,7 +234,9 @@ router.post('/message', authenticateToken, (req, res) => {
 
         // 获取新消息
         db.query(
-          `SELECT m.*, u.username, u.avatar
+          `SELECT m.*,
+                  COALESCE(u.nickname, u.wechat_nickname, u.username) as username,
+                  COALESCE(u.avatar, u.wechat_avatar) as avatar
            FROM messages m
            LEFT JOIN users u ON m.sender_id = u.id
            WHERE m.id = ?`,
@@ -257,8 +265,8 @@ router.get('/messages', authenticateToken, (req, res) => {
   db.query(
     `SELECT
       m.*,
-      u.username,
-      u.avatar,
+      COALESCE(u.nickname, u.wechat_nickname, u.username) as username,
+      COALESCE(u.avatar, u.wechat_avatar) as avatar,
       CASE
         WHEN m.sender_id = ? THEN m.receiver_id
         ELSE m.sender_id
@@ -320,7 +328,9 @@ router.get('/messages/:userId', authenticateToken, (req, res) => {
   }
 
   db.query(
-    `SELECT m.*, u.username, u.avatar
+    `SELECT m.*,
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username,
+            COALESCE(u.avatar, u.wechat_avatar) as avatar
      FROM messages m
      LEFT JOIN users u ON m.sender_id = u.id
      WHERE (m.sender_id = ? AND m.receiver_id = ?)

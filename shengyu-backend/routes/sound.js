@@ -255,7 +255,9 @@ router.get('/detail/:id', optionalAuth, (req, res) => {
   const soundId = req.params.id;
 
   db.query(
-    `SELECT s.*, u.username, u.avatar
+    `SELECT s.*, 
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username, 
+            COALESCE(u.avatar, u.wechat_avatar) as avatar
      FROM sounds s
      LEFT JOIN users u ON s.user_id = u.id
      WHERE s.id = ?`,
