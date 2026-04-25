@@ -2,7 +2,7 @@
   <view class="set-password-page">
     <view class="header">
       <view class="back-btn" @click="goBack">
-        <svg-icon name="arrow-left" :size="32" color="#333" />
+        <svg-icon name="arrow-left" :size="32" color="#666666" />
       </view>
       <text class="header-title">设置密码</text>
       <view class="placeholder"></view>
@@ -32,7 +32,7 @@
               placeholder-class="input-placeholder"
             />
             <view class="toggle-password" @click="showCurrentPassword = !showCurrentPassword">
-              <svg-icon :name="showCurrentPassword ? 'eye' : 'eye-off'" :size="32" color="#999" />
+              <svg-icon :name="showCurrentPassword ? 'eye' : 'eye-off'" :size="32" color="#BBBBBB" />
             </view>
           </view>
         </view>
@@ -50,7 +50,7 @@
               maxlength="20"
             />
             <view class="toggle-password" @click="showNewPassword = !showNewPassword">
-              <svg-icon :name="showNewPassword ? 'eye' : 'eye-off'" :size="32" color="#999" />
+              <svg-icon :name="showNewPassword ? 'eye' : 'eye-off'" :size="32" color="#BBBBBB" />
             </view>
           </view>
         </view>
@@ -68,7 +68,7 @@
               maxlength="20"
             />
             <view class="toggle-password" @click="showConfirmPassword = !showConfirmPassword">
-              <svg-icon :name="showConfirmPassword ? 'eye' : 'eye-off'" :size="32" color="#999" />
+              <svg-icon :name="showConfirmPassword ? 'eye' : 'eye-off'" :size="32" color="#BBBBBB" />
             </view>
           </view>
         </view>

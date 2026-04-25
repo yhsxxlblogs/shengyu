@@ -55,7 +55,7 @@
               placeholder-class="input-placeholder"
             />
             <view class="toggle-password" @click="showPassword = !showPassword">
-              <svg-icon :name="showPassword ? 'eye' : 'eye-off'" :size="32" color="#999" />
+              <svg-icon :name="showPassword ? 'eye' : 'eye-off'" :size="32" color="#BBBBBB" />
             </view>
           </view>
         </view>
