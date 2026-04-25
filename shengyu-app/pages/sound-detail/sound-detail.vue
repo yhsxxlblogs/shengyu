@@ -33,7 +33,7 @@
           <view class="sound-item" v-for="sound in relatedSounds" :key="sound.id" @click="goSoundPlayer(sound.id)">
             <text class="sound-item-icon">{{ getAnimalIcon(type) }}</text>
             <text class="sound-item-emotion">{{ sound.emotion }}</text>
-            <text class="sound-item-duration">{{ sound.duration }}s</text>
+            <text class="sound-item-duration">{{ formatDuration(sound.duration) }}</text>
           </view>
         </view>
       </view>
@@ -186,6 +186,12 @@ export default {
         sheep: '绵羊'
       };
       return names[type] || '动物';
+    },
+    formatDuration(seconds) {
+      if (!seconds || seconds <= 0) return '00:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     },
     goSoundPlayer(id) {
       uni.navigateTo({ url: `/pages/sound-player/sound-player?id=${id}&type=${this.type}` });
