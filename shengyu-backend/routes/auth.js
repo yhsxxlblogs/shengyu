@@ -273,8 +273,8 @@ router.get('/user/:id', (req, res) => {
     return res.status(400).json({ code: 400, error: '无效的用户ID' });
   }
 
-  // 获取用户基本信息
-  db.query('SELECT id, username, email, avatar FROM users WHERE id = ? AND is_active = 1', [id], (err, userResults) => {
+  // 获取用户基本信息（优先显示微信昵称）
+  db.query('SELECT id, COALESCE(nickname, wechat_nickname, username) as username, email, COALESCE(avatar, wechat_avatar) as avatar FROM users WHERE id = ? AND is_active = 1', [id], (err, userResults) => {
     if (err) return res.status(500).json({ code: 500, error: '服务器错误' });
     if (userResults.length === 0) return res.status(404).json({ code: 404, error: '用户不存在' });
 
