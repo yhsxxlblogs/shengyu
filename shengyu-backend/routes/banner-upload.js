@@ -36,12 +36,18 @@ const upload = multer({
 
 // 创建轮播图（支持文件上传）
 router.post('/create', upload.single('image'), (req, res) => {
+  // 调试日志
+  console.log('[Banner Create] req.file:', req.file);
+  console.log('[Banner Create] req.body:', req.body);
+  
   // 从 req.body 获取文本字段，multer 会自动解析
   const title = req.body?.title || '';
   const link_url = req.body?.link_url || '';
   const sort_order = parseInt(req.body?.sort_order || '0');
   
   const image_url = req.file ? `/uploads/banners/${req.file.filename}` : '';
+  
+  console.log('[Banner Create] 处理后的数据:', { title, link_url, sort_order, image_url });
 
   db.query(
     'INSERT INTO banners (image_url, title, link_url, sort_order) VALUES (?, ?, ?, ?)',
