@@ -215,6 +215,50 @@ router.get('/by-animal/:type', (req, res) => {
   );
 });
 
+// 按动物类型ID获取系统声音（前端声音详情页使用）
+router.get('/system/by-type/:typeId', (req, res) => {
+  const { typeId } = req.params;
+  const typeIdNum = parseInt(typeId);
+
+  if (isNaN(typeIdNum) || typeIdNum < 1) {
+    return res.status(400).json({ code: 400, error: '无效的类型ID' });
+  }
+
+  // 首先获取动物类型的type字符串
+  db.query(
+    'SELECT type FROM animal_types WHERE id = ? AND is_active = 1',
+    [typeIdNum],
+    (err, typeResults) => {
+      if (err) {
+        console.error('获取动物类型失败:', err);
+        return res.status(500).json({ code: 500, error: '服务器错误' });
+      }
+
+      if (typeResults.length === 0) {
+        return res.status(404).json({ code: 404, error: '动物类型不存在' });
+      }
+
+      const animalType = typeResults[0].type;
+
+      // 获取该系统类型的声音（系统声音：user_id IS NULL）
+      db.query(
+        `SELECT s.* FROM sounds s
+         WHERE s.animal_type = ? AND s.user_id IS NULL AND s.visible = 1
+         ORDER BY s.created_at DESC`,
+        [animalType],
+        (err, results) => {
+          if (err) {
+            console.error('获取系统声音失败:', err);
+            return res.status(500).json({ code: 500, error: '服务器错误' });
+          }
+
+          res.status(200).json({ code: 200, data: results });
+        }
+      );
+    }
+  );
+});
+
 // 搜索声音
 router.get('/search', (req, res) => {
   const { q } = req.query;
