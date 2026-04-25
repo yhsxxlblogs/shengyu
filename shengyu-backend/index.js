@@ -510,6 +510,10 @@ app.use(cors(corsOptions));
 const bannerUploadRoutes = require('./routes/banner-upload');
 app.use('/api/banner/admin', bannerUploadRoutes);
 
+// 后台声音上传路由（也需要在 body-parser 之前）
+const adminSoundUploadRoutes = require('./routes/admin-sound-upload');
+app.use('/api/admin', adminSoundUploadRoutes);
+
 // 注册 body-parser（用于其他 API）
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

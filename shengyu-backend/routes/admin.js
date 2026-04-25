@@ -793,56 +793,8 @@ router.get('/system-sounds', (req, res) => {
   );
 });
 
-// 添加系统声音（支持文件上传）
-router.post('/system-sounds', upload.single('sound'), (req, res) => {
-  const { animal_type, emotion, duration } = req.body;
-  const soundUrl = req.file ? '/uploads/sounds/' + req.file.filename : req.body.sound_url;
-
-  if (!animal_type || !emotion || !soundUrl) {
-    return res.status(400).json({ code: 400, error: '缺少必要参数' });
-  }
-
-  db.query(
-    'INSERT INTO sounds (user_id, animal_type, emotion, sound_url, duration, visible) VALUES (NULL, ?, ?, ?, ?, 1)',
-    [animal_type, emotion, soundUrl, duration || 0],
-    (err, results) => {
-      if (err) {
-        console.error('添加系统声音失败:', err);
-        return res.status(500).json({ code: 500, error: '服务器错误' });
-      }
-      res.status(200).json({ 
-        code: 200,
-        message: '系统声音添加成功',
-        data: { id: results.insertId }
-      });
-    }
-  );
-});
-
-// 更新系统声音
-router.put('/system-sounds/:id', (req, res) => {
-  const { id } = req.params;
-  const { animal_type, emotion, sound_url, duration } = req.body;
-
-  if (!animal_type || !emotion) {
-    return res.status(400).json({ code: 400, error: '动物类型和情绪不能为空' });
-  }
-
-  db.query(
-    'UPDATE sounds SET animal_type = ?, emotion = ?, sound_url = ?, duration = ? WHERE id = ? AND user_id IS NULL',
-    [animal_type, emotion, sound_url, duration || 0, id],
-    (err, results) => {
-      if (err) {
-        console.error('更新系统声音失败:', err);
-        return res.status(500).json({ code: 500, error: '服务器错误' });
-      }
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ code: 404, error: '系统声音不存在或无权限修改' });
-      }
-      res.status(200).json({ code: 200, message: '系统声音更新成功' });
-    }
-  );
-});
+// 注意：添加和更新系统声音的路由已移至 admin-sound-upload.js
+// 该文件在 body-parser 之前加载，避免 multipart 请求被错误解析为 JSON
 
 // 删除系统声音
 router.delete('/system-sounds/:id', (req, res) => {
