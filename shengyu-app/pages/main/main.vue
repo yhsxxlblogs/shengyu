@@ -1,4 +1,4 @@
-﻿<template>
+﻿﻿﻿﻿<template>
   <view class="main-container">
     <swiper
       class="main-swiper"
@@ -1574,21 +1574,28 @@ export default {
       const token = uni.getStorageSync('token')
       const userInfo = uni.getStorageSync('userInfo') || uni.getStorageSync('user')
       this.isLoggedIn = !!token
+      
+      console.log('[loadProfileData] token:', token ? '存在' : '不存在')
+      console.log('[loadProfileData] userInfo:', userInfo ? '存在' : '不存在')
 
       if (token && userInfo) {
         this.userInfo = userInfo
         try {
+          console.log('[loadProfileData] 开始请求 /api/auth/user')
           const userRes = await uni.request({
             url: 'http://shengyu.supersyh.xyz/api/auth/user',
             method: 'GET',
             header: { 'Authorization': `Bearer ${token}` }
           })
+          console.log('[loadProfileData] /api/auth/user 响应:', userRes.statusCode, userRes.data)
           if (userRes.statusCode === 200 && userRes.data && userRes.data.user) {
+            console.log('[loadProfileData] 开始请求 /api/auth/user/stats')
             const statsRes = await uni.request({
               url: 'http://shengyu.supersyh.xyz/api/auth/user/stats',
               method: 'GET',
               header: { 'Authorization': `Bearer ${token}` }
             })
+            console.log('[loadProfileData] /api/auth/user/stats 响应:', statsRes.statusCode, statsRes.data)
             const userData = userRes.data.user
             // 优先使用微信昵称和头像（如果是微信登录用户）
             this.userInfo = {
