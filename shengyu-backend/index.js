@@ -504,8 +504,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// 增加请求体大小限制，支持大图片上传（默认100KB太小）
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 安全响应头
 app.use(securityHeaders);
