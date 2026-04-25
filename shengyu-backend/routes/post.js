@@ -4,6 +4,68 @@ const db = require('../config/db');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { authenticateToken, optionalAuth, sanitizeInput } = require('../middleware/security');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// 确保上传目录存在
+const postsDir = path.join(__dirname, '../uploads/posts');
+if (!fs.existsSync(postsDir)) {
+  fs.mkdirSync(postsDir, { recursive: true });
+}
+
+// 配置multer存储
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, postsDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const safeExt = path.extname(file.originalname).toLowerCase();
+    cb(null, 'post-' + uniqueSuffix + safeExt);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: config.upload.maxImageSize || 5 * 1024 * 1024 // 默认5MB
+  },
+  fileFilter: function (req, file, cb) {
+    // 只允许上传图片
+    const filetypes = /jpeg|jpg|png|gif|webp/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('只允许上传图片文件'));
+    }
+  }
+});
+
+// 上传帖子图片
+router.post('/upload-image', authenticateToken, upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ code: 400, error: '请选择要上传的图片' });
+    }
+
+    // 返回图片URL
+    const imageUrl = `/uploads/posts/${req.file.filename}`;
+    res.status(200).json({
+      code: 200,
+      message: '上传成功',
+      data: {
+        url: imageUrl,
+        filename: req.file.filename
+      }
+    });
+  } catch (error) {
+    console.error('上传图片失败:', error);
+    res.status(500).json({ code: 500, error: '上传图片失败' });
+  }
+});
 
 // 发布帖子
 router.post('/create', authenticateToken, (req, res) => {

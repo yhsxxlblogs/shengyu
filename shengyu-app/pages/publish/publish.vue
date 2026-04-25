@@ -113,10 +113,20 @@ export default {
       try {
         uni.showLoading({ title: '发布中...' });
         
+        let uploadedImageUrl = '';
+        
+        // 如果有图片，先上传图片
+        if (this.imageFile && this.imageUrl) {
+          const uploadRes = await this.uploadImage(token);
+          if (uploadRes && uploadRes.url) {
+            uploadedImageUrl = uploadRes.url;
+          }
+        }
+        
         // 准备请求数据
         const postData = {
           content: this.content,
-          image_url: this.imageUrl || '',
+          image_url: uploadedImageUrl,
           sound_id: this.soundUrl || null
         };
         
@@ -150,6 +160,39 @@ export default {
         console.error('发布失败:', error);
         uni.showToast({ title: '发布失败', icon: 'none' });
       }
+    },
+    
+    // 上传图片到服务器
+    uploadImage(token) {
+      return new Promise((resolve, reject) => {
+        uni.uploadFile({
+          url: 'http://shengyu.supersyh.xyz/api/post/upload-image',
+          filePath: this.imageUrl,
+          name: 'image',
+          header: {
+            Authorization: `Bearer ${token}`
+          },
+          success: (res) => {
+            try {
+              const data = JSON.parse(res.data);
+              if (data.code === 200 && data.data) {
+                resolve(data.data);
+              } else {
+                uni.showToast({ title: data.error || '图片上传失败', icon: 'none' });
+                resolve(null);
+              }
+            } catch (e) {
+              console.error('解析上传响应失败:', e);
+              resolve(null);
+            }
+          },
+          fail: (err) => {
+            console.error('上传图片失败:', err);
+            uni.showToast({ title: '图片上传失败', icon: 'none' });
+            resolve(null);
+          }
+        });
+      });
     },
     playSound(url) {
       uni.showToast({ title: '播放声音', icon: 'none' });
