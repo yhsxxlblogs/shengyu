@@ -24,7 +24,7 @@
               <text v-if="user.is_mutual" class="mutual-tag">互相关注</text>
             </view>
           </view>
-          <view class="action-area" v-if="showFollowButton">
+          <view class="action-area" v-if="showFollowButton(user)">
             <button
               class="follow-btn"
               :class="{ 'following': user.is_following, 'mutual': user.is_mutual }"
@@ -54,17 +54,40 @@ export default {
     }
   },
   computed: {
-    title() {
-      return this.type === 'following' ? '我的关注' : '我的粉丝';
+    // 是否查看自己的列表
+    isMyList() {
+      return !this.userId || String(this.userId) === String(this.currentUserId);
+    },
+    // 页面标题
+    pageTitle() {
+      if (this.type === 'following') {
+        return this.isMyList ? '我的关注' : 'TA的关注';
+      } else {
+        return this.isMyList ? '我的粉丝' : 'TA的粉丝';
+      }
     },
     emptyText() {
-      return this.type === 'following' ? '还没有关注任何人' : '还没有粉丝';
-    },
-    // 是否显示关注按钮（只看自己的列表时显示）
-    showFollowButton() {
-      return !this.userId || String(this.userId) === String(this.currentUserId);
+      if (this.type === 'following') {
+        return this.isMyList ? '还没有关注任何人' : 'TA还没有关注任何人';
+      } else {
+        return this.isMyList ? '还没有粉丝' : 'TA还没有粉丝';
+      }
     }
   },
+  methods: {
+    // 判断是否显示关注按钮
+    showFollowButton(user) {
+      // 不显示自己的关注按钮
+      if (String(user.id) === String(this.currentUserId)) {
+        return false;
+      }
+      // 查看自己的列表时，显示所有关注按钮
+      if (this.isMyList) {
+        return true;
+      }
+      // 查看别人的列表时，只显示关注状态（已关注/关注），不显示互相关注
+      return true;
+    },
   onLoad(options) {
     this.type = options.type || 'following';
     this.userId = options.userId;
@@ -73,7 +96,7 @@ export default {
     this.currentUserId = userInfo ? userInfo.id : null;
     // 设置页面标题
     uni.setNavigationBarTitle({
-      title: this.type === 'following' ? '我的关注' : '我的粉丝'
+      title: this.pageTitle
     });
     this.loadUsers();
     // 监听关注状态变化事件
