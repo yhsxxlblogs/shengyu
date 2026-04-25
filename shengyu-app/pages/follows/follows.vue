@@ -24,11 +24,11 @@
               <text v-if="user.is_mutual" class="mutual-tag">互相关注</text>
             </view>
           </view>
-          <view class="action-area">
-            <button 
-              class="follow-btn" 
+          <view class="action-area" v-if="showFollowButton">
+            <button
+              class="follow-btn"
               :class="{ 'following': user.is_following, 'mutual': user.is_mutual }"
-              @click="toggleFollow(user)"
+              @click.stop="toggleFollow(user)"
             >
               {{ user.is_mutual ? '互相关注' : (user.is_following ? '已关注' : '关注') }}
             </button>
@@ -47,6 +47,7 @@ export default {
     return {
       type: 'following', // 'following' 或 'followers'
       userId: null,
+      currentUserId: null, // 当前登录用户ID
       users: [],
       loading: false,
       error: ''
@@ -58,11 +59,18 @@ export default {
     },
     emptyText() {
       return this.type === 'following' ? '还没有关注任何人' : '还没有粉丝';
+    },
+    // 是否显示关注按钮（只看自己的列表时显示）
+    showFollowButton() {
+      return !this.userId || String(this.userId) === String(this.currentUserId);
     }
   },
   onLoad(options) {
     this.type = options.type || 'following';
     this.userId = options.userId;
+    // 获取当前登录用户ID
+    const userInfo = uni.getStorageSync('userInfo');
+    this.currentUserId = userInfo ? userInfo.id : null;
     // 设置页面标题
     uni.setNavigationBarTitle({
       title: this.type === 'following' ? '我的关注' : '我的粉丝'
