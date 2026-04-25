@@ -38,11 +38,14 @@
                 @change="onBannerChange"
                 :autoplay="bannerList.length > 1"
                 :interval="4000"
-                :duration="400"
+                :duration="300"
                 :circular="bannerList.length > 1"
                 :indicator-dots="false"
                 previous-margin="60rpx"
                 next-margin="60rpx"
+                :acceleration="true"
+                :disable-programmatic-animation="false"
+                cache-extent="2"
               >
                 <swiper-item
                   v-for="(banner, index) in bannerList"
@@ -62,6 +65,9 @@
                       :src="banner.fullImageUrl"
                       class="banner-image"
                       mode="aspectFill"
+                      :lazy-load="true"
+                      :fade-show="true"
+                      :webp="true"
                       @error="onBannerImageError(index)"
                     />
                     <view v-else class="banner-placeholder">
@@ -2139,6 +2145,8 @@ export default {
 
 .banner-swiper {
   height: 340rpx;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .banner-item-wrapper {
@@ -2170,8 +2178,11 @@ export default {
   border-radius: 24rpx;
   overflow: hidden;
   background: #FFFFFF;
-  transition: transform 0.35s ease, opacity 0.35s ease;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
   box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 /* 中心激活状态 */
@@ -2202,6 +2213,9 @@ export default {
   width: 100%;
   height: 100%;
   border-radius: 24rpx;
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .banner-placeholder {
