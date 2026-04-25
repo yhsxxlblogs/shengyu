@@ -160,20 +160,20 @@ export default {
 /* 未读消息气泡 */
 .unread-badge {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 4rpx;
+  right: 4rpx;
   background: #FF4757;
   color: #FFFFFF;
-  font-size: 20rpx;
-  min-width: 32rpx;
-  height: 32rpx;
-  border-radius: 16rpx;
+  font-size: 16rpx;
+  min-width: 24rpx;
+  height: 24rpx;
+  border-radius: 12rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 6rpx;
+  padding: 0 4rpx;
   font-weight: 600;
-  box-shadow: 0 2rpx 8rpx rgba(255, 71, 87, 0.4);
+  box-shadow: 0 2rpx 6rpx rgba(255, 71, 87, 0.4);
   animation: badge-pulse 2s ease-in-out infinite;
 }
 

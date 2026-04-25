@@ -1491,7 +1491,7 @@ export default {
         if (this.isLoggedIn) {
           this.loadProfileData()
         }
-      }, 30000)
+      }, 120000) // 从30秒改为2分钟，极大降低刷新频率
     },
 
     initSocket() {

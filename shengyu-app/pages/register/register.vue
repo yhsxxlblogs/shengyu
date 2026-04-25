@@ -191,14 +191,14 @@ export default {
 }
 
 .app-icon {
-  width: 240rpx;
-  height: 240rpx;
+  width: 180rpx;
+  height: 180rpx;
   background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 50%, #FFD1DC 100%);
-  border-radius: 60rpx;
+  border-radius: 44rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 16rpx 48rpx rgba(255, 182, 193, 0.4);
+  box-shadow: 0 12rpx 36rpx rgba(255, 182, 193, 0.4);
   overflow: hidden;
   animation: iconPulse 3s ease-in-out infinite;
 }
@@ -215,8 +215,8 @@ export default {
 }
 
 .app-logo {
-  width: 170rpx;
-  height: 170rpx;
+  width: 130rpx;
+  height: 130rpx;
   animation: logoFloat 3s ease-in-out infinite;
 }
 
