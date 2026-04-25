@@ -504,6 +504,12 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// 文件上传路由需要在 body-parser 之前注册，避免 JSON 解析错误
+// 轮播图上传路由（使用 multipart/form-data，跳过 JSON 解析）
+const bannerUploadRoutes = require('./routes/banner-upload');
+app.use('/api/banner/admin', bannerUploadRoutes);
+
 // 增加请求体大小限制，支持大图片上传（默认100KB太小）
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
