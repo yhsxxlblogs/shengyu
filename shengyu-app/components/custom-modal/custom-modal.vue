@@ -275,13 +275,13 @@ export default {
 .modal-actions {
   display: flex;
   justify-content: center;
-  gap: 24rpx;
+  gap: 20rpx;
 }
 
 .action-btn {
-  min-width: 140rpx;
-  padding: 16rpx 32rpx;
-  border-radius: 28rpx;
+  min-width: 120rpx;
+  padding: 12rpx 28rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -290,37 +290,37 @@ export default {
 }
 
 .action-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 .cancel-btn {
-  background: #F5F5F5;
-  border: 2rpx solid #E0E0E0;
+  background: #F8F8F8;
+  border: 1rpx solid #E5E5E5;
 }
 
 .cancel-btn .btn-text {
-  color: #999999;
-  font-size: 26rpx;
+  color: #888888;
+  font-size: 24rpx;
   font-weight: 500;
 }
 
 .confirm-btn {
   background: linear-gradient(135deg, #FFB6C1, #FFC0CB);
-  box-shadow: 0 4rpx 16rpx rgba(255, 182, 193, 0.4);
+  box-shadow: 0 3rpx 12rpx rgba(255, 182, 193, 0.35);
 }
 
 .confirm-btn .btn-text {
   color: #FFFFFF;
-  font-size: 26rpx;
+  font-size: 24rpx;
   font-weight: 600;
 }
 
 /* 按钮悬停效果 */
 .cancel-btn:hover {
-  background: #EEEEEE;
+  background: #F0F0F0;
 }
 
 .confirm-btn:hover {
-  box-shadow: 0 6rpx 20rpx rgba(255, 182, 193, 0.5);
+  box-shadow: 0 4rpx 16rpx rgba(255, 182, 193, 0.45);
 }
 </style>
