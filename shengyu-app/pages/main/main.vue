@@ -559,6 +559,9 @@
     </swiper>
 
     <custom-tabbar :current-index="currentIndex" :unread-count="unreadMessageCount" @change="onTabChange"></custom-tabbar>
+
+    <!-- 自定义弹窗组件 -->
+    <custom-modal ref="customModal"></custom-modal>
   </view>
 </template>
 
@@ -1713,51 +1716,48 @@ export default {
       });
     },
     // 处理扫码结果
-    handleScanResult(result) {
+    async handleScanResult(result) {
       if (!result) return;
       
-      // 判断是否为 URL
-      if (result.startsWith('http://') || result.startsWith('https://')) {
-        // 如果是 URL，可以跳转或复制
-        uni.showModal({
+      const isUrl = result.startsWith('http://') || result.startsWith('https://')
+      
+      try {
+        const modalRes = await this.$refs.customModal.show({
           title: '扫码结果',
           content: result,
-          confirmText: '打开链接',
+          icon: isUrl ? '🔗' : '📋',
+          iconType: 'info',
+          showCancel: isUrl,
           cancelText: '复制',
-          success: (modalRes) => {
-            if (modalRes.confirm) {
-              // 打开链接
-              uni.navigateTo({
-                url: `/pages/webview/webview?url=${encodeURIComponent(result)}`
-              });
-            } else if (modalRes.cancel) {
-              // 复制到剪贴板
-              uni.setClipboardData({
-                data: result,
-                success: () => {
-                  uni.showToast({ title: '已复制', icon: 'success' });
-                }
-              });
-            }
+          confirmText: isUrl ? '打开链接' : '复制'
+        })
+        
+        if (modalRes.confirm) {
+          if (isUrl) {
+            // 打开链接
+            uni.navigateTo({
+              url: `/pages/webview/webview?url=${encodeURIComponent(result)}`
+            });
+          } else {
+            // 复制到剪贴板
+            uni.setClipboardData({
+              data: result,
+              success: () => {
+                uni.showToast({ title: '已复制', icon: 'success' });
+              }
+            });
           }
-        });
-      } else {
-        // 普通文本，显示并复制
-        uni.showModal({
-          title: '扫码结果',
-          content: result,
-          confirmText: '复制',
-          success: (modalRes) => {
-            if (modalRes.confirm) {
-              uni.setClipboardData({
-                data: result,
-                success: () => {
-                  uni.showToast({ title: '已复制', icon: 'success' });
-                }
-              });
+        } else if (modalRes.cancel && isUrl) {
+          // 复制到剪贴板
+          uni.setClipboardData({
+            data: result,
+            success: () => {
+              uni.showToast({ title: '已复制', icon: 'success' });
             }
-          }
-        });
+          });
+        }
+      } catch (e) {
+        // 用户取消
       }
     },
     goRecord() {
