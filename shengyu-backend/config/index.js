@@ -34,7 +34,7 @@ const config = {
   redis: {
     host: 'localhost',
     port: 6379,
-    password: '@Syh20050608',
+    password: '',  // 无密码
     db: 0,
   },
 
