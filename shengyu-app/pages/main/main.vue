@@ -1634,6 +1634,8 @@ export default {
             }
             // 检查是否设置了密码
             this.hasPassword = userData.hasPassword || false
+            // 检查是否绑定了微信
+            this.wechatBound = userData.isWechatBound || false
             // 加载关注列表到缓存
             this.loadFollowingList(token)
           }
