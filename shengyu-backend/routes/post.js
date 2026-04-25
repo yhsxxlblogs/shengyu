@@ -33,7 +33,9 @@ router.post('/create', authenticateToken, (req, res) => {
 
       // 获取新发布的帖子
       db.query(
-        `SELECT p.*, u.username, u.avatar,
+        `SELECT p.*, 
+                COALESCE(u.nickname, u.wechat_nickname, u.username) as username, 
+                COALESCE(u.avatar, u.wechat_avatar) as avatar,
                 0 as like_count,
                 0 as comment_count
          FROM posts p
@@ -72,12 +74,15 @@ router.get('/list', optionalAuth, (req, res) => {
   }
 
   db.query(
-    `SELECT p.*, u.username, u.avatar,
+    `SELECT p.*, 
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username, 
+            COALESCE(u.avatar, u.wechat_avatar) as avatar,
             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count,
             ${userId ? `(SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id AND l.user_id = ${userId}) as is_liked` : '0 as is_liked'}
      FROM posts p
      LEFT JOIN users u ON p.user_id = u.id
+     WHERE p.visible = 1
      ORDER BY p.created_at DESC
      LIMIT ? OFFSET ?`,
     [limitNum, offset],
@@ -102,7 +107,9 @@ router.get('/popular', (req, res) => {
   }
 
   db.query(
-    `SELECT p.*, u.username, u.avatar,
+    `SELECT p.*, 
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username, 
+            COALESCE(u.avatar, u.wechat_avatar) as avatar,
             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
      FROM posts p
@@ -220,7 +227,9 @@ router.post('/comment/:post_id', authenticateToken, (req, res) => {
 
         // 获取新评论
         db.query(
-          `SELECT c.*, u.username, u.avatar
+          `SELECT c.*, 
+                  COALESCE(u.nickname, u.wechat_nickname, u.username) as username, 
+                  COALESCE(u.avatar, u.wechat_avatar) as avatar
            FROM comments c
            LEFT JOIN users u ON c.user_id = u.id
            WHERE c.id = ?`,
@@ -269,7 +278,9 @@ router.get('/comments/:post_id', (req, res) => {
   }
 
   db.query(
-    `SELECT c.*, u.username, u.avatar
+    `SELECT c.*, 
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username, 
+            COALESCE(u.avatar, u.wechat_avatar) as avatar
      FROM comments c
      LEFT JOIN users u ON c.user_id = u.id
      WHERE c.post_id = ?
@@ -301,7 +312,9 @@ router.get('/my', authenticateToken, (req, res) => {
   }
 
   db.query(
-    `SELECT p.*, u.username, u.avatar,
+    `SELECT p.*, 
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username, 
+            COALESCE(u.avatar, u.wechat_avatar) as avatar,
             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
      FROM posts p
@@ -335,7 +348,9 @@ router.get('/likes', authenticateToken, (req, res) => {
   }
 
   db.query(
-    `SELECT p.*, u.username, u.avatar,
+    `SELECT p.*, 
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username, 
+            COALESCE(u.avatar, u.wechat_avatar) as avatar,
             (SELECT COUNT(*) FROM likes l2 WHERE l2.post_id = p.id) as like_count,
             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count,
             1 as is_liked
@@ -434,7 +449,9 @@ router.get('/detail/:post_id', optionalAuth, (req, res) => {
   const userId = req.user?.id;
 
   db.query(
-    `SELECT p.*, u.username, u.avatar,
+    `SELECT p.*, 
+            COALESCE(u.nickname, u.wechat_nickname, u.username) as username, 
+            COALESCE(u.avatar, u.wechat_avatar) as avatar,
             (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) as like_count,
             (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count,
             ${userId ? `(SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id AND l.user_id = ${userId}) as is_liked` : '0 as is_liked'}
